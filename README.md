@@ -6,22 +6,22 @@
 
 > 🔎 **Browse the papers in a searchable web UI → [**ser666.github.io/awesome-zero-shot-navigation/**](https://ser666.github.io/awesome-zero-shot-navigation/)**
 
-![Papers](https://img.shields.io/badge/papers-688-blue) ![Last update](https://img.shields.io/badge/updated-2026--09--27-green) ![License](https://img.shields.io/badge/license-MIT-lightgrey)
+![Papers](https://img.shields.io/badge/papers-689-blue) ![Last update](https://img.shields.io/badge/updated-2026--09--27-green) ![License](https://img.shields.io/badge/license-MIT-lightgrey)
 
 ---
 
 ## 📊 Stats
 
-- **Total papers**: 688
-- **New in the last 7 days**: 18
+- **Total papers**: 689
+- **New in the last 7 days**: 19
 - **Categories**: 7
-- **Sources**: crossref (156), openalex (593)
-- **Last updated**: 2026-09-27 02:15 UTC
+- **Sources**: crossref (156), openalex (595)
+- **Last updated**: 2026-09-27 02:23 UTC
 
 ## 🗂 Contents
 
 - [Object-Goal Navigation (ObjectNav)](#objectnav) — 190 papers
-- [Vision-and-Language Navigation (VLN)](#vln) — 176 papers
+- [Vision-and-Language Navigation (VLN)](#vln) — 177 papers
 - [Aerial VLN](#aerial-vln) — 80 papers
 - [Semantic / Open-Vocabulary Navigation](#semantic-nav) — 43 papers
 - [Social Navigation](#social-nav) — 31 papers
@@ -281,7 +281,7 @@
 
 <a id="vln"></a>
 
-## Vision-and-Language Navigation (VLN) (176)
+## Vision-and-Language Navigation (VLN) (177)
 
 - [GPT-6-Astra Lights Up Embodied Navigation: Evaluation in Zero-Shot Vision-and-Language Navigation in Continuous Environments](https://doi.org/10.48550/arxiv.2609.29861)  
   Guangzhao Dai, Qianru Sun, Qi Wu et al. · arXiv (Cornell University) · `2026-09-24`
@@ -295,6 +295,8 @@
   Quanhua Chen, Juhan Kang, Runfeng Lin et al. · arXiv (Cornell University) · `2026-09-22` · [PDF](https://arxiv.org/pdf/2609.26408)
 - [A Topological Representation with Object-Path Graphs for Open-Vocabulary Instance Navigation](https://doi.org/10.48550/arxiv.2609.24189)  
   Linwei Zheng, Daojie Peng, Bingtao Wang et al. · arXiv (Cornell University) · `2026-09-21` · [PDF](https://arxiv.org/pdf/2609.24189)
+- [What do VLM-Based Vision-Language Navigation Models Rely on: Interpreting and Steering Policy Behavior](https://doi.org/10.48550/arxiv.2609.24576)  
+  Débora Oliveira Makowski, Samiran Gode, Abhijeet Nayak et al. · arXiv (Cornell University) · `2026-09-21` · [PDF](https://arxiv.org/pdf/2609.24576)
 - [NaViRrator: Robot Navigation from Human-Readable Maps through a Learned Visual Route](https://doi.org/10.48550/arxiv.2609.21316)  
   이아윤, Jiseon Kim, Giseop Kim · arXiv (Cornell University) · `2026-09-18` · [PDF](https://arxiv.org/pdf/2609.21316)
 - [Navi-Agent: Unlocalized Monocular Navigation Agent](https://doi.org/10.48550/arxiv.2609.20388)  
@@ -521,10 +523,8 @@
   Danyang Li, Zenghui Yang, Guangpeng Qi et al. · arXiv 2025 · `2025-10-25` · ⭐ 2
 - [VLN-ChEnv: Vision-language Navigation in Changeable Environments](https://doi.org/10.1145/3746027.3755202)  
   Shubo Liu, Hongsheng Zhang, 謙二 高橋 et al. · arXiv 2025 · `2025-10-25` · ⭐ 2
-- [Ali-UI: Enhancing Complex Vision-Language Navigation with Alignment of Unified Map and Instruction Parsing](https://doi.org/10.1145/3746027.3755232)  
-  Shanshan Li, Jiawei Hou, Da Huang et al. · arXiv 2025 · `2025-10-25`
 
-*…and 56 more (see the [web browser](https://ser666.github.io/awesome-zero-shot-navigation/) for the full list).*
+*…and 57 more (see the [web browser](https://ser666.github.io/awesome-zero-shot-navigation/) for the full list).*
 
 <a id="aerial-vln"></a>
 
@@ -1182,4 +1182,4 @@ Every day (GitHub Actions, free for public repos):
 
 ---
 
-*Auto-generated. Last update: 2026-09-27 02:15 UTC*
+*Auto-generated. Last update: 2026-09-27 02:23 UTC*
