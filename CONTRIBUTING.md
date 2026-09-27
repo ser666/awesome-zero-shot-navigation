@@ -54,12 +54,34 @@ make serve            # → http://127.0.0.1:8210
 
 | Want to change | File | Notes |
 |----------------|------|-------|
-| What counts as "zero-shot navigation" | `scripts/relevance.py` | **Add a test case** for whatever you fix |
+| What counts as "zero-shot navigation" | `scripts/relevance.py` | **Add a test case**, and run `scripts/impact.py` first (see below) |
 | Sub-topic / category taxonomy | `scripts/topics.py` | Order matters — most specific rule first |
 | Which venues count as "top" (bolded) | `scripts/venues.py` | CCF-A + major robotics |
 | Code-repo matching strictness | `scripts/links.py` | Precision over recall |
 | Search keywords | `scripts/sources.py` (`QUERIES_*`) | Grouped: core / task / method |
 | README & site layout | `scripts/export.py`, `docs/index.html` | |
+
+### ⚠️ Tightening the relevance filter? Run the impact check first
+
+```bash
+python3 scripts/impact.py        # lists every paper the new rules would drop
+python3 scripts/impact.py --brief  # just the counts
+```
+
+**Never blind-delete.** For a relevance filter the **cost of a false negative is
+much higher than a false positive**: one extra irrelevant entry is a small blemish,
+while dropping an important paper is a real, permanent loss (and you'll never
+notice). So:
+
+1. Run `impact.py` and **read every entry** it wants to remove.
+2. If a legitimate paper would be dropped, your rule is wrong — adjust it.
+3. Prefer **"title-only" negative terms** over tightening positive rules.
+   A word in the *abstract* doesn't mean the paper belongs to that domain (it may
+   be an inspiration, a baseline, or one sensor); the *title* is a strong signal.
+   Example: adding `maritime` globally dropped a legitimate unmanned-surface-vehicle
+   VLN paper, and `place cells` dropped a brain-inspired robot navigation paper.
+4. **Encode both directions as tests**: the cases you reject *and* the near-miss
+   cases that must keep passing.
 
 ### Rules of the road
 

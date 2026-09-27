@@ -163,7 +163,7 @@ python3 scripts/keepalive.py
 | 定时任务莫名停了 | `python3 scripts/keepalive.py` | 脚本会自动重新启用 |
 | 数据好久没变 | Actions 是否 `disabled_inactivity` | 同上 |
 | 单轮任务跑很久 | 是否被 429 拖住 | 已加"失败快退 + 时间预算"；若仍慢，调小 `--budget` |
-| 收录了无关论文 | `python3 scripts/audit.py` | 改 `scripts/relevance.py` **并加测试用例**，再跑 `--refilter` |
+| 收录了无关论文 | `python3 scripts/audit.py` | 改 `scripts/relevance.py` **并加测试用例**，再跑 `--refilter`；⚠️ **收紧前必须先跑影响评估**（见下） |
 | 会议名/子专题不对 | —— | 改 `scripts/venues.py` / `scripts/topics.py`，跑 `--backfill`（秒级，不联网） |
 | **代码链接挂错仓库** | 抽查 `data/papers.db` | 改 `scripts/links.py`（**精度优先于召回**：宁可没有，也不能挂错） |
 | 网站打不开 | Pages 设置 | 确认 Settings → Pages → Source = **GitHub Actions** |

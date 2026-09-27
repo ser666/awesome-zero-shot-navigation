@@ -121,6 +121,49 @@ NEGATIVE_TERMS = [
     "benchmark for proactive",
 ]
 
+# ── 「仅标题」负面词 —— 只在**标题**上匹配，不看摘要
+#
+# 📌 为什么要单独一份、且只查标题
+# ---------------------------------------------------------------
+# 2026-09-27 从库内真实误收案例中归纳时，试过两条路，都踩了坑：
+#
+#  ❌ 方案一：给正向规则加门槛（"标题须含具身/感知词"）
+#     → **误杀 6 篇正常论文**（HOZ++、3D-Aware Object Goal Navigation、
+#       CBF-Critic MPPI Navigation for Omnidirectional Mobile Robots …）。
+#       门槛天然依赖词表完备性，连复数 "Robots" 都会漏。
+#
+#  ❌ 方案二：把负面词加到全局表（标题 + 摘要都查）
+#     → 也误杀了正常论文：**"maritime" 杀掉了 USV 无人船 VLN 论文**；
+#       **"place cells"/"hippocampal" 杀掉了 brain-inspired 机器人导航论文**
+#       （类脑导航正是用这些概念写的）。
+#
+#  ✅ 方案三（本表）：**只用"标题级"且"高度具体"的词**。
+#     理由：摘要里出现某个词 ≠ 论文属于那个领域（可能是灵感来源、对比对象、
+#     传感器之一）；但**标题**出现这些词，基本可以断定论文不是做
+#     "智能体零样本导航"的。这样既清了垃圾，又几乎不可能伤到真论文。
+#
+#  🎯 一般化教训：**过滤器的"误杀成本"远高于"误收成本"** ——
+#     列表里多一条无关条目只是小瑕疵；漏掉一篇重要论文是真实损失。
+#     所以：正向规则放宽 + 负面词精密（宁少勿滥），并给每个案例写回归测试。
+TITLE_ONLY_NEGATIVE_TERMS = [
+    # 惯性导航 / 组合导航硬件（标题讲这个的，就是仪器论文，不是零样本导航）
+    "strapdown",
+    "inertial navigation system",
+    "inertial measurement unit",
+    "gnss/ins", "ins/gnss",
+    "doppler sensor",
+    # 人体技能评估（不是智能体）
+    "eye tracking", "eye-tracking", "eye movement",
+    "maritime training", "pilot training", "seafarer", "cadet",
+    # 神经科学（昆虫/动物导航的生物学机制）
+    "mushroom body",
+    # 人群行为 / 建筑空间研究
+    "virtual museum",
+    # 车辆轨迹预测（非具身决策）
+    "trajectory prediction of land vehicle",
+    "vehicle trajectory prediction",
+]
+
 # 数据集/勘误类（非研究论文）
 DROP_TITLE_PREFIXES = [
     "dataset for:", "dataset:", "correction to", "erratum", "retraction",
@@ -146,6 +189,7 @@ _RE_ZS = _compile(ZS_TERMS)
 _RE_EMB = _compile(EMBODIED_TERMS)
 _RE_LLM = _compile(LLM_TERMS)
 _RE_NEG = _compile(NEGATIVE_TERMS)
+_RE_NEG_TITLE = _compile(TITLE_ONLY_NEGATIVE_TERMS)
 _RE_OFF = _compile(OFFDOMAIN_TITLE)
 # 导航密度统计：任何 navig* 词形 + VLN 类缩写
 _RE_NAVDENSE = re.compile(r"(?<![a-z0-9])(?:navig\w*|navigat\w*|vln|objectnav|"
@@ -172,6 +216,9 @@ def check(title: str = "", abstract: str = "") -> tuple:
         return False, "negative-domain-title"
     if _RE_NEG.search(a):
         return False, "negative-domain-abstract"
+    # 1b) 「仅标题」负面词（高度具体，只看标题 —— 见词表处的说明）
+    if _RE_NEG_TITLE.search(t):
+        return False, "negative-domain-title-only"
 
     title_nav = bool(_RE_STRONG.search(t))
     title_weak = bool(_RE_WEAK.search(t))
@@ -252,6 +299,40 @@ TESTS = [
      "We estimate hydrodynamic derivatives with machine learning.", False),
     ("Vision-Reasoning-Guided Occlusion Removal from Light Fields",
      "A foundation model removes occlusions in light fields.", False),
+    # ── 应拒绝（2026-09-27 从库内真实误收中归纳）
+    #    这些是"navigation 一词被非机器人领域借用"的场景，用**仅标题**负面词拦截
+    ("A Model-Free Calibration Method of Inertial Navigation System and "
+     "Doppler Sensors",
+     "We calibrate an inertial navigation system using an agent-based "
+     "simulation; navigation accuracy improves over the navigation trajectory.",
+     False),
+    ("Improved exponential weighted moving average based measurement noise "
+     "estimation for strapdown inertial navigation",
+     "Navigation drift and navigation errors are analyzed over the trajectory.",
+     False),
+    ("Use of eye tracking for assessment of electronic navigation competency "
+     "in maritime training",
+     "Maritime training in a simulator; navigation competency is assessed via "
+     "eye movement across navigation tasks.", False),
+    ("Spatio-temporal Memory for Navigation in a Mushroom Body Model",
+     "We model navigation in the insect brain and its neural circuit.", False),
+    ("Navigation Comparison between a Real and a Virtual Museum",
+     "We study wayfinding and spatial cognition.", False),
+    # ── 应通过 —— ⚠️ **回归测试**，守住"别再用误杀方案"
+    #    ① 我试过给规则 B2 加"标题须含具身词"门槛 → 误杀 HOZ++ 这类正常论文；
+    #    ② 也试过把 "maritime"/"place cells" 加进全局负面词 →
+    #       误杀 USV 无人船 VLN 论文和 brain-inspired 机器人导航论文。
+    #    下面三条专门守住这两种回归。
+    ("HOZ++: Versatile Hierarchical Object-to-Zone Graph for Object Navigation",
+     "Object navigation requires an agent to find a target object. We navigate "
+     "across scenes and report navigation success.", True),
+    ("USV-3.0: Cognitive maritime navigation through vision-language models",
+     "A zero-shot approach where an unmanned surface vehicle follows language "
+     "instructions at sea, evaluated in maritime environments with a VLM.", True),
+    ("A Brain-Inspired Goal-Oriented Robot Navigation System",
+     "Inspired by place cells and grid cells, our robot navigates to goals in "
+     "unseen scenes without task-specific training, using an embodied agent.",
+     True),
 ]
 
 
