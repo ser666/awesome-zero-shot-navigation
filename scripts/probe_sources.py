@@ -53,48 +53,62 @@ def tcp(host: str, port: int, timeout: int = 8) -> bool:
 def probe_arxiv():
     """arXiv 官方 API —— 最新论文的主力源（含 comment 字段，常含 project/code 链接）。
 
-    ⚠️ arXiv 对 Accept 头敏感：带 "application/json" 会返回 406，
-    必须只发一个简单的 UA（官方建议标明应用+联系方式）。
+    踩坑记录：
+      · 带 `Accept: application/json` → 406
+      · 只带 UA 但仍然用 http:// → 依然 406
+      → 结论：**必须用 https://**（arXiv 已弃用明文 HTTP）
     """
-    url = ("http://export.arxiv.org/api/query?"
-           + urllib.parse.urlencode({
-               "search_query": 'all:"zero-shot navigation"',
-               "start": 0, "max_results": 3,
-               "sortBy": "submittedDate", "sortOrder": "descending"}))
-    # 只发 UA，不发 Accept —— 这是修掉 406 的关键
-    st, body, dt = _get(url, hdr={"User-Agent":
-                                  "awesome-zero-shot-navigation/1.0 "
-                                  "(+https://github.com/ser666/awesome-zero-shot-navigation)"})
-    if st != 200:
-        return False, f"HTTP {st}: {body[:120]}", None
     import re
+
+    q = urllib.parse.urlencode({
+        "search_query": 'all:"zero-shot navigation"',
+        "start": 0, "max_results": 3,
+        "sortBy": "submittedDate", "sortOrder": "descending"})
+    ua = {"User-Agent": "awesome-zero-shot-navigation/1.0 "
+                        "(+https://github.com/ser666/awesome-zero-shot-navigation)"}
+
+    results = {}
+    for scheme in ("https", "http"):
+        st, body, dt = _get(f"{scheme}://export.arxiv.org/api/query?{q}", hdr=ua)
+        results[scheme] = (st, body, dt)
+
+    st, body, dt = results["https"]
+    if st != 200:
+        st2, body2, _ = results["http"]
+        return False, f"https→HTTP {st} ｜ http→HTTP {st2} ｜ {body[:100]}", None
+
     entries = re.findall(r"<entry>(.*?)</entry>", body, re.S)
     if entries:
         m = re.search(r"<title>(.*?)</title>", entries[0], re.S)
         title = " ".join(m.group(1).split()) if m else "?"
     else:
         title = "?"
-    has_comment = "<arxiv:comment>" in body
-    has_journal = "<arxiv:journal_ref>" in body
-    return True, (f"{dt:.1f}s ｜ {len(entries)} 条 ｜ comment字段={has_comment} "
-                  f"journal_ref={has_journal}"), title[:80]
+    return True, (f"https {dt:.1f}s ｜ {len(entries)} 条 ｜ "
+                  f"comment字段={'有' if '<arxiv:comment>' in body else '无'} ｜ "
+                  f"journal_ref={'有' if '<arxiv:journal_ref>' in body else '无'}"), \
+        title[:80]
 
 
 def probe_semanticscholar():
-    """Semantic Scholar —— 引用数 / openAccessPdf（无 Key 配额低）"""
+    """Semantic Scholar —— 引用数 / openAccessPdf（无 Key 配额低，需重试）"""
     url = ("https://api.semanticscholar.org/graph/v1/paper/search?"
            + urllib.parse.urlencode({
                "query": "zero-shot navigation", "limit": 3,
                "fields": "title,year,citationCount,externalIds,openAccessPdf"}))
-    st, body, dt = _get(url)
-    if st != 200:
-        return False, f"HTTP {st}: {body[:120]}", None
-    try:
-        d = json.loads(body)
-        n = len(d.get("data", []))
-        return True, f"{dt:.1f}s ｜ {n} 条", (d["data"][0]["title"][:70] if n else "?")
-    except Exception as e:  # noqa: BLE001
-        return False, f"解析失败 {e}", None
+    last = ""
+    for i in range(3):
+        st, body, dt = _get(url)
+        if st == 200:
+            try:
+                d = json.loads(body)
+                n = len(d.get("data", []))
+                return True, f"{dt:.1f}s（第{i+1}次）｜ {n} 条", \
+                    (d["data"][0]["title"][:70] if n else "?")
+            except Exception as e:  # noqa: BLE001
+                return False, f"解析失败 {e}", None
+        last = f"HTTP {st}: {body[:100]}"
+        time.sleep(6 + 6 * i)      # 429 退避后重试
+    return False, f"重试 3 次仍失败 ｜ {last}", None
 
 
 def probe_dblp():
