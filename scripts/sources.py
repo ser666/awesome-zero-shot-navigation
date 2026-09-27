@@ -21,24 +21,74 @@ from html import unescape
 POLITE_EMAIL = "1035534180@qq.com"
 UA = f"awesome-zero-shot-navigation/1.0 (mailto:{POLITE_EMAIL})"
 
-# ── 检索关键词（每条都是 OpenAlex/Crossref 的查询串）
-QUERIES = [
+# ── 检索关键词
+#
+# Boss 反馈「论文来源感觉不是很充足」→ 除增加**数据源**，最高性价比的是
+# **扩大检索面**：把"任务别名 / 方法别名 / 基准名 / 平台名"都覆盖到。
+#
+# 分三组，便于维护和调参：
+#   A. 核心任务（zero-shot / training-free 直白变体）
+#   B. 任务体系（各子任务的标准叫法 —— 覆盖不写 zero-shot 但同类的论文）
+#   C. 方法 / 基准 / 平台（LLM/VLM/VLA 驱动、GOAT/R2R-CE 等基准）
+QUERIES_CORE = [
     "zero-shot navigation",
     "zero-shot object navigation",
     "zero-shot object goal navigation",
     "zero-shot vision-and-language navigation",
     "zero-shot embodied navigation",
-    "training-free navigation",
-    "open-vocabulary object navigation",
     "zero-shot semantic navigation",
-    "vision-language navigation foundation model",
-    "embodied navigation foundation model",
+    "zero-shot indoor navigation",
+    "training-free navigation",
+    "training-free object goal navigation",
+    "open-vocabulary object navigation",
+    "open-vocabulary navigation",
     "zero-shot aerial navigation",
+    "zero-shot UAV navigation",
+]
+
+QUERIES_TASK = [
+    "object goal navigation unseen object",
+    "object goal navigation zero shot",
+    "instance goal navigation",
+    "image goal navigation",
+    "point goal navigation generalization",
+    "multi-object navigation",
+    "semantic navigation robot",
+    "instance navigation open vocabulary",
+    "vision-and-language navigation continuous environments",
+    "aerial vision-and-language navigation",
+    "UAV vision language navigation",
+    "social navigation robot",
+    "autonomous exploration unknown environment",
+    "embodied question answering navigation",
+    "text-driven navigation",
+]
+
+QUERIES_METHOD = [
+    "visual language model robot navigation",
+    "large language model robot navigation",
     "LLM based navigation",
     "VLM navigation robot",
+    "vision language action navigation",
+    "foundation model embodied navigation",
+    "vision-language navigation foundation model",
+    "embodied navigation foundation model",
     "instruction following navigation",
-    "goal navigation unseen object",
+    "scene graph navigation",
+    "semantic map navigation agent",
+    "memory based navigation agent",
+    "reinforcement learning zero shot navigation",
 ]
+
+# 用于 GitHub 上找代码仓库 / 关键词匹配（不参与 API 检索）
+QUERIES_BENCH = [
+    "GOAT benchmark",
+    "R2R-CE",
+    "NavGPT",
+    "open-vocabulary object goal navigation benchmark",
+]
+
+QUERIES = QUERIES_CORE + QUERIES_TASK + QUERIES_METHOD
 
 
 def _get_json(url: str, timeout: int = 40, retries: int = 2):
@@ -227,6 +277,21 @@ SOURCES = {
     "openalex": harvest_openalex,
     "crossref": harvest_crossref,
 }
+
+# 附加源（OpenReview / HuggingFace）—— 单独注册。
+# 为什么不混进 SOURCES：它们的调用签名不同（不需要 query 循环里的 date_to 等），
+# 且在管线里是"每轮只调一次"，而不是"每个关键词调一次"。
+#
+# ⚠️ arXiv API 已确认**不可用**（HTTP 406，封禁云服务商 IP，HTTP/HTTPS 都一样），
+#    所以不要试图加回来 —— 详见 scripts/probe_sources.py 的探测记录。
+try:
+    from sources_extra import harvest_huggingface, harvest_openreview
+    EXTRA_SOURCES = {
+        "openreview": harvest_openreview,   # 会议投稿（含接收结果）
+        "huggingface": harvest_huggingface,  # 每日热门（带热度）
+    }
+except ImportError:  # 单独运行 sources.py 时容忍
+    EXTRA_SOURCES = {}
 
 
 def now_iso() -> str:

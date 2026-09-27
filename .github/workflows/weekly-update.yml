@@ -1,0 +1,190 @@
+name: Weekly Update
+
+# ⏰ 调度说明（为什么要这样设）
+#
+#  · **每周一次**（Boss 要求）：论文列表不需要每天刷；每周一次既保持新鲜，
+#    又大幅降低被数据源限速（429）的概率，也省 Actions 时长。
+#    ⚠️ 想改回每天：把 cron 改成 "17 2 * * *" 即可，其余不用动。
+#
+#  · **错开整点**：GitHub 官方文档指出定时任务在"整点"最拥堵，
+#    可能延迟甚至被丢弃（"some queued jobs may be dropped"）。
+#    所以用 02:17 UTC = 北京 10:17。
+#
+#  · **只在默认分支运行**（GitHub 限制），本项目就是 main。
+on:
+  schedule:
+    - cron: "17 2 * * 1"      # 每周一 02:17 UTC（北京时间周一 10:17）
+  workflow_dispatch:            # 允许手动触发（测试 / 补跑）
+  push:
+    branches: [main]
+    paths:                      # 改动流水线代码时也跑一次，便于及时发现回归
+      - "scripts/**"
+      - ".github/workflows/weekly-update.yml"
+
+permissions:
+  contents: write               # 需要提交数据
+
+# 同一时间只跑一个；⚠️ 新运行自动取消卡住的旧运行
+# （否则一次卡住的运行会阻塞后续所有定时任务 —— 实测踩过）
+concurrency:
+  group: weekly-update
+  cancel-in-progress: true
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+
+      # 本项目只用标准库，无需 pip install ✅（更快、更稳）
+
+      - name: Harvest new papers
+        # 增量更新：回看 21 天（每周跑一次，留足容错窗口，漏抓的能补回）
+        # ⏱ 时间预算 600s：超时后不再发起新查询（防限速重试拖超时）
+        run: python3 scripts/pipeline.py --days 21 --budget 600
+        continue-on-error: true     # 采集失败不阻塞导出（保留旧数据可用）
+
+      - name: Re-filter (drop anything no longer relevant)
+        run: python3 scripts/pipeline.py --refilter
+        continue-on-error: true
+
+      - name: Backfill derived fields (venue tiers / topics / links)
+        # 不联网、秒级；规则升级后靠它回填历史
+        run: python3 scripts/pipeline.py --backfill
+        continue-on-error: true
+
+      - name: Enrich (citations · OA PDFs · code repositories)
+        # 逐篇补数据，必须限流：总预算 900s + GitHub 搜索上限 250 次/轮。
+        # 清不完的部分下一轮继续（列表是长期维护的，不急于一轮做完）。
+        #
+        # 🔑 用哪个 token 搜代码仓库：
+        #   优先 secrets.GH_PAT（专职 PAT，配额更高 —— 可选，不配也能跑）；
+        #   否则回退到 Actions 内置的 GITHUB_TOKEN（零配置，立即可用）。
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TOKEN="${GH_PAT:-$GITHUB_TOKEN}"
+          if [ -n "$TOKEN" ]; then
+            mkdir -p "$HOME/.hermes/secrets"
+            printf '%s' "$TOKEN" > "$HOME/.hermes/secrets/github_pat"
+            chmod 600 "$HOME/.hermes/secrets/github_pat"
+            echo "已装载 GitHub token（${GH_PAT:+专用 PAT}${GH_PAT:-内置 GITHUB_TOKEN}）"
+          else
+            echo "无 token —— 跳过 GitHub 代码仓库搜索（其余增强照常）"
+          fi
+          python3 scripts/pipeline.py --enrich --budget 900
+        continue-on-error: true
+
+      - name: Export README + site data
+        run: python3 scripts/export.py
+
+      - name: Sanity check
+        # 防止"导出静默出错"（比如 DB 有数据但 JSON 空）导致网站变空白
+        run: |
+          python3 - <<'PY'
+          import json, pathlib, sqlite3, sys
+          db = pathlib.Path("data/papers.db")
+          js = pathlib.Path("docs/data/papers.json")
+          con = sqlite3.connect(f"file:{db}?mode=ro", uri=True)
+          n_db = con.execute("SELECT COUNT(*) FROM papers").fetchone()[0]
+          con.close()
+          d = json.loads(js.read_text())
+          n_js = d["total"]
+          print(f"DB={n_db}  JSON={n_js}  README={pathlib.Path('README.md').stat().st_size//1024}KB")
+          if n_js != n_db:
+              sys.exit(f"❌ 数量不一致：DB {n_db} vs JSON {n_js}")
+          if n_js < 100:
+              sys.exit(f"❌ 论文数异常偏低：{n_js}")
+          print("✅ sanity check passed")
+          PY
+
+      - name: Commit changes
+        run: |
+          git config user.name  "ser666"
+          git config user.email "1035534180@qq.com"
+          git add README.md docs/data/papers.json data/papers.db
+          if git diff --staged --quiet; then
+            echo "无变化，跳过提交"
+          else
+            git commit -m "chore(data): weekly update $(date -u +'%Y-%m-%d %H:%M UTC')"
+            git push
+          fi
+
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "## 📊 Weekly Update"
+            echo ""
+            echo "| 项 | 值 |"
+            echo "|----|-----|"
+            echo "| 论文总数 | $(python3 -c "import json;print(json.load(open('docs/data/papers.json'))['total'])") |"
+            echo "| 重要会议/期刊 | $(python3 -c "import json;print(sum(1 for p in json.load(open('docs/data/papers.json'))['papers'] if p['vt']=='A'))") |"
+            echo "| 有代码链接 | $(python3 -c "import json;print(sum(1 for p in json.load(open('docs/data/papers.json'))['papers'] if p['co']))") |"
+            echo "| README | $(du -h README.md | cut -f1) |"
+            echo "| 数据 | $(du -h docs/data/papers.json | cut -f1) |"
+          } >> $GITHUB_STEP_SUMMARY
+
+  # ⭐ 关键：在同一工作流内直接部署 Pages
+  #
+  # 为什么必须放在这里（而不是靠 pages.yml 被 push 触发）：
+  #   GitHub 明确规定 —— 用默认 GITHUB_TOKEN 做的推送【不会触发其他工作流】
+  #   （防止递归运行）。所以本作业的自动提交不会触发 pages.yml，
+  #   网站就会永远停在旧数据上。必须在本工作流内自己部署。
+  deploy-pages:
+    needs: update
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          ref: main      # 取最新提交（含刚提交的数据）
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v6
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: docs
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5
+
+  # ⭐ 防停自检：检查定时任务是否还活着（GitHub 60 天无活动会静默禁用）
+  health-check:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule'
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Check last data update
+        run: |
+          python3 - <<'PY'
+          import json, datetime, pathlib, sys
+          d = json.loads(pathlib.Path("docs/data/papers.json").read_text())
+          gen = datetime.datetime.fromisoformat(d["generated_at"].replace("Z","+00:00"))
+          age = (datetime.datetime.now(datetime.timezone.utc) - gen).days
+          print(f"数据距今 {age} 天（{gen.date()}）｜ 共 {d['total']} 篇")
+          if age > 45:
+              print(f"::error::数据已 {age} 天未更新 —— 定时任务可能被禁用了！")
+              sys.exit(1)
+          print("✅ 数据新鲜度正常")
+          PY

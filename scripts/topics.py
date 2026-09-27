@@ -19,45 +19,52 @@ import re
 
 # ══════════════════════════════════════════════════════════════
 # 主分类（每篇唯一，按顺序判优 —— 越具体越靠前）
+#
+# ⚠️ 顺序是调过的，别随意改：
+#   原先把 "Exploration / Semantic" 放在 ObjectNav 前面，结果 107 篇被判成
+#   Exploration、ObjectNav 只剩 67 篇 —— 因为大量 ObjectNav 论文都会提到
+#   "frontier-based exploration" 或 "semantic map"。
+#   现在原则是：**先按"任务目标"判（aerial/multi-object/image-goal/social/
+#   objectnav/vln），再用"能力/方法"兜底（semantic/exploration/LLM）**。
 # ══════════════════════════════════════════════════════════════
 PRIMARY_RULES: list[tuple[str, str]] = [
     # 空中 / 无人机（要在通用 VLN 之前，否则会被 VLN 吃掉）
     ("Aerial VLN",
-     r"aerial|uav|drone|unmanned aerial|quadrotor|aircraft|flying|air\b|"
+     r"aerial|uav|drone|unmanned aerial|quadrotor|aircraft|flying|"
      r"terrestrial-aerial|air-ground"),
-    # 社会导航
-    ("Social Navigation",
-     r"social(ly)?[- ]?(compliant|aware)?\s*navigat|pedestrian|crowd|"
-     r"human-aware navigation|socially aware|social robot"),
-    # 探索（无明确目标，主动探索）
-    ("Exploration",
-     r"\bexploration\b|frontier[- ]based|active exploration|"
-     r"exploration policy|map exploration|autonomous exploration"),
-    # 开放词汇 / 语义导航
-    ("Semantic & Open-Vocabulary Navigation",
-     r"open[- ]?vocab|semantic navigation|semantic map|open[- ]?set|"
-     r"zero[- ]shot semantic|category[- ]?agnostic"),
+    # 多目标导航（比单目标更具体）
+    ("Multi-Object Navigation",
+     r"multi[- ]object navigat|multi[- ]target navigat|"
+     r"object sequence|semantic target sequence|\bgoat\b"),
     # 图像 / 点目标导航
     ("Image & Point-Goal Navigation",
      r"image[- ]goal|image goal|point[- ]goal|goal image|"
      r"visual goal|goal[- ]conditioned|instance[- ]goal|instance navigation|"
      r"object[- ]path graph"),
-    # 多目标导航
-    ("Multi-Object Navigation",
-     r"multi[- ]object navigat|multi[- ]target navigat|"
-     r"object sequence|semantic target sequence"),
-    # 指令型 VLN
+    # 社会导航
+    ("Social Navigation",
+     r"social(ly)?[- ]?(compliant|aware)?\s*navigat|pedestrian|crowd|"
+     r"human-aware navigation|socially aware|social robot"),
+    # 目标导向导航（核心任务之一）
+    ("Object-Goal Navigation (ObjectNav)",
+     r"object[- ]goal|object[- ]?nav|goal[- ]object|"
+     r"object goal navigat|target object navigat|"
+     r"zero[- ]shot object navigat|semantic object navigat"),
+    # 指令型 VLN（核心任务之二）
     ("Vision-and-Language Navigation (VLN)",
      r"\bvln\b|vision[- ]and[- ]language navigat|vision[- ]language navigat|"
      r"language[- ]guided navigat|instruction[- ]following|"
-     r"language instruction|navigat\w* instruction|r2r|rxr|touchdown|"
+     r"navigat\w* instruction|r2r|rxr|touchdown|"
      r"talk2nav|dialogue navigat|conversational navigat"),
-    # 目标导向导航（ObjectNav 大家族）
-    ("Object-Goal Navigation (ObjectNav)",
-     r"object[- ]goal|object[- ]?nav|goal[- ]object|find(ing)? (a|the) "
-     r"target object|object goal navigat|target object navigat|"
-     r"zero[- ]shot object navigat"),
-    # LLM/VLM 智能体式导航（常被归到 Other，这里单独成一类）
+    # 开放词汇 / 语义导航（能力维度，放在任务之后兜底）
+    ("Semantic & Open-Vocabulary Navigation",
+     r"open[- ]?vocab|semantic navigation|semantic map|open[- ]?set|"
+     r"zero[- ]shot semantic|category[- ]?agnostic"),
+    # 探索（无明确目标，主动探索）
+    ("Exploration",
+     r"\bexploration\b|frontier[- ]based|active exploration|"
+     r"exploration policy|map exploration|autonomous exploration"),
+    # LLM/VLM 智能体式导航（方法维度，最后兜底）
     ("LLM / VLM Navigation Agents",
      r"\bllm\b|\bvlm\b|\bmllm\b|\bvla\b|large language model|"
      r"vision[- ]language model|multimodal large language|"
@@ -184,13 +191,13 @@ def topic_tags(title: str, abstract: str = "", venue_kind: str = "") -> list[str
 CATEGORY_ORDER = [
     "Object-Goal Navigation (ObjectNav)",
     "Vision-and-Language Navigation (VLN)",
-    "LLM / VLM Navigation Agents",
     "Aerial VLN",
     "Semantic & Open-Vocabulary Navigation",
     "Image & Point-Goal Navigation",
     "Multi-Object Navigation",
     "Social Navigation",
     "Exploration",
+    "LLM / VLM Navigation Agents",
     "Other",
 ]
 
