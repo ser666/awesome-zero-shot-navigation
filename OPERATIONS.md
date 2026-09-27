@@ -168,6 +168,31 @@ python3 scripts/keepalive.py
 | **代码链接挂错仓库** | 抽查 `data/papers.db` | 改 `scripts/links.py`（**精度优先于召回**：宁可没有，也不能挂错） |
 | 网站打不开 | Pages 设置 | 确认 Settings → Pages → Source = **GitHub Actions** |
 
+### ⚠️ 一个要接受的现实：每周都会进来几篇杂音
+
+规则 B2（标题含导航词 + 摘要含具身词 + 摘要导航密集）是**刻意放宽**的 ——
+因为"漏掉真论文"的代价远大于"多收一篇无关的"。副作用是：**每次采集都会混进
+几篇"借用了 navigation 一词"的论文**，典型是导航系统工程类
+（制导/惯导/组合导航标定/UWB-INS 融合）。
+
+实测两轮累计清掉 10 篇，例如：
+
+```
+· Monte Carlo Diagnostics of a Launch Vehicle Guidance Navigation and Control Simulator
+· ...GRU-SAC Measurement Covariance Adaptation for Robust UWB/INS Indoor Navigation
+· PedestrianDiffusion: ... 6D State Estimation for Inertial Navigation
+· A New Algorithm for Navigation Trajectory Prediction of Land Vehicles
+```
+
+**这是设计取舍，不是 bug。** 处理方式：
+
+1. 每季度（或想清理时）跑一次 `python3 scripts/audit.py` 抽查
+2. 跑 `python3 scripts/impact.py` 看会删哪些 → **逐条核对摘要**（别只看数字）
+3. 确认无误后把新词加进 `relevance.py` 的 `TITLE_ONLY_NEGATIVE_TERMS`
+   （⚠️ **只加"高度具体"的组合词**，且**只看标题**）
+4. **给每个新增词补一条回归测试**，同时补"必须通过"的兄弟案例
+5. `python3 scripts/pipeline.py --refilter` 清洗 + `scripts/export.py` 重新导出
+
 ### 本地排查流程
 
 ```bash

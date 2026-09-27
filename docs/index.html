@@ -26,13 +26,13 @@
     -webkit-font-smoothing:antialiased}
   a{color:var(--link);text-decoration:none}
   a:hover{text-decoration:underline}
-  .wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+  .wrap{max-width:1280px;margin:0 auto;padding:0 20px}
 
   /* ── 头部 ── */
-  header{border-bottom:1px solid var(--border);padding:26px 0 20px;margin-bottom:0}
+  header{border-bottom:1px solid var(--border);padding:26px 0 20px}
   h1{margin:0 0 8px;font-size:27px;color:var(--text);letter-spacing:-.3px}
-  .sub{color:var(--text-muted);margin:0 0 14px;max-width:860px;font-size:14.5px}
-  .badges{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:6px}
+  .sub{color:var(--text-muted);margin:0 0 14px;max-width:900px;font-size:14.5px}
+  .badges{display:flex;flex-wrap:wrap;gap:7px}
   .badge{background:var(--surface-2);border:1px solid var(--border);
     border-radius:999px;padding:4px 12px;font-size:12.5px;color:var(--text-muted);
     white-space:nowrap}
@@ -40,34 +40,74 @@
   .badge.acc{background:var(--tierA-bg);border-color:#e3c5b3;color:var(--tierA)}
   .badge.acc b{color:var(--tierA)}
 
-  /* ── 控制区 ── */
-  .controls{position:sticky;top:0;z-index:20;background:var(--bg);
-    border-bottom:1px solid var(--border);padding:12px 0 10px;margin-bottom:16px}
-  .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-  #q{flex:1 1 260px;min-width:200px;padding:9px 13px;border:1px solid var(--border-strong);
-    border-radius:var(--radius);background:var(--surface);color:var(--text);font-size:14.5px}
+  /* ══════════════════════════════════════════════════════════════
+     主布局：左侧边栏（筛选）+ 右结果流
+     —— 这是 Explore 型界面的标准构图：筛选与结果并列，不是上下堆叠
+     ══════════════════════════════════════════════════════════════ */
+  .layout{display:grid;grid-template-columns:246px minmax(0,1fr);
+    gap:28px;align-items:start;padding:22px 20px 60px;
+    max-width:1280px;margin:0 auto}
+
+  /* ── 侧边栏 ── */
+  .sidebar{position:sticky;top:0;max-height:100vh;overflow-y:auto;
+    padding:4px 4px 24px 0;scrollbar-width:thin}
+  .sidebar::-webkit-scrollbar{width:7px}
+  .sidebar::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:4px}
+  .side-block{margin-bottom:20px}
+  .side-title{font-size:11.5px;font-weight:700;text-transform:uppercase;
+    letter-spacing:.07em;color:var(--text-muted);margin:0 0 7px;
+    display:flex;justify-content:space-between;align-items:baseline}
+  .side-title .clr{font-size:11px;font-weight:500;letter-spacing:0;
+    text-transform:none;color:var(--link);cursor:pointer;display:none}
+  .side-title .clr.show{display:inline}
+
+  #q{width:100%;padding:9px 12px;border:1px solid var(--border-strong);
+    border-radius:var(--radius);background:var(--surface);color:var(--text);
+    font-size:14px;margin-bottom:9px}
   #q:focus{outline:2px solid var(--accent-soft);border-color:var(--accent)}
-  select{padding:9px 11px;border:1px solid var(--border-strong);border-radius:var(--radius);
-    background:var(--surface);color:var(--text-body);font-size:13.5px;max-width:220px}
-  .count{color:var(--text-muted);font-size:13px;margin-left:auto;white-space:nowrap}
-  label.chk{display:flex;align-items:center;gap:5px;font-size:13.5px;
-    color:var(--text-muted);cursor:pointer;user-select:none}
+  select{width:100%;padding:8px 10px;border:1px solid var(--border-strong);
+    border-radius:var(--radius);background:var(--surface);color:var(--text-body);
+    font-size:13px;margin-bottom:9px}
+  label.chk{display:flex;align-items:center;gap:7px;font-size:13px;
+    color:var(--text-body);cursor:pointer;user-select:none;padding:4px 0}
+  label.chk input{accent-color:var(--accent);width:15px;height:15px;cursor:pointer}
 
-  /* 快捷筛选 chips */
-  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
-  .chip{background:var(--surface-2);border:1px solid var(--border);border-radius:999px;
-    padding:3px 11px;font-size:12.5px;color:var(--text-body);cursor:pointer;
-    transition:.12s;white-space:nowrap}
-  .chip:hover{border-color:var(--accent);color:var(--accent)}
-  .chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
-  .chip .n{opacity:.65;margin-left:4px;font-size:11.5px}
-  .chips.collapsed .chip.extra{display:none}
-  .taglabel{font-size:12px;color:var(--text-muted);margin:9px 0 0;letter-spacing:.02em}
+  /* 侧边栏里的分类 / 子专题列表（纵向列表比 chips 更好扫读） */
+  .navlist{display:flex;flex-direction:column;gap:1px}
+  .navlist.collapsed .navitem.extra{display:none}
+  .navitem{display:flex;justify-content:space-between;align-items:baseline;gap:8px;
+    padding:5px 9px;border-radius:6px;font-size:13px;color:var(--text-body);
+    cursor:pointer;transition:.1s;line-height:1.35}
+  .navitem:hover{background:var(--surface-2)}
+  .navitem.on{background:var(--accent);color:#fff;font-weight:600}
+  .navitem .lbl{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .navitem .n{font-size:11.5px;color:var(--text-muted);flex:none;
+    font-variant-numeric:tabular-nums}
+  .navitem.on .n{color:#fff;opacity:.8}
+  .morebtn{background:none;border:none;color:var(--link);font-size:12.5px;
+    cursor:pointer;padding:5px 9px 0;text-align:left}
+  .morebtn:hover{text-decoration:underline}
+  #resetall{width:100%;padding:8px 12px;border:1px solid var(--border-strong);
+    border-radius:var(--radius);background:var(--surface);color:var(--text-body);
+    font-size:13px;cursor:pointer}
+  #resetall:hover{border-color:var(--accent);color:var(--accent)}
 
-  /* ── 论文卡片 ── */
-  main{padding-bottom:60px}
-  .paper{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
-    padding:14px 16px;margin-bottom:10px}
+  /* ── 结果流 ── */
+  .results{min-width:0}
+  .resbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;
+    justify-content:space-between;padding:0 0 12px;margin-bottom:4px;
+    border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10;
+    background:var(--bg)}
+  .count{color:var(--text-muted);font-size:13px}
+  .activefilters{display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+  .afchip{background:var(--accent-soft);color:var(--accent);border-radius:999px;
+    padding:2px 10px;font-size:12px;display:inline-flex;gap:5px;align-items:center}
+  .afchip b{font-weight:600}
+  .afchip .x{cursor:pointer;opacity:.7;font-weight:700}
+  .afchip .x:hover{opacity:1}
+
+  .paper{background:var(--surface);border:1px solid var(--border);
+    border-radius:var(--radius);padding:14px 16px;margin-bottom:10px}
   .paper:hover{border-color:var(--border-strong)}
   .ptitle{font-size:15.5px;font-weight:650;color:var(--text);line-height:1.45;
     display:block;margin-bottom:7px}
@@ -81,7 +121,6 @@
   .tag.cat{background:var(--accent-soft);color:var(--accent)}
   .tag.new{background:#2f7d4f;color:#fff}
   .tag.oa{background:#e6efe2;color:var(--code)}
-  .tag.hot{background:#f6e3d8;color:var(--tierA)}
   .tag.tpc{background:var(--surface-2);color:var(--text-muted);cursor:pointer}
   .tag.tpc:hover{border-color:var(--accent);color:var(--accent)}
   .tag.cite{background:var(--surface-3);color:var(--text-muted)}
@@ -105,12 +144,23 @@
     border-radius:var(--radius);background:var(--surface);color:var(--text-body);
     cursor:pointer;font-size:14px}
   #more:hover{border-color:var(--accent);color:var(--accent)}
-  footer{border-top:1px solid var(--border);padding:22px 0 40px;color:var(--text-muted);
-    font-size:12.5px}
+  footer{border-top:1px solid var(--border);padding:22px 0 40px;
+    color:var(--text-muted);font-size:12.5px}
   footer p{margin:5px 0}
-  @media (max-width:640px){
-    h1{font-size:22px} .count{width:100%;margin-left:0}
-    .chip .n{display:none} select{max-width:150px}
+
+  /* ── 移动端：侧边栏收成可折叠面板，避免占满首屏 ── */
+  .sidebox{border:1px solid var(--border);border-radius:var(--radius);
+    background:var(--surface);padding:12px 14px;margin-bottom:14px;
+    display:none;cursor:pointer;font-size:14px;color:var(--text);
+    font-weight:600;justify-content:space-between;align-items:center}
+  .sidebox .arw{color:var(--text-muted);font-weight:400}
+  @media (max-width:900px){
+    .layout{grid-template-columns:1fr;gap:0;padding-top:14px}
+    .sidebar{position:static;max-height:none;overflow:visible;padding-right:0}
+    .sidebox{display:flex}
+    .sidebar.hidden{display:none}
+    .resbar{position:static}
+    h1{font-size:22px}
   }
 </style>
 </head>
@@ -127,32 +177,68 @@
   </div>
 </header>
 
-<div class="controls">
-  <div class="wrap">
-    <div class="row">
-      <input id="q" type="search" placeholder="Search title, author, or abstract…" autocomplete="off">
-      <select id="cat" title="Primary category"><option value="">All categories</option></select>
-      <select id="tpc" title="Sub-topic"><option value="">All sub-topics</option></select>
-      <select id="ven" title="Venue"><option value="">All venues</option></select>
-      <select id="yr" title="Year"><option value="">All years</option></select>
-      <select id="sort" title="Sort">
-        <option value="date">Newest first</option>
-        <option value="cite">Most cited</option>
-        <option value="year">Year (desc)</option>
-        <option value="title">Title A–Z</option>
-      </select>
-      <label class="chk"><input type="checkbox" id="top"> Top venues only</label>
-      <label class="chk"><input type="checkbox" id="oa"> Open access</label>
-      <span class="count" id="count">loading…</span>
-    </div>
-    <div class="chips" id="chips"></div>
-  </div>
+<!-- 移动端：筛选面板开关（桌面端隐藏） -->
+<div class="wrap">
+  <button class="sidebox" id="sidebox" aria-expanded="false" aria-controls="sidebar">
+    <span>🔍 Filters &amp; categories</span><span class="arw" id="sidebox-arw">▾</span>
+  </button>
 </div>
 
-<main class="wrap">
-  <div id="list"></div>
-  <button id="more" style="display:none"></button>
-</main>
+<div class="layout">
+
+  <!-- ═══ 侧边栏：全部筛选条件（分类是主体，纵向列表便于扫读） ═══ -->
+  <aside class="sidebar hidden" id="sidebar">
+
+    <div class="side-block">
+      <input id="q" type="search" placeholder="Search title, author, abstract…" autocomplete="off">
+      <select id="sort" title="Sort">
+        <option value="date">Sort: Newest first</option>
+        <option value="cite">Sort: Most cited</option>
+        <option value="year">Sort: Year (desc)</option>
+        <option value="title">Sort: Title A–Z</option>
+      </select>
+      <label class="chk"><input type="checkbox" id="top"> 🏆 Top venues only</label>
+      <label class="chk"><input type="checkbox" id="oa"> 🔓 Open access only</label>
+    </div>
+
+    <div class="side-block">
+      <div class="side-title">
+        <span>Categories</span>
+        <span class="clr" id="clr-cat">clear</span>
+      </div>
+      <div class="navlist" id="catlist"></div>
+    </div>
+
+    <div class="side-block">
+      <div class="side-title">
+        <span>Sub-topics</span>
+        <span class="clr" id="clr-topic">clear</span>
+      </div>
+      <div class="navlist collapsed" id="tclist"></div>
+      <button class="morebtn" id="tmore">＋ more sub-topics</button>
+    </div>
+
+    <div class="side-block">
+      <div class="side-title"><span>Venue</span></div>
+      <select id="ven" title="Venue"><option value="">All venues</option></select>
+      <div class="side-title"><span>Year</span></div>
+      <select id="yr" title="Year"><option value="">All years</option></select>
+    </div>
+
+    <button id="resetall">Reset all filters</button>
+  </aside>
+
+  <!-- ═══ 结果流 ═══ -->
+  <section class="results">
+    <div class="resbar">
+      <span class="count" id="count">loading…</span>
+      <div class="activefilters" id="af"></div>
+    </div>
+    <div id="list"></div>
+    <button id="more" style="display:none"></button>
+  </section>
+
+</div>
 
 <footer class="wrap">
   <p><b>How this works</b> — a GitHub Actions job harvests papers every week from
@@ -173,6 +259,7 @@
 const PAGE = 40;
 let DATA = {papers: [], categories: {}, topics: {}, venues: {}};
 let shown = PAGE;
+let activeCat = "";
 let activeTopic = "";
 
 const $ = id => document.getElementById(id);
@@ -182,6 +269,9 @@ const isNew = d => {
   const t = new Date(d + "T00:00:00Z");
   return (Date.now() - t.getTime()) / 86400000 <= 14;   // 每周更新 → 14 天窗口
 };
+
+/* 分类名去掉尾部括号（"Object-Goal Navigation (ObjectNav)" → "Object-Goal Navigation"） */
+const shortCat = k => k.replace(/\s*\(.*\)$/,'');
 
 function badges() {
   const n = DATA.papers.length;
@@ -198,15 +288,7 @@ function badges() {
 }
 
 function fillSelects() {
-  const cats = Object.entries(DATA.categories).sort((a,b)=>b[1]-a[1]);
-  $("cat").innerHTML = `<option value="">All categories (${DATA.papers.length})</option>` +
-    cats.map(([k,v]) => `<option value="${esc(k)}">${esc(k)} (${v})</option>`).join("");
-
-  const tps = Object.entries(DATA.topics).slice(0, 60);
-  $("tpc").innerHTML = `<option value="">All sub-topics</option>` +
-    tps.map(([k,v]) => `<option value="${esc(k)}">${esc(k)} (${v})</option>`).join("");
-
-  const vs = Object.entries(DATA.venues).slice(0, 80);
+  const vs = Object.entries(DATA.venues).slice(0, 90);
   $("ven").innerHTML = `<option value="">All venues</option>` +
     vs.map(([k,v]) => `<option value="${esc(k)}">${esc(k)} (${v})</option>`).join("");
 
@@ -215,52 +297,76 @@ function fillSelects() {
     yrs.map(y => `<option value="${y}">${y}</option>`).join("");
 }
 
-/* 分类 chips + 子专题 chips（参考 Embodied-AI-Daily 的细粒度主题导航） */
-function chips() {
+/* ═══ 侧边栏列表：分类 + 子专题（替代原来的横向 chips） ═══ */
+function sidebarLists() {
   const cats = Object.entries(DATA.categories).sort((a,b)=>b[1]-a[1]);
   const tps  = Object.entries(DATA.topics).sort((a,b)=>b[1]-a[1]);
 
-  let h = `<span class="taglabel">Categories</span><div class="chips" style="margin-top:5px">`;
-  h += `<span class="chip on" data-cat="">All<span class="n">${DATA.papers.length}</span></span>`;
+  let h = `<div class="navitem on" data-cat=""><span class="lbl">All papers</span>`
+        + `<span class="n">${DATA.papers.length}</span></div>`;
   h += cats.map(([k,v]) =>
-    `<span class="chip" data-cat="${esc(k)}">${esc(k.replace(/\s*\(.*\)$/,''))}<span class="n">${v}</span></span>`
+    `<div class="navitem" data-cat="${esc(k)}" title="${esc(k)}">`
+    + `<span class="lbl">${esc(shortCat(k))}</span><span class="n">${v}</span></div>`
   ).join("");
-  h += `</div><span class="taglabel">Sub-topics</span><div class="chips" id="tchips" style="margin-top:5px">`;
-  h += tps.map(([k,v],i) =>
-    `<span class="chip${i>=14?' extra':''}" data-topic="${esc(k)}">${esc(k)}<span class="n">${v}</span></span>`
-  ).join("");
-  h += `<span class="chip" id="tmore">＋ more</span></div>`;
-  $("chips").innerHTML = h;
+  $("catlist").innerHTML = h;
 
-  $("chips").querySelectorAll("[data-cat]").forEach(el => el.onclick = () => {
-    $("chips").querySelectorAll("[data-cat]").forEach(x => x.classList.remove("on"));
+  $("tclist").innerHTML = tps.map(([k,v],i) =>
+    `<div class="navitem${i>=12?' extra':''}" data-topic="${esc(k)}">`
+    + `<span class="lbl">${esc(k)}</span><span class="n">${v}</span></div>`
+  ).join("");
+
+  $("catlist").querySelectorAll("[data-cat]").forEach(el => el.onclick = () => {
+    activeCat = el.dataset.cat;
+    $("catlist").querySelectorAll("[data-cat]").forEach(x => x.classList.remove("on"));
     el.classList.add("on");
-    $("cat").value = el.dataset.cat;
+    $("clr-cat").classList.toggle("show", !!activeCat);
     shown = PAGE; render();
   });
-  bindTopicChips();
+
+  $("tclist").querySelectorAll("[data-topic]").forEach(el => el.onclick = () => {
+    const t = el.dataset.topic;
+    activeTopic = (activeTopic === t) ? "" : t;
+    $("tclist").querySelectorAll("[data-topic]").forEach(x =>
+      x.classList.toggle("on", x.dataset.topic === activeTopic));
+    $("clr-topic").classList.toggle("show", !!activeTopic);
+    shown = PAGE; render();
+  });
+
+  $("clr-cat").onclick = () => {
+    activeCat = "";
+    $("catlist").querySelectorAll("[data-cat]").forEach(x =>
+      x.classList.toggle("on", x.dataset.cat === ""));
+    $("clr-cat").classList.remove("show");
+    shown = PAGE; render();
+  };
+  $("clr-topic").onclick = () => {
+    activeTopic = "";
+    $("tclist").querySelectorAll("[data-topic]").forEach(x => x.classList.remove("on"));
+    $("clr-topic").classList.remove("show");
+    shown = PAGE; render();
+  };
+
   $("tmore").onclick = () => {
-    const c = $("tchips");
-    const col = c.classList.toggle("collapsed");
-    if (col) c.classList.add("collapsed");
-    $("tmore").textContent = col ? "＋ more" : "－ less";
+    const c = $("tclist");
+    const collapsed = c.classList.toggle("collapsed");
+    $("tmore").textContent = collapsed ? "＋ more sub-topics" : "－ fewer sub-topics";
   };
 }
 
-function bindTopicChips() {
-  $("chips").querySelectorAll("[data-topic]").forEach(el => el.onclick = () => {
-    const t = el.dataset.topic;
-    const was = activeTopic === t;
-    activeTopic = was ? "" : t;
-    $("chips").querySelectorAll("[data-topic]").forEach(x =>
-      x.classList.toggle("on", !was && x.dataset.topic === t));
-    $("tpc").value = activeTopic;
-    shown = PAGE; render();
-  });
+/* 清空全部筛选（侧边栏 + 结果栏都用它） */
+function resetAll() {
+  $("q").value = ""; $("ven").value = ""; $("yr").value = "";
+  $("sort").value = "date"; $("top").checked = false; $("oa").checked = false;
+  activeCat = ""; activeTopic = "";
+  $("catlist").querySelectorAll("[data-cat]").forEach(x =>
+    x.classList.toggle("on", x.dataset.cat === ""));
+  $("tclist").querySelectorAll("[data-topic]").forEach(x => x.classList.remove("on"));
+  $("clr-cat").classList.remove("show"); $("clr-topic").classList.remove("show");
+  shown = PAGE; render();
 }
 
-function matches(p, q, cat, tpc, ven, yr, topOnly, oaOnly) {
-  if (cat && p.c !== cat) return false;
+function matches(p, q, tpc, ven, yr, topOnly, oaOnly) {
+  if (activeCat && p.c !== activeCat) return false;
   if (tpc && !(p.tp||[]).includes(tpc)) return false;
   if (ven && p.v !== ven) return false;
   if (yr && String(p.y) !== yr) return false;
@@ -286,7 +392,7 @@ function card(p) {
     const title = p.vf ? ` title="${esc(p.vf)}"` : "";
     bits.push(`<span class="tag ven${p.vt==="A"?" top":""}"${title}>${p.vt==="A"?"🏆 ":""}${esc(label)}</span>`);
   }
-  bits.push(`<span class="tag cat">${esc(p.c)}</span>`);
+  bits.push(`<span class="tag cat">${esc(shortCat(p.c))}</span>`);
   if (p.oa) bits.push(`<span class="tag oa">🔓 OA</span>`);
   if (p.cite) bits.push(`<span class="tag cite">⭐ ${p.cite}</span>`);
 
@@ -313,13 +419,52 @@ function card(p) {
   </article>`;
 }
 
+/* 结果栏上方的「当前筛选」小标签（点 × 即清掉该项） */
+function activeFilterChips() {
+  const out = [];
+  const q = $("q").value.trim();
+  if (activeCat) out.push(["cat", `Category: <b>${esc(shortCat(activeCat))}</b>`]);
+  if (activeTopic) out.push(["topic", `Sub-topic: <b>${esc(activeTopic)}</b>`]);
+  if (q) out.push(["q", `Search: <b>${esc(q.slice(0,26))}</b>`]);
+  if ($("ven").value) out.push(["ven", `Venue: <b>${esc($("ven").value)}</b>`]);
+  if ($("yr").value) out.push(["yr", `Year: <b>${$("yr").value}</b>`]);
+  if ($("top").checked) out.push(["top", `🏆 Top venues`]);
+  if ($("oa").checked) out.push(["oa", `🔓 Open access`]);
+  // ⚠️ 没有筛选时必须**清空容器**再返回 ——
+  //    早期版本直接 `return ""`，导致重置后残留上一次的标签（实测抓到）。
+  if (!out.length) { $("af").innerHTML = ""; return; }
+
+  $("af").innerHTML = out.map(([k, html]) =>
+    `<span class="afchip" data-k="${k}">${html}<span class="x" title="remove">×</span></span>`
+  ).join("") + `<span class="afchip" id="afreset" style="cursor:pointer"><b>Reset</b></span>`;
+
+  $("af").querySelectorAll(".afchip[data-k]").forEach(el => el.onclick = () => {
+    const k = el.dataset.k;
+    if (k === "cat") activeCat = "";
+    else if (k === "topic") activeTopic = "";
+    else if (k === "q") $("q").value = "";
+    else if (k === "ven") $("ven").value = "";
+    else if (k === "yr") $("yr").value = "";
+    else if (k === "top") $("top").checked = false;
+    else if (k === "oa") $("oa").checked = false;
+    $("catlist").querySelectorAll("[data-cat]").forEach(x =>
+      x.classList.toggle("on", x.dataset.cat === activeCat));
+    $("tclist").querySelectorAll("[data-topic]").forEach(x =>
+      x.classList.toggle("on", x.dataset.topic === activeTopic));
+    $("clr-cat").classList.toggle("show", !!activeCat);
+    $("clr-topic").classList.toggle("show", !!activeTopic);
+    shown = PAGE; render();
+  });
+  $("afreset").onclick = resetAll;
+}
+
 function render() {
   const q = $("q").value.trim();
-  const cat = $("cat").value, tpc = $("tpc").value, ven = $("ven").value;
+  const tpc = activeTopic, ven = $("ven").value;
   const yr = $("yr").value, sort = $("sort").value;
   const topOnly = $("top").checked, oaOnly = $("oa").checked;
 
-  let res = DATA.papers.filter(p => matches(p, q, cat, tpc, ven, yr, topOnly, oaOnly));
+  let res = DATA.papers.filter(p => matches(p, q, tpc, ven, yr, topOnly, oaOnly));
 
   if (sort === "date") res.sort((a,b) => (b.d||"").localeCompare(a.d||"") || b.cite-a.cite);
   else if (sort === "cite") res.sort((a,b) => b.cite-a.cite);
@@ -327,6 +472,7 @@ function render() {
   else res.sort((a,b) => (a.t||"").localeCompare(b.t||""));
 
   $("count").textContent = `${res.length} of ${DATA.papers.length} papers`;
+  activeFilterChips();
 
   const slice = res.slice(0, shown);
   $("list").innerHTML = slice.length
@@ -341,49 +487,44 @@ function render() {
   } else more.style.display = "none";
 
   const r = $("reset");
-  if (r) r.onclick = e => {
-    e.preventDefault();
-    $("q").value = ""; $("cat").value = ""; $("tpc").value = "";
-    $("ven").value = ""; $("yr").value = ""; $("top").checked = false;
-    $("oa").checked = false; activeTopic = "";
-    $("chips").querySelectorAll(".chip").forEach(x => x.classList.remove("on"));
-    $("chips").querySelector('[data-cat=""]')?.classList.add("on");
-    shown = PAGE; render();
-  };
+  if (r) r.onclick = e => { e.preventDefault(); resetAll(); };
 
   $("list").querySelectorAll(".toggle").forEach(b => b.onclick = () => {
     const d = $(b.dataset.abs);
     const open = d.classList.toggle("open");
     b.textContent = (open ? "▾" : "▸") + " abstract";
   });
+  /* 卡片里的子专题标签：点一下 = 在侧边栏选中它（并滚回顶部） */
   $("list").querySelectorAll(".tpc").forEach(t => t.onclick = e => {
     e.preventDefault();
     activeTopic = t.dataset.t;
-    $("tpc").value = activeTopic;
-    $("chips").querySelectorAll("[data-topic]").forEach(x =>
+    $("tclist").querySelectorAll("[data-topic]").forEach(x =>
       x.classList.toggle("on", x.dataset.topic === activeTopic));
+    $("clr-topic").classList.add("show");
     shown = PAGE; render();
     window.scrollTo({top: 0, behavior: "smooth"});
   });
 }
 
-["q","cat","tpc","ven","yr","sort","top","oa"].forEach(id => {
-  $(id).addEventListener("input", () => {
-    if (id === "tpc") {
-      activeTopic = $("tpc").value;
-      $("chips").querySelectorAll("[data-topic]").forEach(x =>
-        x.classList.toggle("on", x.dataset.topic === activeTopic));
-    }
-    shown = PAGE; render();
-  });
+["q","ven","yr","sort","top","oa"].forEach(id => {
+  $(id).addEventListener("input", () => { shown = PAGE; render(); });
 });
 $("more").onclick = () => { shown += PAGE; render(); };
+$("resetall").onclick = resetAll;
+
+/* 移动端：筛选面板展开/收起 */
+$("sidebox").onclick = () => {
+  const sb = $("sidebar");
+  const hidden = sb.classList.toggle("hidden");
+  $("sidebox").setAttribute("aria-expanded", String(!hidden));
+  $("sidebox-arw").textContent = hidden ? "▾" : "▴";
+};
 
 fetch("data/papers.json?t=" + Date.now())
   .then(r => r.json())
   .then(d => {
     DATA = d;
-    badges(); fillSelects(); chips(); render();
+    badges(); fillSelects(); sidebarLists(); render();
     $("gen").textContent = `Data generated at ${(d.generated_at||"").slice(0,19).replace("T"," ")} UTC · ${d.total} papers`;
   })
   .catch(e => {

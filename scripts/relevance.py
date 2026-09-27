@@ -162,6 +162,27 @@ TITLE_ONLY_NEGATIVE_TERMS = [
     # 车辆轨迹预测（非具身决策）
     "trajectory prediction of land vehicle",
     "vehicle trajectory prediction",
+    "of land vehicles",
+    # 导航系统工程（制导/惯导/组合导航硬件）—— 2026-09-27 第二轮补充
+    #
+    # 背景：B2 规则（标题含导航词 + 摘要含具身词 + 摘要导航密集）是本项目
+    # **最松**的一条规则，所以每周新采的论文里会持续混进"navigation 被借用"
+    # 的领域。第二轮 audit 又抓到两篇：
+    #   · Monte Carlo Diagnostics of a Launch Vehicle Guidance Navigation and
+    #     Control Simulator            → 火箭制导仿真器
+    #   · ...GRU-SAC Measurement Covariance Adaptation for Robust UWB/INS
+    #     Indoor Navigation            → 传感器融合定位
+    # 这两类的共同特征是：主题是**载具的导航系统本身**（制导/滤波/标定），
+    # 而不是"智能体靠视觉/语言/学习在空间里导航"。
+    #
+    # ⚠️ 只放**高度具体**的组合词：像 "kalman filter"、"uwb" 单独出现时
+    #    机器人导航论文也会用（UWB 定位就是机器人常配的传感器），
+    #    放进去会误杀 → 所以只收无歧义的组合。
+    "guidance navigation and control",
+    "launch vehicle",
+    "measurement covariance",
+    "uwb/ins", "ins/uwb", "gnss/ins", "ins/gnss",
+    "inertial navigation",
 ]
 
 # 数据集/勘误类（非研究论文）
@@ -333,6 +354,26 @@ TESTS = [
      "Inspired by place cells and grid cells, our robot navigates to goals in "
      "unseen scenes without task-specific training, using an embodied agent.",
      True),
+    # ── 应拒绝（2026-09-27 第二轮 audit：CI 新采论文里的真误收）
+    ("Monte Carlo Diagnostics of a Launch Vehicle Guidance Navigation and "
+     "Control Simulator",
+     "We evaluate a guidance navigation and control simulator for a launch "
+     "vehicle; navigation accuracy is analyzed in simulation.", False),
+    ("Delay- and Dropout-Aware GRU-SAC Measurement Covariance Adaptation for "
+     "Robust UWB/INS Indoor Navigation",
+     "We adapt the measurement covariance of a UWB/INS fusion system for indoor "
+     "navigation; navigation accuracy is evaluated in simulation.", False),
+    # ── 应通过：⚠️ 守住"别把传感器/滤波类词一刀切"
+    #    UWB、Kalman、LiDAR 这些词**单独出现时**正常机器人导航论文也会用
+    #    （UWB 定位就是机器人常配的传感器），所以只拦无歧义的组合词。
+    ("Robotic Guide Dog: UWB-Assisted Indoor Navigation for the Visually "
+     "Impaired",
+     "A zero-shot navigation policy for a mobile robot that follows user "
+     "instructions, using UWB ranging as one sensor in an embodied agent.",
+     True),
+    ("LiDAR-Based Zero-Shot Navigation with a Kalman-Filtered State Estimator",
+     "Our robot navigates to unseen goals without task-specific training; a "
+     "Kalman filter smooths the state estimate for the navigation policy.", True),
 ]
 
 
