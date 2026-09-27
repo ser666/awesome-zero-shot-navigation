@@ -139,28 +139,41 @@ def merge_into(existing: dict, new: dict):
 
 # ══════════════════════════════════════════════════════════════
 def run(date_from: str | None = None, date_to: str | None = None,
-        verbose: bool = True) -> dict:
+        verbose: bool = True, sort: str = "date",
+        budget_s: int | None = 900) -> dict:
+    """采集 → 过滤 → 入库。
+
+    budget_s: 时间预算（秒）。超过后不再发起新查询（只收尾入库）。
+              防某个查询疯狂重试把整个任务拖超时 —— 漏掉的明天会补回来。
+    """
     import json
 
     started = now_iso()
+    t_start = time.time()
     con = connect()
     by_doi, by_title = existing_index(con)
     if verbose:
-        print(f"📚 库中已有 {len(by_title)} 篇")
+        print(f"📚 库中已有 {len(by_title)} 篇"
+              + (f"｜时间预算 {budget_s}s" if budget_s else ""))
 
     fetched = 0
     relevant = 0
-    # 内存里的候选（本次抓到的），按 DOI/标题归一化聚合
     cand: dict = {}
+    skipped = 0
 
     for q in QUERIES:
         for src_name in ["openalex", "crossref"]:
-            if src_name == "crossref" and not date_from:
-                pass  # Crossref 无日期过滤时也抓（补正式出版信息）
+            if budget_s and (time.time() - t_start) > budget_s:
+                skipped += 1
+                continue
             if verbose:
                 print(f"  🔎 [{src_name}] {q}")
             try:
-                rows = SOURCES[src_name](q, date_from=date_from, date_to=date_to)
+                if src_name == "openalex":
+                    rows = SOURCES[src_name](q, date_from=date_from,
+                                             date_to=date_to, sort=sort)
+                else:
+                    rows = SOURCES[src_name](q, date_from=date_from, date_to=date_to)
             except Exception as e:  # noqa: BLE001
                 print(f"     ⚠️ {str(e)[:80]}")
                 continue
@@ -247,9 +260,12 @@ def run(date_from: str | None = None, date_to: str | None = None,
     con.close()
 
     result = {"fetched": fetched, "relevant": relevant, "inserted": inserted,
-              "updated": updated, "total": total}
+              "updated": updated, "total": total, "skipped": skipped,
+              "elapsed_s": round(time.time() - t_start, 1)}
     if verbose:
         print(f"\n✅ 新增 {inserted} 篇 / 更新 {updated} 篇 / 库中共 {total} 篇")
+        if skipped:
+            print(f"⏹ 因超时预算跳过 {skipped} 个查询（明天会补）")
     return result
 
 
@@ -292,18 +308,31 @@ def main():
                     help="只抓某一年，如 2022（补历史用）")
     ap.add_argument("--refilter", action="store_true",
                     help="只用当前规则清洗已有数据（不采集）")
+    ap.add_argument("--landmarks", action="store_true",
+                    help="⭐ 抓经典论文（按引用量排序，跨全时段）")
+    ap.add_argument("--budget", type=int, default=900,
+                    help="时间预算秒数（默认 900；0=不限）")
     args = ap.parse_args()
+
+    budget = None if args.budget == 0 else args.budget
 
     if args.refilter:
         refilter()
         return
+
+    if args.landmarks:
+        print("⭐ 采集经典/高引论文（sort=cited_by_count:desc，不设日期下限）")
+        t0 = time.time()
+        res = run(date_from=None, date_to=None, sort="cited", budget_s=budget)
+        print(f"⏱ 耗时 {time.time()-t0:.1f}s")
+        return res
 
     if args.year:
         date_from = f"{args.year}-01-01"
         date_to = f"{args.year}-12-31"
         print(f"🚀 采集 {args.year} 年（{date_from} → {date_to}）")
         t0 = time.time()
-        res = run(date_from=date_from, date_to=date_to)
+        res = run(date_from=date_from, date_to=date_to, budget_s=budget)
         print(f"⏱ 耗时 {time.time()-t0:.1f}s")
         return res
 
@@ -317,7 +346,7 @@ def main():
 
     print(f"🚀 开始采集（date_from={date_from}）")
     t0 = time.time()
-    res = run(date_from=date_from)
+    res = run(date_from=date_from, budget_s=budget)
     print(f"⏱ 耗时 {time.time()-t0:.1f}s")
     return res
 

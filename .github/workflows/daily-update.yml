@@ -25,7 +25,7 @@ concurrency:
 jobs:
   update:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
 
     steps:
       - name: Checkout
@@ -39,8 +39,14 @@ jobs:
       # 本项目只用标准库，无需 pip install ✅（更快、更稳）
 
       - name: Harvest new papers
-        run: python3 scripts/pipeline.py
+        # ⏱ 时间预算 600s：超时后不再发起新查询（防限速重试拖超时）。
+        #    漏掉的查询明天靠 14 天回看窗口自动补回。
+        run: python3 scripts/pipeline.py --days 14 --budget 600
         continue-on-error: true        # 采集失败不阻塞导出（保留旧数据可用）
+
+      - name: Re-filter (drop anything no longer relevant)
+        run: python3 scripts/pipeline.py --refilter
+        continue-on-error: true
 
       - name: Export README + site data
         run: python3 scripts/export.py

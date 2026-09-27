@@ -41,8 +41,13 @@ QUERIES = [
 ]
 
 
-def _get_json(url: str, timeout: int = 45, retries: int = 4):
-    """带退避重试的 GET。429（限速）单独处理，等待更久。"""
+def _get_json(url: str, timeout: int = 40, retries: int = 2):
+    """带退避重试的 GET。
+
+    ⚠️ 限速策略：429 只重试 2 次、退避较短 —— **失败要快**。
+    理由：这活儿每天跑，今天漏抓的论文明天会被 14 天回看窗口捞回来，
+    没必要为一个查询卡几分钟（实测曾因 429 退避把单次任务拖到 25 分钟+）。
+    """
     last: Exception | None = None
     for i in range(retries):
         try:
@@ -53,15 +58,14 @@ def _get_json(url: str, timeout: int = 45, retries: int = 4):
         except urllib.error.HTTPError as e:
             last = e
             if e.code == 429:
-                wait = 8 * (i + 1)  # 限速：等更久
+                time.sleep(5 + 5 * i)       # 5s, 10s
             elif e.code in (500, 502, 503, 504):
-                wait = 4 * (i + 1)
+                time.sleep(3 + 2 * i)
             else:
-                wait = 2 * (i + 1)
-            time.sleep(wait)
+                time.sleep(1 + i)
         except Exception as e:  # noqa: BLE001
             last = e
-            time.sleep(2 * (i + 1))
+            time.sleep(1 + i)
     raise last if last else RuntimeError("request failed")
 
 
@@ -94,13 +98,24 @@ def _decode_openalex_abstract(inverted) -> str:
 # OpenAlex
 # ══════════════════════════════════════════════════════════════
 def harvest_openalex(query: str, per_page: int = 200, date_from: str | None = None,
-                     date_to: str | None = None) -> list:
-    """按标题/摘要检索，按发表日期倒序"""
+                     date_to: str | None = None, sort: str = "date") -> list:
+    """按标题/摘要检索。
+
+    sort:
+      "date"     → publication_date:desc（默认，用于"抓最新"）
+      "cited"    → cited_by_count:desc（用于"抓经典" —— 找高引里程碑论文）
+      "relevant" → 不传 sort，用 OpenAlex 默认的相关性排序
+    """
     params = {
         "per-page": min(per_page, 200),
-        "sort": "publication_date:desc",
         "mailto": POLITE_EMAIL,
     }
+    if sort == "date":
+        params["sort"] = "publication_date:desc"
+    elif sort == "cited":
+        params["sort"] = "cited_by_count:desc"
+    # "relevant" → 不传 sort
+
     flt = [f"title_and_abstract.search:{query}"]
     if date_from:
         flt.append(f"from_publication_date:{date_from}")
