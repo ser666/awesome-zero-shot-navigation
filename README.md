@@ -16,7 +16,7 @@
 - **New in the last 7 days**: 19
 - **Categories**: 7
 - **Sources**: crossref (156), openalex (595)
-- **Last updated**: 2026-09-27 08:08 UTC
+- **Last updated**: 2026-09-27 10:04 UTC
 
 ## 🗂 Contents
 
@@ -284,7 +284,7 @@
 ## Vision-and-Language Navigation (VLN) (177)
 
 - [GPT-6-Astra Lights Up Embodied Navigation: Evaluation in Zero-Shot Vision-and-Language Navigation in Continuous Environments](https://doi.org/10.48550/arxiv.2609.29861)  
-  Guangzhao Dai, Qianru Sun, Qi Wu et al. · arXiv (Cornell University) · `2026-09-24`
+  Guangzhao Dai, Qianru Sun, Qi Wu et al. · arXiv (Cornell University) · `2026-09-24` · [PDF](https://arxiv.org/pdf/2609.29861)
 - [Spatial and Semantic Reasoning for LLM-Driven Robot Navigation via MCP](https://doi.org/10.48550/arxiv.2609.27340)  
   Jungsoo Lee, Jaegyun Park, Wansoo Kim · arXiv (Cornell University) · `2026-09-23` · [PDF](https://arxiv.org/pdf/2609.27340)
 - [Talk2Escape: Conversational Grounding for Vision-and-Language Navigation](https://doi.org/10.48550/arxiv.2609.28296)  
@@ -889,7 +889,7 @@
 - [Navigation and steering control of a service robot using Kinectv2 and LiDAR](https://doi.org/10.11591/ijece.v16i5.pp2454-2472)  
   Dwijayanti, Suci, Miranda, Silfani Sandra, Suprapto, Bhakti Yudho et al. · International Journal of Electrical and Computer Engineerin… · `2026-10-01`
 - [ReVNM: Learning-Based Visual Navigation from a Remote Camera](https://doi.org/10.48550/arxiv.2609.28976)  
-  Michikuni Eguchi, Kohei Honda, Masafumi Endo et al. · arXiv (Cornell University) · `2026-09-24`
+  Michikuni Eguchi, Kohei Honda, Masafumi Endo et al. · arXiv (Cornell University) · `2026-09-24` · [PDF](https://arxiv.org/pdf/2609.28976)
 - [AI Agents and Multi-Robot SLAM: DARPA's Push in Automated Theorem Proving and GPS-Denied Navigation — E8 Intelligence Research](https://doi.org/10.5281/zenodo.22910282)  
   Andrew Stewart Caldin · Zenodo (CERN European Organization for Nuclear Research) · `2026-09-23`
 - [Deploying Foundation Models for Embodied Navigation](https://arxiv.org/abs/2609.25666)  
@@ -1182,4 +1182,4 @@ Every day (GitHub Actions, free for public repos):
 
 ---
 
-*Auto-generated. Last update: 2026-09-27 08:08 UTC*
+*Auto-generated. Last update: 2026-09-27 10:04 UTC*
