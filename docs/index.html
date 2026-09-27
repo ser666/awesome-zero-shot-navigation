@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Zero-Shot Navigation Papers</title>
+<meta name="description" content="A searchable, automatically updated list of zero-shot navigation research — ObjectNav, VLN, Aerial VLN, and more.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧭</text></svg>">
+<style>
+  :root{
+    --bg:#f7f5f0; --surface:#fffdf8; --surface-2:#f1ede3;
+    --border:#e3ddd0; --border-strong:#d3cbb8;
+    --text:#1f1d19; --text-body:#3d3a33; --muted:#6f6a5e; --faint:#8d8779;
+    --accent:#b0522c; --accent-soft:#f5e8df; --accent-line:#d9a98c;
+    --green:#4f7a52; --green-soft:#e8f0e6;
+    --radius:10px; --radius-sm:6px;
+    --shadow:0 1px 2px rgba(60,50,30,.05), 0 4px 14px rgba(60,50,30,.045);
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; background:var(--bg); color:var(--text-body);
+    font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif;
+  }
+  a{color:var(--accent); text-decoration:none}
+  a:hover{text-decoration:underline}
+  .wrap{max-width:1080px; margin:0 auto; padding:0 18px}
+
+  /* ── header ── */
+  header{padding:34px 0 22px; border-bottom:1px solid var(--border)}
+  h1{margin:0 0 8px; font-size:27px; letter-spacing:-.4px; color:var(--text); font-weight:650}
+  h1 .emoji{font-size:24px}
+  .sub{margin:0 0 18px; color:var(--muted); font-size:14.5px; max-width:720px}
+  .badges{display:flex; flex-wrap:wrap; gap:7px; align-items:center}
+  .badge{
+    display:inline-flex; align-items:center; gap:5px; padding:4px 10px;
+    background:var(--surface-2); border:1px solid var(--border);
+    border-radius:999px; font-size:12.5px; color:var(--muted); white-space:nowrap;
+  }
+  .badge b{color:var(--text); font-weight:600}
+  .badge.acc{background:var(--accent-soft); border-color:var(--accent-line); color:var(--accent)}
+  .badge.acc b{color:var(--accent)}
+
+  /* ── controls ── */
+  .controls{
+    position:sticky; top:0; z-index:20; background:var(--bg);
+    padding:14px 0 12px; border-bottom:1px solid var(--border);
+  }
+  .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
+  .search{position:relative; flex:1 1 260px; min-width:220px}
+  .search input{
+    width:100%; padding:10px 34px 10px 34px; font-size:14.5px;
+    background:var(--surface); border:1px solid var(--border-strong);
+    border-radius:var(--radius-sm); color:var(--text); outline:none;
+  }
+  .search input:focus{border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft)}
+  .search .ico{position:absolute; left:11px; top:50%; transform:translateY(-50%); color:var(--faint); font-size:13px; pointer-events:none}
+  .search .clr{
+    position:absolute; right:6px; top:50%; transform:translateY(-50%);
+    border:0; background:none; color:var(--faint); cursor:pointer; font-size:15px; padding:3px 6px; display:none;
+  }
+  select{
+    padding:10px 12px; font-size:14px; background:var(--surface);
+    border:1px solid var(--border-strong); border-radius:var(--radius-sm);
+    color:var(--text-body); cursor:pointer; max-width:210px;
+  }
+  select:focus{outline:none; border-color:var(--accent)}
+  .chk{display:inline-flex; align-items:center; gap:6px; font-size:13.5px; color:var(--muted); cursor:pointer; user-select:none}
+  .chk input{accent-color:var(--accent); width:15px; height:15px; cursor:pointer}
+  .count{font-size:13px; color:var(--faint); margin-left:auto; white-space:nowrap}
+
+  /* ── list ── */
+  main{padding:18px 0 60px}
+  .paper{
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:var(--radius); padding:15px 17px; margin-bottom:11px;
+    box-shadow:var(--shadow); transition:border-color .15s;
+  }
+  .paper:hover{border-color:var(--border-strong)}
+  .ptitle{font-size:15.5px; font-weight:600; color:var(--text); line-height:1.42; margin:0 0 7px}
+  .ptitle a{color:var(--text)}
+  .ptitle a:hover{color:var(--accent)}
+  .meta{display:flex; flex-wrap:wrap; gap:6px; align-items:center; font-size:12.5px; color:var(--muted)}
+  .tag{
+    padding:2px 8px; border-radius:4px; font-size:11.5px;
+    background:var(--surface-2); border:1px solid var(--border); color:var(--muted);
+  }
+  .tag.cat{background:var(--accent-soft); border-color:var(--accent-line); color:var(--accent); font-weight:550}
+  .tag.new{background:var(--green-soft); border-color:#bcd5b6; color:var(--green); font-weight:600}
+  .tag.date{font-variant-numeric:tabular-nums}
+  .tag.cite{font-variant-numeric:tabular-nums}
+  .authors{margin:0 0 7px; font-size:13px; color:var(--muted)}
+  .abs{margin:8px 0 0; font-size:13.5px; color:var(--text-body); opacity:.9;
+       display:none; line-height:1.62}
+  .abs.open{display:block}
+  .toggle{
+    margin-top:8px; border:0; background:none; color:var(--accent);
+    font-size:12.5px; cursor:pointer; padding:2px 0; font-family:inherit;
+  }
+  .toggle:hover{text-decoration:underline}
+  .links{display:flex; gap:12px; margin-top:7px; font-size:12.5px}
+  .empty{text-align:center; padding:56px 20px; color:var(--faint)}
+  .empty .big{font-size:34px; margin-bottom:10px}
+
+  footer{border-top:1px solid var(--border); padding:22px 0 40px; color:var(--faint); font-size:13px}
+  footer p{margin:0 0 6px}
+  #more{display:block; width:100%; padding:11px; margin:6px 0 0; cursor:pointer;
+        background:var(--surface); border:1px solid var(--border-strong);
+        border-radius:var(--radius-sm); color:var(--accent); font-size:14px; font-family:inherit}
+  #more:hover{background:var(--surface-2)}
+  @media (max-width:620px){
+    h1{font-size:22px}
+    .count{margin-left:0; width:100%}
+    .paper{padding:13px 14px}
+    select{max-width:100%; flex:1 1 46%}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1><span class="emoji">🧭</span> Zero-Shot Navigation Papers</h1>
+    <p class="sub">
+      An automatically updated collection of <b>zero-shot / training-free navigation</b> research —
+      Object-Goal Navigation, Vision-and-Language Navigation (VLN), Aerial VLN,
+      semantic &amp; open-vocabulary navigation, social navigation, and exploration.
+    </p>
+    <div class="badges">
+      <span class="badge acc">📄 <b id="b-total">—</b> papers</span>
+      <span class="badge">🆕 <b id="b-week">—</b> new this week</span>
+      <span class="badge">🔄 updated <b id="b-updated">—</b></span>
+      <span class="badge">🤖 auto-updated daily</span>
+      <a class="badge" id="b-repo" href="#" target="_blank" rel="noopener">⭐ GitHub</a>
+    </div>
+  </header>
+
+  <div class="controls">
+    <div class="row">
+      <div class="search">
+        <span class="ico">🔍</span>
+        <input id="q" type="search" placeholder="Search title, author, or abstract…" autocomplete="off">
+        <button class="clr" id="clr" title="Clear">✕</button>
+      </div>
+      <select id="cat"><option value="">All categories</option></select>
+      <select id="yr"><option value="">All years</option></select>
+      <select id="sort">
+        <option value="date">Newest first</option>
+        <option value="cite">Most cited</option>
+        <option value="az">Title A–Z</option>
+      </select>
+      <label class="chk"><input type="checkbox" id="oa"> Open access only</label>
+      <span class="count" id="count">—</span>
+    </div>
+  </div>
+
+  <main id="list"></main>
+
+  <footer>
+    <p><b>How this works</b> — every day, GitHub Actions harvests new papers from
+      OpenAlex &amp; Crossref, filters them for zero-shot navigation relevance, deduplicates,
+      and regenerates this page plus the
+      <a id="f-readme" href="#" target="_blank" rel="noopener">README list</a>.</p>
+    <p>Found a missing paper or a mis-classification?
+      <a id="f-issue" href="#" target="_blank" rel="noopener">Open an issue</a> —
+      or check the <a id="f-related" href="#" target="_blank" rel="noopener">broader awesome lists</a>.</p>
+    <p id="f-gen"></p>
+  </footer>
+</div>
+
+<script>
+const PAGE = 40;
+let ALL = [], FILTERED = [], SHOWN = 0;
+
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => (
+  {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+function daysAgo(d){
+  if(!d) return null;
+  const t = new Date(d + 'T00:00:00Z').getTime();
+  if(isNaN(t)) return null;
+  return (Date.now() - t) / 86400000;
+}
+function isNew(d){ const n = daysAgo(d); return n !== null && n >= 0 && n <= 7; }
+
+function fmtAuthors(a){
+  if(!a || !a.length) return '';
+  const clean = a.map(x => String(x).trim()).filter(Boolean);
+  if(clean.length <= 4) return clean.join(', ');
+  return clean.slice(0,4).join(', ') + ' et al. (' + clean.length + ')';
+}
+
+function card(p){
+  const parts = [];
+  const link = p.u || (p.doi ? 'https://doi.org/'+p.doi : '');
+  const t = link ? `<a href="${esc(link)}" target="_blank" rel="noopener">${esc(p.t)}</a>` : esc(p.t);
+  parts.push(`<h3 class="ptitle">${t}</h3>`);
+  const au = fmtAuthors(p.a);
+  if(au) parts.push(`<p class="authors">${esc(au)}</p>`);
+  const tags = [];
+  if(isNew(p.d)) tags.push(`<span class="tag new">NEW</span>`);
+  if(p.d) tags.push(`<span class="tag date">${esc(p.d)}</span>`);
+  else if(p.y) tags.push(`<span class="tag date">${esc(p.y)}</span>`);
+  if(p.v) tags.push(`<span class="tag">${esc(String(p.v).slice(0,58))}</span>`);
+  if(p.c) tags.push(`<span class="tag cite">⭐ ${p.c}</span>`);
+  if(p.oa) tags.push(`<span class="tag new">OA</span>`);
+  (p.src||[]).forEach(s => tags.push(`<span class="tag">${esc(s)}</span>`));
+  parts.push(`<div class="meta"><span class="tag cat">${esc(p.cat)}</span>${tags.join('')}</div>`);
+  if(p.ab){
+    const id = 'ab' + Math.random().toString(36).slice(2,9);
+    parts.push(`<p class="abs" id="${id}">${esc(p.ab)}</p>`);
+    parts.push(`<button class="toggle" data-t="${id}">▸ abstract</button>`);
+  }
+  const links = [];
+  if(link) links.push(`<a href="${esc(link)}" target="_blank" rel="noopener">Paper ↗</a>`);
+  if(p.pdf) links.push(`<a href="${esc(p.pdf)}" target="_blank" rel="noopener">PDF ↗</a>`);
+  if(p.doi) links.push(`<a href="https://doi.org/${esc(p.doi)}" target="_blank" rel="noopener">DOI ↗</a>`);
+  if(links.length) parts.push(`<div class="links">${links.join('')}</div>`);
+  return `<article class="paper">${parts.join('')}</article>`;
+}
+
+function apply(){
+  const q = $('q').value.trim().toLowerCase();
+  const cat = $('cat').value, yr = $('yr').value, oa = $('oa').checked;
+  FILTERED = ALL.filter(p => {
+    if(cat && p.cat !== cat) return false;
+    if(yr && String(p.y) !== yr) return false;
+    if(oa && !p.oa) return false;
+    if(q){
+      const hay = (p.t + ' ' + (p.a||[]).join(' ') + ' ' + (p.ab||'') + ' ' + (p.v||'')).toLowerCase();
+      if(!q.split(/\s+/).every(w => hay.includes(w))) return false;
+    }
+    return true;
+  });
+  const s = $('sort').value;
+  FILTERED.sort((a,b) => {
+    if(s === 'cite') return (b.c||0) - (a.c||0);
+    if(s === 'az') return a.t.localeCompare(b.t);
+    return String(b.d||'').localeCompare(String(a.d||''));
+  });
+  SHOWN = 0;
+  $('list').innerHTML = '';
+  renderMore();
+  $('count').textContent = FILTERED.length + ' of ' + ALL.length + ' papers';
+}
+
+function renderMore(){
+  const list = $('list');
+  const slice = FILTERED.slice(SHOWN, SHOWN + PAGE);
+  list.insertAdjacentHTML('beforeend', slice.map(card).join(''));
+  SHOWN += slice.length;
+  const old = $('more');
+  if(old) old.remove();
+  if(SHOWN < FILTERED.length){
+    const btn = document.createElement('button');
+    btn.id = 'more';
+    btn.textContent = `Show ${Math.min(PAGE, FILTERED.length - SHOWN)} more (${FILTERED.length - SHOWN} remaining)`;
+    btn.onclick = renderMore;
+    list.appendChild(btn);
+  } else if(FILTERED.length === 0){
+    list.innerHTML = `<div class="empty"><div class="big">🔍</div>
+      <p>No papers match your filters.</p></div>`;
+  }
+}
+
+document.addEventListener('click', (e) => {
+  const b = e.target.closest('.toggle');
+  if(b){
+    const el = $(b.dataset.t);
+    if(el){
+      el.classList.toggle('open');
+      b.textContent = (el.classList.contains('open') ? '▾ ' : '▸ ') + 'abstract';
+    }
+  }
+});
+
+['q','cat','yr','sort','oa'].forEach(id =>
+  $(id).addEventListener('input', apply));
+$('clr').onclick = () => { $('q').value = ''; apply(); $('q').focus(); };
+$('q').addEventListener('input', () => {
+  $('clr').style.display = $('q').value ? 'block' : 'none';
+});
+
+fetch('data/papers.json')
+  .then(r => r.json())
+  .then(d => {
+    ALL = d.papers || [];
+    const repo = 'https://github.com/' + d.repo;
+    $('b-total').textContent = d.total;
+    $('b-week').textContent = ALL.filter(p => isNew(p.d)).length;
+    $('b-updated').textContent = (d.generated_at || '').slice(0,10);
+    $('b-repo').href = repo;
+    $('f-readme').href = repo + '#readme';
+    $('f-issue').href = repo + '/issues/new';
+    $('f-related').href = 'https://github.com/jonyzhang2023/awesome-embodied-vla-va-vln';
+    $('f-gen').textContent = 'Data generated at ' + (d.generated_at||'').replace('T',' ').slice(0,19) + ' UTC.';
+
+    const cats = Object.entries(d.categories || {}).sort((a,b) => b[1]-a[1]);
+    cats.forEach(([c,n]) => {
+      const o = document.createElement('option');
+      o.value = c; o.textContent = `${c} (${n})`;
+      $('cat').appendChild(o);
+    });
+    const yrs = [...new Set(ALL.map(p => p.y).filter(Boolean))].sort((a,b) => b-a);
+    yrs.forEach(y => {
+      const o = document.createElement('option');
+      o.value = String(y); o.textContent = y;
+      $('yr').appendChild(o);
+    });
+    apply();
+  })
+  .catch(e => {
+    $('list').innerHTML = `<div class="empty"><div class="big">⚠️</div>
+      <p>Failed to load papers data.</p><p style="font-size:12px">${esc(e.message)}</p></div>`;
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# 本地/临时
+*.log
+.DS_Store
+tmp/
+.cache/
+
+# 注意：以下【必须提交】—— 它们是数据源（让网站与列表有历史）
+#   data/papers.db
+#   docs/data/papers.json
+#   README.md

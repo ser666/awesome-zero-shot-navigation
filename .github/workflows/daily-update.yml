@@ -1,0 +1,118 @@
+name: Daily Update
+
+# ⚠️ 时间说明：
+#   GitHub 官方文档：定时任务在"整点"最拥挤，可能延迟甚至被丢弃。
+#   所以刻意错开整点（02:17 UTC = 北京时间 10:17）。
+on:
+  schedule:
+    - cron: "17 2 * * *"
+  workflow_dispatch:        # 允许手动触发（用于测试/补跑）
+  push:
+    branches: [main]
+    paths:
+      - "scripts/**"
+      - ".github/workflows/daily-update.yml"
+
+# 允许 push（防停机制需要提交动作）
+permissions:
+  contents: write
+
+# 同一时间只跑一个，避免并发冲突
+concurrency:
+  group: daily-update
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+
+      # 本项目只用标准库，无需 pip install ✅（更快、更稳）
+
+      - name: Harvest new papers
+        run: python3 scripts/pipeline.py
+        continue-on-error: true        # 采集失败不阻塞导出（保留旧数据可用）
+
+      - name: Export README + site data
+        run: python3 scripts/export.py
+
+      - name: Sanity check
+        run: |
+          echo "=== 数据规模 ==="
+          ls -lh data/papers.db docs/data/papers.json
+          python3 - <<'PY'
+          import json, sqlite3, pathlib
+          db = pathlib.Path("data/papers.db")
+          js = pathlib.Path("docs/data/papers.json")
+          con = sqlite3.connect(db)
+          n = con.execute("SELECT COUNT(*) FROM papers").fetchone()[0]
+          con.close()
+          data = json.loads(js.read_text())
+          assert data["total"] > 0, "papers.json 为空！"
+          print(f"  DB: {n} 篇 ｜ JSON: {data['total']} 篇")
+          assert n == data["total"], "DB 与 JSON 数量不一致"
+          print("  ✅ 一致性通过")
+          PY
+
+      # ⭐ 防停机制：用 PAT 提交 → commit 归属本人 = 算作"仓库活动"
+      #    否则 GitHub 会在 60 天无活动时【悄悄禁用】定时任务
+      - name: Commit changes
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+        run: |
+          git config user.name  "ser666"
+          git config user.email "1035534180@qq.com"
+          git add -A data docs README.md
+          if git diff --staged --quiet; then
+            echo "无变化，跳过提交"
+            exit 0
+          fi
+          # 无 PAT 时降级用默认 token（仍能提交，但不算"本人活动"）
+          if [ -n "$GH_PAT" ]; then
+            git remote set-url origin "https://x-access-token:${GH_PAT}@github.com/${{ github.repository }}.git"
+          fi
+          git commit -m "chore(data): auto-update $(date -u '+%Y-%m-%d %H:%M UTC')"
+          git push
+
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "## 📊 Daily Update"
+            echo ""
+            echo "| 项 | 值 |"
+            echo "|----|-----|"
+            echo "| 论文总数 | $(python3 -c "import json;print(json.load(open('docs/data/papers.json'))['total'])") |"
+            echo "| README | $(du -h README.md | cut -f1) |"
+            echo "| 数据 | $(du -h docs/data/papers.json | cut -f1) |"
+          } >> $GITHUB_STEP_SUMMARY
+
+  # ⭐ 防停自检：每周检查定时任务是否还活着
+  health-check:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule'
+    steps:
+      - uses: actions/checkout@v7
+      - name: Check last data update
+        run: |
+          python3 - <<'PY'
+          import json, pathlib, datetime, sys
+          p = pathlib.Path("docs/data/papers.json")
+          d = json.loads(p.read_text())
+          gen = datetime.datetime.fromisoformat(d["generated_at"].replace("Z","+00:00"))
+          age = (datetime.datetime.now(datetime.timezone.utc) - gen).days
+          print(f"上次数据生成: {gen.date()} ({age} 天前)")
+          if age > 45:
+              print(f"::error::数据已有 {age} 天未更新 —— 定时任务可能已被 GitHub 禁用（60 天无活动会静默停用）。请到 Actions 页面手动启用，或做一次提交。")
+              sys.exit(1)
+          print("✅ 更新正常")
+          PY
