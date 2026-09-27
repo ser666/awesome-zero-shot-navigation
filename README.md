@@ -16,7 +16,7 @@
 - **New in the last 7 days**: 19
 - **Categories**: 7
 - **Sources**: crossref (156), openalex (595)
-- **Last updated**: 2026-09-27 02:23 UTC
+- **Last updated**: 2026-09-27 08:08 UTC
 
 ## 🗂 Contents
 
@@ -1182,4 +1182,4 @@ Every day (GitHub Actions, free for public repos):
 
 ---
 
-*Auto-generated. Last update: 2026-09-27 02:23 UTC*
+*Auto-generated. Last update: 2026-09-27 08:08 UTC*
