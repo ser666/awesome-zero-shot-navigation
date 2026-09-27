@@ -17,10 +17,11 @@ on:
 permissions:
   contents: write
 
-# 同一时间只跑一个，避免并发冲突
+# 同一时间只跑一个；⚠️ 新运行会自动取消卡住的旧运行
+# （否则一次卡住的运行会阻塞后续所有定时任务）
 concurrency:
   group: daily-update
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   update:
