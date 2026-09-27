@@ -15,8 +15,8 @@
 - **Total papers**: 689
 - **New in the last 7 days**: 19
 - **Categories**: 7
-- **Sources**: crossref (156), openalex (595)
-- **Last updated**: 2026-09-27 10:04 UTC
+- **Sources**: crossref (156), openalex (594)
+- **Last updated**: 2026-09-27 10:11 UTC
 
 ## 🗂 Contents
 
@@ -1182,4 +1182,4 @@ Every day (GitHub Actions, free for public repos):
 
 ---
 
-*Auto-generated. Last update: 2026-09-27 10:04 UTC*
+*Auto-generated. Last update: 2026-09-27 10:11 UTC*
