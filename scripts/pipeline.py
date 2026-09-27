@@ -135,12 +135,28 @@ def derive_fields(p: dict) -> dict:
         "venue_tier": v_tier,
         "venue_kind": v_kind,
         "venue_year": v_year,
-        "code_url": code or None,
-        "project_url": proj or None,
+        "code_url": _clean_url(code, is_code=True),
+        "project_url": _clean_url(proj),
         "topics": json.dumps(
             topic_tags(p.get("title") or "", p.get("abstract") or ""),
             ensure_ascii=False),
     }
+
+
+def _clean_url(u: str | None, is_code: bool = False) -> str | None:
+    """URL 卫生：去空白/转义换行；code 链接归一化到仓库根。
+
+    为什么需要：数据源给的标题/摘要里常带 `\\n` 转义，会把 URL 尾巴弄脏
+    （点进去 404）；从摘要捞的 GitHub 链接常带 /tree/main 或 /compare/…
+    子路径。实测出现过这些脏数据，所以在**每次写入时统一清洗**。
+    """
+    if not u:
+        return None
+    u = str(u).replace("\\n", "").replace("\\r", "").replace("\\t", "")
+    u = re.sub(r"\s+", "", u).strip()
+    if is_code and "github.com" in u.lower():
+        u = linkutil.normalize_github(u)
+    return u or None
 
 
 def enrich(limit: int | None = None, only_missing: bool = True,
@@ -557,21 +573,28 @@ def backfill(verbose: bool = True) -> dict:
     用途：规则升级后回填历史数据。
       例：新增「会议分级表」或「子专题标签」后，
           旧的 700 篇不会自动获得这些字段 —— 跑一次本函数即可。
+    同时做 **URL 卫生**（去转义换行、GitHub 链接归一化到仓库根）。
     """
     con = connect()
     rows = [dict(r) for r in con.execute(
-        "SELECT id, title, abstract, venue, year, tldr, code_url, project_url "
-        "FROM papers")]
+        "SELECT id, title, abstract, venue, year, tldr, code_url, project_url, "
+        "pdf_url, url FROM papers")]
     changed = 0
+    url_fixed = 0
     for r in rows:
         d = derive_fields(r)
+        code = _clean_url(r.get("code_url") or d["code_url"], is_code=True)
+        proj = _clean_url(r.get("project_url") or d["project_url"])
+        pdf = _clean_url(r.get("pdf_url"))
+        page = _clean_url(r.get("url"))
+        if (code != r.get("code_url") or proj != r.get("project_url")
+                or pdf != r.get("pdf_url") or page != r.get("url")):
+            url_fixed += 1
         con.execute("""UPDATE papers SET category=?, venue_short=?, venue_tier=?,
                        venue_kind=?, venue_year=?, code_url=?, project_url=?,
-                       topics=? WHERE id=?""",
+                       pdf_url=?, url=?, topics=? WHERE id=?""",
                     (d["category"], d["venue_short"], d["venue_tier"],
-                     d["venue_kind"], d["venue_year"],
-                     r.get("code_url") or d["code_url"],
-                     r.get("project_url") or d["project_url"],
+                     d["venue_kind"], d["venue_year"], code, proj, pdf, page,
                      d["topics"], r["id"]))
         changed += 1
     con.commit()
@@ -596,7 +619,9 @@ def backfill(verbose: bool = True) -> dict:
     if verbose:
         print(f"✅ 回填完成 {stats['total']} 篇："
               f"重要会议/期刊 {stats['venue_a']} ｜ 有代码 {stats['with_code']} ｜ "
-              f"有项目页 {stats['with_proj']} ｜ 有子专题标签 {stats['with_topics']}")
+              f"有项目页 {stats['with_proj']} ｜ 有子专题标签 {stats['with_topics']}"
+              + (f" ｜ URL 清洗 {url_fixed} 处" if url_fixed else ""))
+    stats["url_fixed"] = url_fixed
     return stats
 
 

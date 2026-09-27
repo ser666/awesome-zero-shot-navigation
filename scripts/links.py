@@ -54,15 +54,41 @@ _PROJ_HINTS = ("project", "demo", "page", "site", "homepage", "video",
 
 
 def extract_urls(text: str) -> list[str]:
-    """从任意文本里提取 URL（去重、去尾部标点）"""
+    """从任意文本里提取 URL（去重、去尾部标点、清洗空白）
+
+    ⚠️ 必须处理**字面量 `\\n`**：数据源的标题/摘要里常带转义换行
+    （如 "...Grounded\\n Navigation"），会让 URL 变成
+    `https://github.com/google-research/valan.\\n`（尾部多一个 `\\n`），
+    点进去 404。实测出现过。
+    """
     if not text:
         return []
     out = []
     for m in _URL_RE.finditer(text):
-        u = m.group(0).rstrip(".,;:!?)]}'\"")
-        if u not in out:
+        u = m.group(0)
+        # ⚠️ 顺序很重要：先去掉转义序列/空白，**再**剥尾部标点。
+        #    反过来的话，`.../valan.\n` 的末尾是 "n" 不是标点 → 剥不掉，
+        #    去掉 `\n` 后会残留一个尾部 "."（实测踩过）。
+        u = u.replace("\\n", "").replace("\\r", "").replace("\\t", "")
+        u = re.sub(r"\s+", "", u)
+        u = u.rstrip(".,;:!?)]}'\"")
+        if u and u not in out:
             out.append(u)
     return out
+
+
+def normalize_github(url: str) -> str:
+    """把 GitHub URL 归一化到**仓库根**。
+
+    动机：从摘要里捞到的链接常带子路径或版本路径：
+        github.com/owner/repo/tree/main
+        github.com/owner/repo/compare/V1.0.0.4...V1.0.0
+        github.com/owner/repo/commits/V1.0.0
+    作为"代码仓库"链接，仓库根才是有意义的目标（子路径会随分支改名失效）。
+    """
+    m = re.match(r"(https?://github\.com/[^/]+/[^/#?]+?)(?:\.git)?(?:[/#?].*)?$",
+                 url, re.I)
+    return m.group(1) if m else url
 
 
 def classify_url(url: str) -> str | None:
@@ -122,7 +148,8 @@ def _score_url(text: str, url: str) -> int:
 def from_text(*texts: str) -> dict:
     """从摘要 / comment 等文本里提取 project / code 链接（精度最高的一路）
 
-    同一类型有多个候选时，取**语境得分最高**的那个。
+    同一类型有多个候选时，取**语境得分最高**的那个；
+    code 链接统一归一化到仓库根（见 normalize_github）。
     """
     out: dict[str, str] = {}
     best: dict[str, int] = {}
@@ -132,6 +159,8 @@ def from_text(*texts: str) -> dict:
             kind = classify_url(u)
             if not kind:
                 continue
+            if kind == "code":
+                u = normalize_github(u)
             sc = _score_url(t, u)
             if kind not in out or sc > best.get(kind, -999):
                 out[kind] = u
@@ -410,6 +439,35 @@ if __name__ == "__main__":
         print(f"  {'✅' if good else '❌'} {title[:58]:60} → {sorted(names)}")
         if not good:
             print(f"      期望 {'含 ' + want_token if want_has else '空集'}")
+
+    print(f"\n{ok}/{ok+bad} 通过")
+
+    # ── URL 卫生（实测踩过的脏数据）
+    print()
+    print("=" * 80)
+    print("③ URL 卫生")
+    print("=" * 80)
+    URL_CASES = [
+        # 字面量转义换行（数据源标题里常见）——会让链接 404
+        ("see https://github.com/google-research/valan.\\n for code", "code",
+         "https://github.com/google-research/valan"),
+        # GitHub 子路径 → 归一化到仓库根
+        ("code at https://github.com/mvrl/GOMAA-Geo/tree/main", "code",
+         "https://github.com/mvrl/GOMAA-Geo"),
+        ("https://github.com/o/r/commits/v1.0 released", "code",
+         "https://github.com/o/r"),
+        # 尾部标点要剥掉
+        ("Code: https://github.com/foo/ZeroShotNav.", "code",
+         "https://github.com/foo/ZeroShotNav"),
+    ]
+    for text, want_kind, want in URL_CASES:
+        got = from_text(text).get(want_kind)
+        good = got == want
+        ok += good
+        bad += not good
+        print(f"  {'✅' if good else '❌'} {text[:56]:58} → {got}")
+        if not good:
+            print(f"      期望 {want}")
 
     print(f"\n{ok}/{ok+bad} 通过")
     raise SystemExit(0 if bad == 0 else 1)
