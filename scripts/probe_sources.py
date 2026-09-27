@@ -51,23 +51,29 @@ def tcp(host: str, port: int, timeout: int = 8) -> bool:
 # ═══════════════════════════════════════════════════════════════
 
 def probe_arxiv():
-    """arXiv 官方 API —— 最新论文的主力源（含 comment 字段，常含 project/code 链接）"""
+    """arXiv 官方 API —— 最新论文的主力源（含 comment 字段，常含 project/code 链接）。
+
+    ⚠️ arXiv 对 Accept 头敏感：带 "application/json" 会返回 406，
+    必须只发一个简单的 UA（官方建议标明应用+联系方式）。
+    """
     url = ("http://export.arxiv.org/api/query?"
            + urllib.parse.urlencode({
                "search_query": 'all:"zero-shot navigation"',
                "start": 0, "max_results": 3,
                "sortBy": "submittedDate", "sortOrder": "descending"}))
-    st, body, dt = _get(url)
+    # 只发 UA，不发 Accept —— 这是修掉 406 的关键
+    st, body, dt = _get(url, hdr={"User-Agent":
+                                  "awesome-zero-shot-navigation/1.0 "
+                                  "(+https://github.com/ser666/awesome-zero-shot-navigation)"})
     if st != 200:
         return False, f"HTTP {st}: {body[:120]}", None
     import re
     entries = re.findall(r"<entry>(.*?)</entry>", body, re.S)
     if entries:
         m = re.search(r"<title>(.*?)</title>", entries[0], re.S)
-        title = m.group(1).strip() if m else "?"
+        title = " ".join(m.group(1).split()) if m else "?"
     else:
         title = "?"
-    # 检查 comment / journal_ref 字段是否存在（这两字段对"补链接/补会议"很关键）
     has_comment = "<arxiv:comment>" in body
     has_journal = "<arxiv:journal_ref>" in body
     return True, (f"{dt:.1f}s ｜ {len(entries)} 条 ｜ comment字段={has_comment} "
@@ -150,17 +156,36 @@ def probe_paperswithcode():
 
 
 def probe_unpaywall():
-    """Unpaywall —— 开放获取 PDF 地址（需 email 参数，免费）"""
+    """Unpaywall —— 开放获取 PDF 地址（需 email 参数，免费）
+
+    ⚠️ 必须用【真实 DOI】，否则 404。
+    """
     url = ("https://api.unpaywall.org/v2/10.1109/LRA.2024.3357317"
            "?email=1035534180@qq.com")
     st, body, dt = _get(url)
     if st != 200:
-        return False, f"HTTP {st}: {body[:120]}", None
+        # 换一个确定存在的 DOI 再试
+        url2 = ("https://api.unpaywall.org/v2/10.1038/nature12373"
+                "?email=1035534180@qq.com")
+        st, body, dt = _get(url2)
+        if st != 200:
+            return False, f"HTTP {st}: {body[:120]}", None
     try:
         d = json.loads(body)
-        return True, f"{dt:.1f}s", f"is_oa={d.get('is_oa')}"
+        loc = (d.get("best_oa_location") or {}).get("url_for_pdf")
+        return True, f"{dt:.1f}s", f"is_oa={d.get('is_oa')} pdf={'有' if loc else '无'}"
     except Exception as e:  # noqa: BLE001
         return False, f"解析失败 {e}", None
+
+
+def probe_arxiv_export():
+    """arXiv 导出接口（同 probe_arxiv，用于对比 Accept 头的影响）"""
+    url = ("http://export.arxiv.org/api/query?search_query=all:%22zero-shot%22"
+           "&max_results=1")
+    st1, _, _ = _get(url)                      # 带 Accept: application/json
+    st2, _, _ = _get(url, hdr={"User-Agent": "test/1.0"})   # 只带 UA
+    return (st2 == 200), f"带Accept→HTTP {st1} ｜ 只带UA→HTTP {st2}", \
+        "确认 Accept 头是否为 406 的原因"
 
 
 def probe_crossref():
@@ -222,6 +247,7 @@ def probe_github():
 
 PROBES = [
     ("arxiv", probe_arxiv),
+    ("arxiv-accept-test", probe_arxiv_export),
     ("semanticscholar", probe_semanticscholar),
     ("semanticscholar-alt", probe_semantic_scholar_alt),
     ("dblp", probe_dblp),
