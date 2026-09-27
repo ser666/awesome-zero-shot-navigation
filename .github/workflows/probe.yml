@@ -1,0 +1,20 @@
+name: Probe Sources
+
+# 一次性诊断工具：在 GitHub Actions 的海外网络环境里实测各学术源可用性。
+# 因为本机（中国大陆）访问不了 arXiv/DBLP，只有在这里测才准。
+on:
+  workflow_dispatch:
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+
+      - name: Probe academic sources
+        run: python3 scripts/probe_sources.py
