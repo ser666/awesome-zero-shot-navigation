@@ -6,27 +6,27 @@
 
 > 🔎 **Browse the papers in a searchable web UI → [**ser666.github.io/awesome-zero-shot-navigation/**](https://ser666.github.io/awesome-zero-shot-navigation/)**
 
-![Papers](https://img.shields.io/badge/papers-684-blue) ![Last update](https://img.shields.io/badge/updated-2026--09--27-green) ![License](https://img.shields.io/badge/license-MIT-lightgrey)
+![Papers](https://img.shields.io/badge/papers-688-blue) ![Last update](https://img.shields.io/badge/updated-2026--09--27-green) ![License](https://img.shields.io/badge/license-MIT-lightgrey)
 
 ---
 
 ## 📊 Stats
 
-- **Total papers**: 684
-- **New in the last 7 days**: 14
+- **Total papers**: 688
+- **New in the last 7 days**: 18
 - **Categories**: 7
-- **Sources**: crossref (150), openalex (597)
-- **Last updated**: 2026-09-27 02:10 UTC
+- **Sources**: crossref (156), openalex (593)
+- **Last updated**: 2026-09-27 02:15 UTC
 
 ## 🗂 Contents
 
-- [Object-Goal Navigation (ObjectNav)](#objectnav) — 191 papers
+- [Object-Goal Navigation (ObjectNav)](#objectnav) — 190 papers
 - [Vision-and-Language Navigation (VLN)](#vln) — 176 papers
 - [Aerial VLN](#aerial-vln) — 80 papers
-- [Semantic / Open-Vocabulary Navigation](#semantic-nav) — 42 papers
+- [Semantic / Open-Vocabulary Navigation](#semantic-nav) — 43 papers
 - [Social Navigation](#social-nav) — 31 papers
 - [Exploration](#exploration) — 14 papers
-- [Other](#other) — 150 papers
+- [Other](#other) — 154 papers
 - [Related awesome lists](#-related-awesome-lists)
 - [About / Contributing](#-about)
 
@@ -34,14 +34,12 @@
 
 <a id="objectnav"></a>
 
-## Object-Goal Navigation (ObjectNav) (191)
+## Object-Goal Navigation (ObjectNav) (190)
 
 - [Interactive 3D scene graph alignment for zero-shot object navigation](https://doi.org/10.1016/j.neunet.2026.109323)  
   He, Yu, Zhou, Kang, Tian, Lifang · Neural Networks · `2027-01`
 - [AnchorNav: Training-free object-goal navigation via anchor co-verification and semantic spatial priors](https://doi.org/10.1016/j.neucom.2026.134929)  
   Dai, Mingyu, Huang, ChenXi, Zheng, Boyuan et al. · Neurocomputing · `2026-12`
-- [DRIVE-Nav: Directional Reasoning, Inspection, and Verification for Efficient Open-Vocabulary Navigation](https://doi.org/10.1109/lra.2026.3723310)  
-  Gao, Maoguo, Zhu, Zejun, Sun, Zhiming et al. · IEEE Robotics and Automation Letters · `2026-10` · [PDF](https://arxiv.org/pdf/2603.28691)
 - [Hardware-Aware Acceleration of Open-Vocabulary Multi-Object Navigation on Edge GPUs](https://doi.org/10.3390/electronics15184127)  
   Michael Akor, Heoncheol Lee · Electronics · `2026-09-11`
 - [OVMAN: A Task and Benchmark for Open-Vocabulary Motion-Aware Navigation](https://doi.org/10.48550/arxiv.2609.06424)  
@@ -276,8 +274,10 @@
   I Made Putra Arya Winata, Donghyun Lee, Ida Bagus Dwiweka Naratama et al. · Journal of Institute of Control Robotics and Systems · `2025-08-01`
 - [Multimodal spatial language maps for robot navigation and manipulation](https://doi.org/10.1177/02783649251351658)  
   Chenguang Huang, Oier Mees, Andy Zeng et al. · The International Journal of Robotics Research · `2025-07-27` · ⭐ 4 · [PDF](https://arxiv.org/pdf/2506.06862)
+- [When Engineering Outruns Intelligence: Rethinking Instruction-Guided Navigation](https://doi.org/10.48550/arxiv.2507.20021)  
+  Aghaei, Matin, Lingfeng Zhang, Mohammad Ali Alomrani et al. · arXiv (Cornell University) · `2025-07-26` · [PDF](https://arxiv.org/pdf/2507.20021)
 
-*…and 71 more (see the [web browser](https://ser666.github.io/awesome-zero-shot-navigation/) for the full list).*
+*…and 70 more (see the [web browser](https://ser666.github.io/awesome-zero-shot-navigation/) for the full list).*
 
 <a id="vln"></a>
 
@@ -693,10 +693,12 @@
 
 <a id="semantic-nav"></a>
 
-## Semantic / Open-Vocabulary Navigation (42)
+## Semantic / Open-Vocabulary Navigation (43)
 
 - [ZIVIL: Zero-Shot Incremental Vision–Language Maps and Spatial Graph Representation of Construction Sites](https://doi.org/10.1061/jccee5.cpeng-7640)  
   Raines, Charles M., Fernandez, Ivan A., Sun, Mandy et al. · Journal of Computing in Civil Engineering · `2026-11-01`
+- [DRIVE-Nav: Directional Reasoning, Inspection, and Verification for Efficient Open-Vocabulary Navigation](https://doi.org/10.1109/lra.2026.3723310)  
+  Gao, Maoguo, Zhu, Zejun, Sun, Zhiming et al. · IEEE Robotics and Automation Letters · `2026-10` · [PDF](https://arxiv.org/pdf/2603.28691)
 - ["Dear LLaVA, Please Drive": A Depth-Aware Vision-Language Agent for Closed-Loop Robotic Control](https://doi.org/10.48550/arxiv.2609.22925)  
   Sebastian Berger, Katharina Winter, Fabian B. Flohr · arXiv (Cornell University) · `2026-09-19` · [PDF](https://arxiv.org/pdf/2609.22925)
 - [NavPatch: Evidence-Guided Object-Level Costmap Correction with Vision-Language Models](https://doi.org/10.48550/arxiv.2609.14543)  
@@ -882,12 +884,20 @@
 
 <a id="other"></a>
 
-## Other (150)
+## Other (154)
 
+- [Navigation and steering control of a service robot using Kinectv2 and LiDAR](https://doi.org/10.11591/ijece.v16i5.pp2454-2472)  
+  Dwijayanti, Suci, Miranda, Silfani Sandra, Suprapto, Bhakti Yudho et al. · International Journal of Electrical and Computer Engineerin… · `2026-10-01`
+- [ReVNM: Learning-Based Visual Navigation from a Remote Camera](https://doi.org/10.48550/arxiv.2609.28976)  
+  Michikuni Eguchi, Kohei Honda, Masafumi Endo et al. · arXiv (Cornell University) · `2026-09-24`
 - [AI Agents and Multi-Robot SLAM: DARPA's Push in Automated Theorem Proving and GPS-Denied Navigation — E8 Intelligence Research](https://doi.org/10.5281/zenodo.22910282)  
   Andrew Stewart Caldin · Zenodo (CERN European Organization for Nuclear Research) · `2026-09-23`
 - [Deploying Foundation Models for Embodied Navigation](https://arxiv.org/abs/2609.25666)  
   Vishnu Sashank Dorbala, Dinesh Manocha · arXiv (Cornell University) · `2026-09-22` · [PDF](https://arxiv.org/pdf/2609.25666)
+- [CBF-Critic-Based Heading-Aware MPPI Navigation for Omnidirectional Mobile Robots](https://doi.org/10.21203/rs.3.rs-10955624/v1)  
+  Kim, Taesoon, Seo, Hangil, Lee, Chibum · arXiv 2026 · `2026-09-21`
+- [A hierarchical reinforcement learning approach for robot navigation integrating LiDAR priors and the options framework](https://doi.org/10.1117/12.3125723)  
+  Qiming, Chen · International Conference on Photonic Computing, Algorithms,… · `2026-09-21`
 - [Manipulation Feasible Navigation Among Movable Obstacles with Discrete Contact Pushing](https://doi.org/10.48550/arxiv.2609.23312)  
   Shaohu Wang, Aiguo Song, Yulong Yuan et al. · arXiv (Cornell University) · `2026-09-20` · [PDF](https://arxiv.org/pdf/2609.23312)
 - [Navigate or Relocate? Planning Among Movable Obstacles in Unknown Environments](https://doi.org/10.48550/arxiv.2609.19541)  
@@ -1116,16 +1126,8 @@
   Jeong‐Hyun Choi, Incheol Kim · Journal of Institute of Control Robotics and Systems · `2024-06-10`
 - [Zero-Shot Wireless Indoor Navigation through Physics-Informed Reinforcement Learning](https://doi.org/10.1109/icra57147.2024.10611229)  
   Yin, Mingsheng, Li, Tao, Lei, Haozhe et al. · 2024 IEEE International Conference on Robotics and Automati… · `2024-05-13` · ⭐ 10
-- [The integration of GPS and visual navigation for autonomous navigation of an Ackerman steering mobile robot in cotton fields](https://doi.org/10.3389/frobt.2024.1359887)  
-  Mwitta, Canicius, Rains, Glen C. · Frontiers in Robotics and AI · `2024-04-12` · ⭐ 32
-- [Leveraging Predictions of Task-Related Latents for Interactive Visual Navigation](https://doi.org/10.1109/tnnls.2023.3335416)  
-  Jiwei Shen, Liang Yuan, Yue Lu et al. · IEEE Transactions on Neural Networks and Learning Systems · `2023-12-01` · ⭐ 15
-- [Human-Robot Harmonious Coexistence: A Robot Navigation Framework Follows Social Norms in Dynamic Scenarios](https://doi.org/10.21203/rs.3.rs-3502187/v1)  
-  LingliYu, JiaweiLuo, WeiweiZhu et al. · arXiv 2023 · `2023-10-30`
-- [ViNL: Visual Navigation and Locomotion Over Obstacles](https://doi.org/10.1109/icra48891.2023.10160612)  
-  Simar Kareer, Naoki Yokoyama, Dhruv Batra et al. · arXiv (Cornell University) · `2023-05-29` · ⭐ 33 · [PDF](https://arxiv.org/pdf/2210.14791)
 
-*…and 30 more (see the [web browser](https://ser666.github.io/awesome-zero-shot-navigation/) for the full list).*
+*…and 34 more (see the [web browser](https://ser666.github.io/awesome-zero-shot-navigation/) for the full list).*
 
 ---
 
@@ -1180,4 +1182,4 @@ Every day (GitHub Actions, free for public repos):
 
 ---
 
-*Auto-generated. Last update: 2026-09-27 02:10 UTC*
+*Auto-generated. Last update: 2026-09-27 02:15 UTC*
