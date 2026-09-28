@@ -6,19 +6,19 @@
 
 > 🔎 **Browse & search the papers in a web UI → [**ser666.github.io/awesome-zero-shot-navigation**](https://ser666.github.io/awesome-zero-shot-navigation/)**
 
-<a href="https://ser666.github.io/awesome-zero-shot-navigation/"><img src="https://img.shields.io/badge/papers-716-0984e3?style=for-the-badge&logo=googlescholar&logoColor=white" alt="Papers"></a> <img src="https://img.shields.io/badge/Top%20venues-64-b0522c?style=for-the-badge" alt="Top venues"> <img src="https://img.shields.io/badge/with%20code-90-0f9d58?style=for-the-badge&logo=github" alt="with code"> <a href="https://github.com/ser666/awesome-zero-shot-navigation/actions"><img src="https://img.shields.io/badge/auto--updated%20weekly-2f6fb2?style=for-the-badge&logo=githubactions&logoColor=white" alt="Auto-updated weekly"></a> <img src="https://img.shields.io/badge/license-MIT-lightgrey?style=for-the-badge" alt="MIT">
+<a href="https://ser666.github.io/awesome-zero-shot-navigation/"><img src="https://img.shields.io/badge/papers-717-0984e3?style=for-the-badge&logo=googlescholar&logoColor=white" alt="Papers"></a> <img src="https://img.shields.io/badge/Top%20venues-64-b0522c?style=for-the-badge" alt="Top venues"> <img src="https://img.shields.io/badge/with%20code-90-0f9d58?style=for-the-badge&logo=github" alt="with code"> <a href="https://github.com/ser666/awesome-zero-shot-navigation/actions"><img src="https://img.shields.io/badge/auto--updated%20weekly-2f6fb2?style=for-the-badge&logo=githubactions&logoColor=white" alt="Auto-updated weekly"></a> <img src="https://img.shields.io/badge/license-MIT-lightgrey?style=for-the-badge" alt="MIT">
 
 ---
 
 ## 📊 Stats
 
-- **Total papers**: **716**
+- **Total papers**: **717**
 - **New in the last 7 days**: **28**
 - **Published at top venues** (CCF-A / major robotics): **64**
 - **With PDF**: 470 ｜ **with code**: 90 ｜ **with project page**: 60
 - **Categories**: 10
-- **Sources**: crossref (160), huggingface (1), openalex (618)
-- **Last updated**: 2026-09-27 12:03 UTC
+- **Sources**: crossref (160), huggingface (1), openalex (619)
+- **Last updated**: 2026-09-28 09:01 UTC
 
 ## 🏷 How to read an entry
 
@@ -41,7 +41,7 @@
 - [Multi-Object Navigation](#multi-object) — 16 papers
 - [Social Navigation](#social-nav) — 34 papers
 - [Exploration](#exploration) — 19 papers
-- [LLM / VLM Navigation Agents](#llm-agents) — 78 papers
+- [LLM / VLM Navigation Agents](#llm-agents) — 79 papers
 - [Other](#other) — 93 papers
 - [Related awesome lists](#-related-awesome-lists)
 - [How it works / Contributing](#-about)
@@ -445,7 +445,7 @@
 - [2026] [arXiv] [LightNav-0: Eliciting VLM Spatial Intelligence for Generalist Embodied Navigation](https://doi.org/10.48550/arxiv.2608.30935)  
   <a href="https://arxiv.org/pdf/2608.30935"><img src="https://img.shields.io/badge/arXiv%202608.30935-b31b1b" alt="arXiv 2608.30935"></a> <a href="https://doi.org/10.48550/arxiv.2608.30935"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Shaoan Wang, Aocheng Luo, Fei Huang et al. · 🔓 OA
 - [2026] [RA-L 2026] [CAST: Counterfactual Labels Improve Instruction Following in Vision-Language-Action Models](https://doi.org/10.1109/lra.2026.3726383)  
-  <a href="https://arxiv.org/pdf/2508.13446"><img src="https://img.shields.io/badge/arXiv%202508.13446-b31b1b" alt="arXiv 2508.13446"></a> <a href="https://doi.org/10.1109/lra.2026.3726383"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Catherine Glossop, William  C. Chen, Arjun Bhorkar et al. · ⭐ 34 · 🔓 OA
+  <a href="https://arxiv.org/pdf/2508.13446"><img src="https://img.shields.io/badge/arXiv%202508.13446-b31b1b" alt="arXiv 2508.13446"></a> <a href="https://doi.org/10.1109/lra.2026.3726383"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Catherine Glossop, William  C. Chen, Arjun Bhorkar et al. · ⭐ 35 · 🔓 OA
 - [2026] [arXiv] [OpenBelief-Nav: Evidence-Preserving Object Memory for Open-Vocabulary Language-Guided Navigation](https://doi.org/10.48550/arxiv.2608.13923)  
   <a href="https://arxiv.org/pdf/2608.13923"><img src="https://img.shields.io/badge/arXiv%202608.13923-b31b1b" alt="arXiv 2608.13923"></a> <a href="https://openbelief-nav.github.io/"><img src="https://img.shields.io/badge/project-2f6fb2" alt="project"></a> <a href="https://doi.org/10.48550/arxiv.2608.13923"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Dinh Tuan Nguyen, Anh Dao, Phuong Nam Dang et al. · 🔓 OA
 - [2026] [Appl. Sci. 2026] [Vision-and-Language Navigation: A Component-Centric Survey of Interactions, Coupling, and Deployment](https://doi.org/10.3390/app16168050)  
@@ -1309,10 +1309,12 @@
 
 <a id="llm-agents"></a>
 
-## LLM / VLM Navigation Agents (78)
+## LLM / VLM Navigation Agents (79)
 
 ### 2026
 
+- [2026] [Zenodo] [What Does an Agent Perceive as Possible? Perception, Passibility and the Architecture of Navigation Across Robots, Vehicles, Spacecraft and World Models](https://doi.org/10.5281/zenodo.23000122)  
+  <a href="https://doi.org/10.5281/zenodo.23000122"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Gonçalo Melo de Magalhães · 🔓 OA
 - [2026] [Zenodo] [AI Agents and Multi-Robot SLAM: DARPA's Push in Automated Theorem Proving and GPS-Denied Navigation — E8 Intelligence Research](https://doi.org/10.5281/zenodo.22910282)  
   <a href="https://doi.org/10.5281/zenodo.22910282"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Andrew Stewart Caldin · 🔓 OA
 - [2026] [arXiv] [Spatial and Semantic Reasoning for LLM-Driven Robot Navigation via MCP](https://doi.org/10.48550/arxiv.2609.27340)  
@@ -1349,10 +1351,10 @@
   <a href="https://arxiv.org/pdf/2607.12050"><img src="https://img.shields.io/badge/arXiv%202607.12050-b31b1b" alt="arXiv 2607.12050"></a> <a href="https://doi.org/10.48550/arxiv.2607.12050"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Jinyuan Zhang, Yuwei Wu, Guangyao Shi et al. · 🔓 OA
 - [2026] [arXiv] [GemNav: Discrete-Token Visual Robot Navigation using a Multimodal Large Language Model](https://doi.org/10.48550/arxiv.2607.06882)  
   <a href="https://arxiv.org/pdf/2607.06882"><img src="https://img.shields.io/badge/arXiv%202607.06882-b31b1b" alt="arXiv 2607.06882"></a> <a href="https://doi.org/10.48550/arxiv.2607.06882"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Peter Böhm, Saimunur Rahman, Abdelwahed Khamis et al. · 🔓 OA
+- [2026] [arXiv] [EAGOR: Embodied Reasoning in Omni-direction](https://doi.org/10.48550/arxiv.2607.06165)  
+  <a href="https://arxiv.org/pdf/2607.06165"><img src="https://img.shields.io/badge/arXiv%202607.06165-b31b1b" alt="arXiv 2607.06165"></a> <a href="https://doi.org/10.48550/arxiv.2607.06165"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Shriram Damodaran, Soumyaratna Debnath, Yan Wu et al. · ⭐ 1 · 🔓 OA
 - [2026] [Frontiers in Marine Science 2026] [Neuro-symbolic framework for multi-USV coordination: COLREGs-compliant and energy-efficient smart navigation](https://doi.org/10.3389/fmars.2026.1865602)  
   <a href="https://doi.org/10.3389/fmars.2026.1865602"><img src="https://img.shields.io/badge/PDF-b31b1b" alt="PDF"></a> <a href="https://doi.org/10.3389/fmars.2026.1865602"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Shuai Huang, Yifeng Chen, Mao-Yuan Sun et al. · ⭐ 1 · 🔓 OA
-- [2026] [arXiv] [EAGOR: Embodied Reasoning in Omni-direction](https://doi.org/10.48550/arxiv.2607.06165)  
-  <a href="https://arxiv.org/pdf/2607.06165"><img src="https://img.shields.io/badge/arXiv%202607.06165-b31b1b" alt="arXiv 2607.06165"></a> <a href="https://doi.org/10.48550/arxiv.2607.06165"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Shriram Damodaran, Soumyaratna Debnath, Yan Wu et al. · 🔓 OA
 - [2026] [Nature Communications 2026] [Brain-inspired spatial intelligence for embodied agents](https://doi.org/10.1038/s41467-026-74358-5)  
   <a href="https://doi.org/10.1038/s41467-026-74358-5"><img src="https://img.shields.io/badge/PDF-b31b1b" alt="PDF"></a> <a href="https://github.com/Heathcliff-saku/BSC-Nav"><img src="https://img.shields.io/badge/code-0f9d58?logo=github" alt="code"></a> <img src="https://img.shields.io/github/stars/Heathcliff-saku/BSC-Nav?label=%E2%AD%90" alt="stars"> <a href="https://doi.org/10.1038/s41467-026-74358-5"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Shouwei Ruan, Liyuan Wang, Caixin Kang et al. · ⭐ 2 · 🔓 OA
 - [2026] [IEEE DataPort 2026] ["Can Vision Foundation Models Navigate? Zero-Shot Real-World Evaluation and Lessons Learned"](https://doi.org/10.21227/ay8y-pc26)  
@@ -1750,4 +1752,4 @@ Open an [issue](../../issues) with the paper link and we'll fold it in. The whol
 
 ---
 
-*Auto-generated. Last update: 2026-09-27 12:03 UTC*
+*Auto-generated. Last update: 2026-09-28 09:01 UTC*
