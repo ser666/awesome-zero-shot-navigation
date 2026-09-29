@@ -33,7 +33,10 @@ REPO = f"{OWNER}/{NAME}"
 HDR = {"Authorization": f"Bearer {PAT}",
        "Accept": "application/vnd.github+json",
        "User-Agent": "hermes-agent"}
-WORKFLOW = "daily-update.yml"
+# ⚠️ 必须是**当前真实存在**的工作流文件名。
+# 这里曾残留已删除的 "daily-update.yml"（已改名 weekly-update.yml），
+# 会导致月度看护查不到工作流、静默失效 —— 改动工作流文件名时务必同步这里。
+WORKFLOW = "weekly-update.yml"
 
 DRY = "--dry-run" in sys.argv
 
@@ -92,20 +95,30 @@ print()
 print("=" * 72)
 print("③ 检查数据新鲜度")
 print("=" * 72)
-st, f = call("GET", f"/repos/{REPO}/contents/docs/data/papers.json")
+st, f = call("GET", f"/repos/{REPO}/contents/docs/data/papers.json",
+             accept="application/vnd.github.raw+json")
 stale_days = None
-if st == 200:
-    content = base64.b64decode(f["content"]).decode("utf-8", "ignore")
+# ⚠️ 关键：必须用 **raw 媒体类型**。
+#    Contents API 对 **>1MB** 的文件**不返回内联 content**（content 字段是空串，
+#    而是提示改用 media/raw 接口）。而 papers.json 已达 ~1.4MB ——
+#    用默认 Accept 会拿到空 content，base64 解出空串、json 解析报
+#    "Expecting value: line 1 column 1 (char 0)"，
+#    结果是 stale_days 永远为 None，
+#    **"数据过期 → 触发补跑"这条分支静默失效**（看护等于少了一半）。
+#    raw 媒体类型直接返回文件原文，可支持到 100MB。
+if st == 200 and isinstance(f, dict) and "generated_at" in f:
     try:
-        d = json.loads(content)
-        gen = datetime.fromisoformat(d["generated_at"].replace("Z", "+00:00"))
+        gen = datetime.fromisoformat(f["generated_at"].replace("Z", "+00:00"))
         stale_days = (datetime.now(timezone.utc) - gen).days
         print(f"  数据生成于: {gen.date()}（{stale_days} 天前）")
-        print(f"  论文总数:   {d['total']}")
+        print(f"  论文总数:   {f.get('total')}")
     except Exception as e:  # noqa: BLE001
         print(f"  ⚠️ 解析失败: {e}")
+elif st == 200:
+    got = list(f)[:6] if isinstance(f, dict) else type(f).__name__
+    print(f"  ⚠️ 返回结构异常（期望含 generated_at，实际 keys={got}）")
 else:
-    print(f"  ⚠️ 文件未找到（首次部署前正常）: {st}")
+    print(f"  ⚠️ 读取失败: HTTP {st} {str(f)[:160]}")
 
 if stale_days is not None and stale_days > 3 and not DRY:
     st2, r2 = call("POST", f"/repos/{REPO}/actions/workflows/{WORKFLOW}/dispatches",
