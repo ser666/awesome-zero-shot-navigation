@@ -6,7 +6,7 @@
 
 > 🔎 **Browse & search the papers in a web UI → [**ser666.github.io/awesome-zero-shot-navigation**](https://ser666.github.io/awesome-zero-shot-navigation/)**
 
-<a href="https://ser666.github.io/awesome-zero-shot-navigation/"><img src="https://img.shields.io/badge/papers-756-0984e3?style=for-the-badge&logo=googlescholar&logoColor=white" alt="Papers"></a> <img src="https://img.shields.io/badge/Top%20venues-104-b0522c?style=for-the-badge" alt="Top venues"> <img src="https://img.shields.io/badge/with%20code-91-0f9d58?style=for-the-badge&logo=github" alt="with code"> <a href="https://github.com/ser666/awesome-zero-shot-navigation/actions"><img src="https://img.shields.io/badge/auto--updated%20weekly-2f6fb2?style=for-the-badge&logo=githubactions&logoColor=white" alt="Auto-updated weekly"></a> <img src="https://img.shields.io/badge/license-MIT-lightgrey?style=for-the-badge" alt="MIT">
+<a href="https://ser666.github.io/awesome-zero-shot-navigation/"><img src="https://img.shields.io/badge/papers-756-0984e3?style=for-the-badge&logo=googlescholar&logoColor=white" alt="Papers"></a> <img src="https://img.shields.io/badge/Top%20venues-94-b0522c?style=for-the-badge" alt="Top venues"> <img src="https://img.shields.io/badge/with%20code-92-0f9d58?style=for-the-badge&logo=github" alt="with code"> <a href="https://github.com/ser666/awesome-zero-shot-navigation/actions"><img src="https://img.shields.io/badge/auto--updated%20weekly-2f6fb2?style=for-the-badge&logo=githubactions&logoColor=white" alt="Auto-updated weekly"></a> <img src="https://img.shields.io/badge/license-MIT-lightgrey?style=for-the-badge" alt="MIT">
 
 ---
 
@@ -14,11 +14,11 @@
 
 - **Total papers**: **756**
 - **New in the last 7 days**: **22**
-- **Published at top venues** (CCF-A / major robotics): **104**
-- **With PDF**: 509 ｜ **with code**: 91 ｜ **with project page**: 62
+- **Published at top venues** (CCF-A / major robotics): **94**
+- **With PDF**: 509 ｜ **with code**: 92 ｜ **with project page**: 62
 - **Categories**: 10
 - **Sources**: crossref (159), huggingface (1), openalex (607), openreview (51)
-- **Last updated**: 2026-09-29 04:27 UTC
+- **Last updated**: 2026-09-29 04:49 UTC
 
 ## 🏷 How to read an entry
 
@@ -207,9 +207,9 @@
   <a href="https://doi.org/10.1109/access.2026.3704550"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Yoo, Gunmin, Gu, Hyunwoo, Hwang, Sung Soo · 🔓 OA
 - [2026] [Faster and Better: An Efficient Training-Free Framework for Object Goal Navigation](https://doi.org/10.2139/ssrn.7169966)  
   <a href="https://doi.org/10.2139/ssrn.7169966"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Zhang, Zhipeng, suo, wei, Wang, Ji et al.
-- [2026] [**ICLR 2026**] [HGWM: Hierarchical Graph-guided World Model for Zero-shot Object Navigation via Scene-Goal Graph Matching](https://openreview.net/forum?id=8UEjC5P6jx)  
+- [2026] [Under review] [HGWM: Hierarchical Graph-guided World Model for Zero-shot Object Navigation via Scene-Goal Graph Matching](https://openreview.net/forum?id=8UEjC5P6jx)  
   <a href="https://openreview.net/pdf?id=8UEjC5P6jx"><img src="https://img.shields.io/badge/PDF-b31b1b" alt="PDF"></a>  · I-Tak Ieong, Hao Tang · 🔓 OA
-- [2026] [**ICLR 2026**] [What Matters in RL-Based Methods for Object-Goal Navigation? An Empirical Study and A Unified Framework](https://openreview.net/forum?id=ia5tQ6EebJ)  
+- [2026] [Under review] [What Matters in RL-Based Methods for Object-Goal Navigation? An Empirical Study and A Unified Framework](https://openreview.net/forum?id=ia5tQ6EebJ)  
   <a href="https://openreview.net/pdf?id=ia5tQ6EebJ"><img src="https://img.shields.io/badge/PDF-b31b1b" alt="PDF"></a>  · Hongze Wang, Boyang Sun, Jiaxu Xing et al. · 🔓 OA
 
 ### 2025
@@ -604,11 +604,11 @@
   <a href="https://doi.org/10.1109/tmm.2026.3726310"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Shi, Zhanbo, Zhang, Lin, Zhao, Shengjie et al.
 - [2026] [Vision-and-Language Navigation for Human–Robot Collaboration: A Comprehensive Survey](https://doi.org/10.2139/ssrn.7021520)  
   <a href="https://doi.org/10.2139/ssrn.7021520"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · YAKOLLI, NIVEDAN
-- [2026] [**ICLR 2026**] [AdaNav: Adaptive Reasoning with Uncertainty for Vision-Language Navigation](https://openreview.net/forum?id=Rr8gAjB1dX)  
+- [2026] [Under review] [AdaNav: Adaptive Reasoning with Uncertainty for Vision-Language Navigation](https://openreview.net/forum?id=Rr8gAjB1dX)  
   <a href="https://openreview.net/pdf?id=Rr8gAjB1dX"><img src="https://img.shields.io/badge/PDF-b31b1b" alt="PDF"></a>  · Xin Ding, Jianyu Wei, Yifan Yang et al. · 🔓 OA
-- [2026] [**ICLR 2026**] [From End-to-End to Step-by-Step: learning Composable Navigation Primitives for Vision-Language Navigation](https://openreview.net/forum?id=9ktF3pwXi8)  
+- [2026] [Under review] [From End-to-End to Step-by-Step: learning Composable Navigation Primitives for Vision-Language Navigation](https://openreview.net/forum?id=9ktF3pwXi8)  
   <a href="https://openreview.net/pdf?id=9ktF3pwXi8"><img src="https://img.shields.io/badge/PDF-b31b1b" alt="PDF"></a>  · Yang Chen, Xiaohan Yi, Jiang Bian et al. · 🔓 OA
-- [2026] [**ICLR 2026**] [Learning Goal-Oriented Language-Guided Navigation with Self-Improving Demonstrations at Scale](https://openreview.net/forum?id=wvT56qK50w)  
+- [2026] [Under review] [Learning Goal-Oriented Language-Guided Navigation with Self-Improving Demonstrations at Scale](https://openreview.net/forum?id=wvT56qK50w)  
   <a href="https://openreview.net/pdf?id=wvT56qK50w"><img src="https://img.shields.io/badge/PDF-b31b1b" alt="PDF"></a>  · Songze Li, Zun Wang, Gengze Zhou et al. · 🔓 OA
 
 ### 2025
@@ -878,7 +878,7 @@
   <a href="https://doi.org/10.32604/cmes.2026.085610"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Farkh, Rihem, Oudinet, Ghislain, Moussa, Alaeddine et al.
 - [2026] [Beyond Wall Following: Lightweight Reactive Navigation for Nano-UAVs in Unknown Tunnels](https://doi.org/10.2139/ssrn.6965896)  
   <a href="https://doi.org/10.2139/ssrn.6965896"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Asignacion, Abner, Suzuki, Satoshi, Tanaka, Haruki et al.
-- [2026] [**ICLR 2026**] [DAD-SFT: Dual Attention Distillation for Lightweight UAV Vision-Language Navigation](https://openreview.net/forum?id=7wX5uL459y)  
+- [2026] [Under review] [DAD-SFT: Dual Attention Distillation for Lightweight UAV Vision-Language Navigation](https://openreview.net/forum?id=7wX5uL459y)  
   <a href="https://openreview.net/pdf?id=7wX5uL459y"><img src="https://img.shields.io/badge/PDF-b31b1b" alt="PDF"></a>  · Hengxing Cai, Jinhan Dong, Hao Zhang et al. · 🔓 OA
 
 ### 2025
@@ -1017,9 +1017,9 @@
   · Louis Arbey · 🔓 OA
 - [2026] [Multi-Level Semantic Topology Modeling for Embodied Navigation in Dynamic Indoor Environments Authors](https://doi.org/10.2139/ssrn.6115186)  
   <a href="https://doi.org/10.2139/ssrn.6115186"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Moreau, Jean-Baptiste, Lefèvre, Claire, Dubois, Antoine
-- [2026] [**ICLR 2026**] [CAPNAV: TOWARDS ROBUST INDOOR NAVIGATION WITH DESCRIPTION-FIRST MAPS](https://openreview.net/forum?id=zZvrFzDkwF)  
+- [2026] [Under review] [CAPNAV: TOWARDS ROBUST INDOOR NAVIGATION WITH DESCRIPTION-FIRST MAPS](https://openreview.net/forum?id=zZvrFzDkwF)  
   <a href="https://openreview.net/pdf?id=zZvrFzDkwF"><img src="https://img.shields.io/badge/PDF-b31b1b" alt="PDF"></a>  · Ritali Vatsi, Ayush Ravindra Vaidande, Vikas Sharma et al. · 🔓 OA
-- [2026] [**ICLR 2026**] [Plug-and-Play Label Map Diffusion for Universal Goal-Oriented Navigation](https://openreview.net/forum?id=Dofaulr5RE)  
+- [2026] [Under review] [Plug-and-Play Label Map Diffusion for Universal Goal-Oriented Navigation](https://openreview.net/forum?id=Dofaulr5RE)  
   <a href="https://openreview.net/pdf?id=Dofaulr5RE"><img src="https://img.shields.io/badge/PDF-b31b1b" alt="PDF"></a>  · Zhixuan Shen, Yijie Zeng, Shengxiang Luo et al. · 🔓 OA
 
 ### 2025
@@ -1338,9 +1338,9 @@
   <a href="https://arxiv.org/pdf/2602.15864"><img src="https://img.shields.io/badge/arXiv%202602.15864-b31b1b" alt="arXiv 2602.15864"></a> <a href="https://reasonnavi.github.io/"><img src="https://img.shields.io/badge/project-2f6fb2" alt="project"></a> <a href="https://doi.org/10.48550/arxiv.2602.15864"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Yuzhuo Ao, Anbang Wang, Yu-Wing Tai et al. · 🔓 OA
 - [2026] [arXiv] [VLingNav: Embodied Navigation with Adaptive Reasoning and Visual-Assisted Linguistic Memory](https://doi.org/10.48550/arxiv.2601.08665)  
   <a href="https://arxiv.org/pdf/2601.08665"><img src="https://img.shields.io/badge/arXiv%202601.08665-b31b1b" alt="arXiv 2601.08665"></a> <a href="https://doi.org/10.48550/arxiv.2601.08665"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Shaoan Wang, Yuanfei Luo, Xingyu Chen et al. · 🔓 OA
-- [2026] [**ICLR 2026**] [DP-Nav: Dynamic Exploration Driven by Semantic Region Potential for Zero-shot Visual Navigation](https://openreview.net/forum?id=38ioKDbyP7)  
+- [2026] [Under review] [DP-Nav: Dynamic Exploration Driven by Semantic Region Potential for Zero-shot Visual Navigation](https://openreview.net/forum?id=38ioKDbyP7)  
   <a href="https://openreview.net/pdf?id=38ioKDbyP7"><img src="https://img.shields.io/badge/PDF-b31b1b" alt="PDF"></a>  · Yijie Zeng, Zhixuan Shen, Yongjun Pu et al. · 🔓 OA
-- [2026] [**ICLR 2026**] [ERNav: A Unified, Realistic Benchmark for Embodied AI with Exploration, Representation, and Navigation](https://openreview.net/forum?id=Y4mSVCYEq8)  
+- [2026] [Under review] [ERNav: A Unified, Realistic Benchmark for Embodied AI with Exploration, Representation, and Navigation](https://openreview.net/forum?id=Y4mSVCYEq8)  
   <a href="https://openreview.net/pdf?id=Y4mSVCYEq8"><img src="https://img.shields.io/badge/PDF-b31b1b" alt="PDF"></a>  · Haodong Hong, Sen Wang, Jiajun Liu · 🔓 OA
 
 ### 2025
@@ -1392,7 +1392,7 @@
 - [2026] [Robotics 2026] [Hybrid Zero-Shot Interactive Navigation with LLMs: Path Planning Under Dual Constraints of Speech and Environment](https://doi.org/10.3390/robotics15090167)  
   <a href="https://doi.org/10.3390/robotics15090167"><img src="https://img.shields.io/badge/PDF-b31b1b" alt="PDF"></a> <a href="https://doi.org/10.3390/robotics15090167"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Fan Yang, Jing Wu, Timur Kuzu et al. · 🔓 OA
 - [2026] [GALENA: A Governance-Aware LLM Enterprise Navigation Architecture for Autonomous Multi-Agent Workflow Automation with Compliance Enforcement](https://doi.org/10.64971/j.cph.eijtem.v13.i3.12.2026)  
-  <a href="https://exceljournals.org.in/admin/uploads/EIJTEM_2026_13_3_130-146.pdf"><img src="https://img.shields.io/badge/PDF-b31b1b" alt="PDF"></a> <a href="https://doi.org/10.64971/j.cph.eijtem.v13.i3.12.2026"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Narasimha Rao Boinapalli · 🔓 OA
+  <a href="https://exceljournals.org.in/admin/uploads/EIJTEM_2026_13_3_130-146.pdf"><img src="https://img.shields.io/badge/PDF-b31b1b" alt="PDF"></a> <a href="https://github.com/ANILKMEHER/sap-enterprise-architecture"><img src="https://img.shields.io/badge/code-0f9d58?logo=github" alt="code"></a> <img src="https://img.shields.io/github/stars/ANILKMEHER/sap-enterprise-architecture?label=%E2%AD%90" alt="stars"> <a href="https://doi.org/10.64971/j.cph.eijtem.v13.i3.12.2026"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Narasimha Rao Boinapalli · 🔓 OA
 - [2026] [arXiv] [DF$^3$: World Modeling via Decoder-Free Feature Forecasting in Autonomous Navigation](https://doi.org/10.48550/arxiv.2608.02428)  
   <a href="https://arxiv.org/pdf/2608.02428"><img src="https://img.shields.io/badge/arXiv%202608.02428-b31b1b" alt="arXiv 2608.02428"></a> <a href="https://doi.org/10.48550/arxiv.2608.02428"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Jiaming Chen, Guoan Xu, Aoshen Huang et al. · 🔓 OA
 - [2026] [arXiv] [WikiLoop: Jointly Learning to Build and Navigate Agent-Native Wikis with Downstream Feedback](https://doi.org/10.48550/arxiv.2607.26604)  
@@ -1830,4 +1830,4 @@ Open an [issue](../../issues) with the paper link and we'll fold it in. The whol
 
 ---
 
-*Auto-generated. Last update: 2026-09-29 04:27 UTC*
+*Auto-generated. Last update: 2026-09-29 04:49 UTC*
