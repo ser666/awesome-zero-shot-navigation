@@ -49,6 +49,9 @@ test:
 	@echo "── 数据源注册表契约 ──"
 	@python3 scripts/sources.py --selftest
 	@echo ""
+	@echo "── 仓库一致性（工作流名/脚本引用/secrets） ──"
+	@python3 scripts/selftest.py
+	@echo ""
 	@python3 scripts/export.py > /dev/null && echo "── 导出 ✅ ──"
 
 audit:
