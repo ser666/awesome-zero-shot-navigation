@@ -90,6 +90,14 @@ QUERIES_BENCH = [
 
 QUERIES = QUERIES_CORE + QUERIES_TASK + QUERIES_METHOD
 
+# ⭐ 聚合式源（EXTRA_SOURCES）用的**通用检索词**。
+# 这类源一次请求就返回一批论文（不是按关键词逐个查），
+# 所以只需要一个尽量宽的词来触发它们即可 —— 真正的相关性筛选
+# 由 relevance.py 在这批结果上统一把关。
+# ⚠️ 用太窄的词（如 "zero-shot navigation"）会漏掉同领域其他叫法的论文，
+#    所以这里故意用**最宽的上位词**。
+EXTRA_QUERY = "navigation"
+
 
 def _get_json(url: str, timeout: int = 40, retries: int = 2):
     """带退避重试的 GET。
@@ -278,6 +286,34 @@ SOURCES = {
     "crossref": harvest_crossref,
 }
 
+# ⭐ 新增采集源的**契约**（加源只需两处，其它零改动）：
+#
+#   1) 写一个 harvest_xxx(query, date_from=None, date_to=None) -> list[dict]
+#      · 若该源支持"按引用量排序抓经典"，**再加一个 sort="date" 参数**
+#        （管线会用签名检测自动判断是否传 sort，见 pipeline.py run()）
+#      · 返回的 dict 字段见下方 harvest_openalex 的构造（12 个字段）
+#      · **不要**在这里 print / 落盘 / 改 DB —— 只负责"取回并归一化"
+#
+#   2) 注册进本字典：  "xxx": harvest_xxx
+#
+#   ✅ 不需要改 pipeline.py（它遍历 SOURCES）
+#   ✅ 加完跑 `make test` 会校验签名是否满足调用约定
+#   ⚠️ 只在"每轮调一次"的聚合式源（如 API 一次返回一批）→ 注册到 EXTRA_SOURCES
+#
+# 判别标准：这个源需要**按关键词逐个查**吗？
+#   是 → SOURCES（会被调用 len(QUERIES) 次）
+#   否 → EXTRA_SOURCES（每轮只调 1 次）
+
+# ⭐ 每个源的请求间隔（秒）—— 限速松紧按源配置。
+#    新增的源若限速更严（如无 Key 的免费 API），在这里加一行即可。
+#    未列出的源用 DEFAULT_INTERVAL。
+#    为什么单独抽出来：曾经写死在 pipeline 里（`1.5 if openalex else 0.8`），
+#    加新源时容易忘配、进而被 429 拖慢整轮。
+DEFAULT_INTERVAL = 0.8
+SOURCE_INTERVALS = {
+    "openalex": 1.5,    # 对高频请求较敏感，间隔放大
+}
+
 # 附加源（OpenReview / HuggingFace）—— 单独注册。
 # 为什么不混进 SOURCES：它们的调用签名不同（不需要 query 循环里的 date_to 等），
 # 且在管线里是"每轮只调一次"，而不是"每个关键词调一次"。
@@ -298,7 +334,95 @@ def now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
+def _selftest_registry() -> bool:
+    """⭐ 自测：源注册表是否**可按管线的方式调用**（不联网）。
+
+    为什么需要这条：管线遍历 `SOURCES` 并统一传
+        harvest_fn(query, date_from=..., date_to=...[, sort=...])
+    所以任何一个注册的源，只要签名不能满足这个调用约定，
+    采集时就会**静默跳过**（异常被 except 吞掉，只打印一行警告）。
+
+    本自测把这条约定**变成可验证的**：
+      · 每个源都必须能被 (query, date_from, date_to) 调用
+      · 支持 sort 的源，额外接受 sort
+      · 返回必须是 list（不能返回 None / dict）
+    """
+    import inspect as _inspect
+
+    print("=" * 60)
+    print("源注册表自测（不联网）")
+    print("=" * 60)
+    ok = True
+
+    # ── ① SOURCES：按关键词逐个调用（管线主循环）
+    print("\n① SOURCES（按关键词逐个调用）")
+    for name, fn in SOURCES.items():
+        params = set(_inspect.signature(fn).parameters)
+        sig = _inspect.signature(fn)
+        kwargs = {"date_from": "2026-01-01", "date_to": "2026-12-31"}
+        if "sort" in params:
+            kwargs["sort"] = "date"
+        try:
+            sig.bind("self-test query", **kwargs)
+            print(f"   ✅ {name:12s} 可调用   kwargs={sorted(kwargs)}")
+        except TypeError as e:
+            ok = False
+            print(f"   ❌ {name:12s} 签名不符: {e}")
+
+    # ── ② EXTRA_SOURCES：每轮只调一次（聚合式）
+    #   调用约定（与 pipeline 一致）：date_from 恒传；
+    #   query 若为**必填参数**（无默认值），额外传 EXTRA_QUERY。
+    print("\n② EXTRA_SOURCES（每轮只调一次）")
+    for name, fn in EXTRA_SOURCES.items():
+        sig = _inspect.signature(fn)
+        kwargs = {"date_from": "2026-01-01"}
+        q_param = sig.parameters.get("query")
+        if q_param is not None and q_param.default is _inspect.Parameter.empty:
+            kwargs["query"] = EXTRA_QUERY
+        try:
+            sig.bind(**kwargs)
+            print(f"   ✅ {name:12s} 可调用   kwargs={sorted(kwargs)}")
+        except TypeError as e:
+            ok = False
+            print(f"   ❌ {name:12s} 签名不符: {e}")
+
+    # ── ②·五 限速配置：键必须是已注册的源名（防止改名后残留无效配置）
+    print("\n②·五 限速配置（SOURCE_INTERVALS）")
+    registered = set(SOURCES) | set(EXTRA_SOURCES)
+    stray = [k for k in SOURCE_INTERVALS if k not in registered]
+    if stray:
+        ok = False
+        print(f"   ❌ 配了不存在的源: {stray}（源名拼错或已改名？）")
+    else:
+        for k, v in SOURCE_INTERVALS.items():
+            print(f"   ✅ {k:12s} 间隔 {v}s")
+        print(f"   ℹ️ 未列出的源用默认 {DEFAULT_INTERVAL}s")
+
+    # ── ③ 检索规模提示（让人对"加关键词/加源的代价"有数）
+    print("\n③ 检索规模")
+    per_round = len(QUERIES) * len(SOURCES) + len(EXTRA_SOURCES)
+    print(f"   QUERIES = {len(QUERIES)} 条")
+    print(f"   每轮请求 ≈ {len(QUERIES)} × {len(SOURCES)} 源"
+          f" + {len(EXTRA_SOURCES)} 聚合源 = {per_round} 次")
+    print("   ⚠️ 加关键词/源会线性增加耗时 → 注意 --budget 要够")
+
+    print("\n" + "=" * 60)
+    print("自测结果:", "✅ 全部通过" if ok else "❌ 有失败")
+    print("=" * 60)
+    return ok
+
+
 if __name__ == "__main__":
+    import argparse as _ap
+
+    ap = _ap.ArgumentParser(description="sources.py 自测 / 接口探测")
+    ap.add_argument("--selftest", action="store_true",
+                    help="只跑注册表自测（离线，秒级）")
+    args = ap.parse_args()
+
+    if args.selftest:
+        raise SystemExit(0 if _selftest_registry() else 1)
+
     print("测试 OpenAlex...")
     rs = harvest_openalex("zero-shot object navigation", per_page=5)
     print(f"  返回 {len(rs)} 条")
@@ -310,3 +434,5 @@ if __name__ == "__main__":
     print(f"  返回 {len(rs)} 条")
     for r in rs[:3]:
         print(f"   · [{r['published_date']}] {r['title'][:66]}")
+
+    print("\n（跑 --selftest 可离线校验注册表契约）")

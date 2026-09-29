@@ -58,7 +58,9 @@ make serve            # → http://127.0.0.1:8210
 | Sub-topic / category taxonomy | `scripts/topics.py` | Order matters — most specific rule first |
 | Which venues count as "top" (bolded) | `scripts/venues.py` | CCF-A + major robotics |
 | Code-repo matching strictness | `scripts/links.py` | Precision over recall |
-| Search keywords | `scripts/sources.py` (`QUERIES_*`) | Grouped: core / task / method |
+| Search keywords | `scripts/sources.py` (`QUERIES_*`) | Grouped: core / task / method. **`QUERIES_BENCH` is not used for search** — code matching only |
+| **Add a new data source** | `scripts/sources.py` (`SOURCES` / `EXTRA_SOURCES`) | ⭐ Registration only — **no pipeline changes needed**. See [`OPERATIONS.md` § 如何新增一个数据源](OPERATIONS.md) |
+| **Rate-limit interval** | `scripts/sources.py` (`SOURCE_INTERVALS`) | New source with stricter limits → add a line |
 | README & site layout | `scripts/export.py`, `docs/index.html` | |
 
 ### ⚠️ Tightening the relevance filter? Run the impact check first

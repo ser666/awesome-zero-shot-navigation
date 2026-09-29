@@ -9,6 +9,7 @@
 from __future__ import annotations
 
 import argparse
+import inspect
 import os
 import pathlib
 import re
@@ -21,7 +22,15 @@ from difflib import SequenceMatcher
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 
 from relevance import check as relevance_check  # noqa: E402
-from sources import EXTRA_SOURCES, QUERIES, SOURCES, now_iso  # noqa: E402
+from sources import (  # noqa: E402
+    DEFAULT_INTERVAL,
+    EXTRA_QUERY,
+    EXTRA_SOURCES,
+    QUERIES,
+    SOURCES,
+    SOURCE_INTERVALS,
+    now_iso,
+)
 from topics import primary_category, topic_tags  # noqa: E402
 from venues import normalize as venue_normalize  # noqa: E402
 import links as linkutil  # noqa: E402
@@ -356,6 +365,35 @@ def merge_into(existing: dict, new: dict):
 
 
 # ══════════════════════════════════════════════════════════════
+def call_extra_source(fn, date_from: str | None, *,
+                      name: str = "extra", verbose: bool = False):
+    """调用一个**聚合式源**（EXTRA_SOURCES），返回归一化后的 list。
+
+    为什么单独抽成函数：这段"按签名决定怎么调"的逻辑原先内联在 run() 里，
+    **没法单独测试**。抽出来后：
+      · run() 里只留一行调用
+      · 可以直接对真实 API 做端到端探测（见 scripts/probe_sources.py 的思路）
+
+    调用约定（**签名检测，不写死源名**）：
+      · date_from 恒传
+      · query 若为**必填参数**（无默认值）→ 额外传 EXTRA_QUERY
+      · 失败返回 None（调用方据此跳过；不抛异常，单源失败不影响整轮）
+    """
+    kwargs = {"date_from": date_from}
+    try:
+        q_param = inspect.signature(fn).parameters.get("query")
+    except (TypeError, ValueError):
+        q_param = None
+    if q_param is not None and q_param.default is inspect.Parameter.empty:
+        kwargs["query"] = EXTRA_QUERY
+    try:
+        return fn(**kwargs)
+    except Exception as e:  # noqa: BLE001
+        print(f"     ⚠️ [{name}] {str(e)[:80]}")
+        return None
+
+
+# ══════════════════════════════════════════════════════════════
 def run(date_from: str | None = None, date_to: str | None = None,
         verbose: bool = True, sort: str = "date",
         budget_s: int | None = 900) -> dict:
@@ -380,18 +418,24 @@ def run(date_from: str | None = None, date_to: str | None = None,
     skipped = 0
 
     for q in QUERIES:
-        for src_name in ["openalex", "crossref"]:
+        # ⭐ 源列表**从 SOURCES 直接取**（不写死）：
+        #    新增采集源只需在 sources.py 注册，这里零改动。
+        #
+        # ⚠️ 但各源函数签名可能不同（例：OpenAlex 支持 sort 用于"抓经典"，
+        #    Crossref 不支持）。这里用**签名检测**自动决定是否传 sort ——
+        #    避免再写 `if src_name == "openalex"` 这类硬编码判断
+        #    （曾经就是写死的，导致"加了源却不生效"）。
+        for src_name, harvest_fn in SOURCES.items():
             if budget_s and (time.time() - t_start) > budget_s:
                 skipped += 1
                 continue
             if verbose:
                 print(f"  🔎 [{src_name}] {q}")
             try:
-                if src_name == "openalex":
-                    rows = SOURCES[src_name](q, date_from=date_from,
-                                             date_to=date_to, sort=sort)
-                else:
-                    rows = SOURCES[src_name](q, date_from=date_from, date_to=date_to)
+                call_kwargs = {"date_from": date_from, "date_to": date_to}
+                if "sort" in inspect.signature(harvest_fn).parameters:
+                    call_kwargs["sort"] = sort
+                rows = harvest_fn(q, **call_kwargs)
             except Exception as e:  # noqa: BLE001
                 print(f"     ⚠️ {str(e)[:80]}")
                 continue
@@ -412,8 +456,8 @@ def run(date_from: str | None = None, date_to: str | None = None,
                     cand[key] = {**p, "_sources": [p["source"]]}
             if verbose:
                 print(f"      → {len(rows)} 抓取 / {kept} 相关")
-            # 限速：OpenAlex 对高频请求会 429，给它更大的间隔
-            time.sleep(1.5 if src_name == "openalex" else 0.8)
+            # 限速：按源配置的间隔（见 sources.SOURCE_INTERVALS）
+            time.sleep(SOURCE_INTERVALS.get(src_name, DEFAULT_INTERVAL))
 
     # ── 附加源（每轮只调一次，不按关键词循环）
     #
@@ -425,11 +469,8 @@ def run(date_from: str | None = None, date_to: str | None = None,
             continue
         if verbose:
             print(f"  🔎 [{src_name}] （平台聚合接口）")
-        try:
-            rows = fn(date_from=date_from) if src_name == "huggingface" \
-                else fn("navigation", date_from=date_from)
-        except Exception as e:  # noqa: BLE001
-            print(f"     ⚠️ [{src_name}] {str(e)[:80]}")
+        rows = call_extra_source(fn, date_from, verbose=verbose, name=src_name)
+        if rows is None:
             continue
         fetched += len(rows)
         kept = 0

@@ -145,13 +145,96 @@ python3 scripts/keepalive.py
 ### 限速的三道闸
 
 ```
-① 单源间隔     OpenAlex 1.5s / Crossref 0.8s / S2 0.6s / GitHub 2.2s
+① 单源间隔     ⭐ 按源配置（sources.py → SOURCE_INTERVALS，默认 0.8s）
+               现状：OpenAlex 1.5s / Crossref 0.8s / S2 0.6s / GitHub 2.2s
 ② 时间预算     采集 600s、增强 900s —— 超了就不再发新请求，直接收尾
 ③ 调用次数上限  GitHub 搜索 250 次/轮（最慢的一步单独限流）
 ```
 
 **超预算怎么办？** 不用管 —— 下一轮接着做。
 列表是**长期维护**的资产，不追求一轮做完。
+
+---
+
+### ⭐ 如何新增一个数据源
+
+> 设计目标：**加源 = 配置动作，不改管线代码。**
+> （曾经是写死的 —— `pipeline.py` 里硬编码 `["openalex", "crossref"]`，
+> 导致"注册了新源却不生效"这个坑。已改为遍历 `SOURCES`。）
+
+#### 第 0 步：先判断它属于哪一类
+
+| 类型 | 特征 | 注册到 | 调用频率 |
+|------|------|--------|---------|
+| **平台检索式** | 需要**按关键词逐个查**（如 OpenAlex / Crossref） | `SOURCES` | 每轮 **len(QUERIES) = 41 次** |
+| **聚合式** | 一次请求返回一批（如 OpenReview / HF Daily Papers） | `EXTRA_SOURCES` | 每轮 **1 次** |
+
+> ⚠️ **选错代价大**：把聚合式源放进 `SOURCES` → 被调用 41 次，**浪费配额且极易被封**。
+
+#### 第 1 步：写 harvest 函数（`scripts/sources.py`）
+
+```python
+def harvest_xxx(query: str, date_from: str | None = None,
+                date_to: str | None = None) -> list:
+    """必须返回统一结构的 dict 列表（12 个字段）。"""
+    ...
+    return [{
+        "title": ..., "authors": [...], "year": ...,
+        "published_date": "YYYY-MM-DD",   # ⚠️ 列表按此排序，务必填
+        "venue": ..., "abstract": ...,
+        "doi": ..., "arxiv_id": ...,
+        "citations": 0, "url": ..., "pdf_url": ...,
+        "open_access": bool, "type": ..., "source": "xxx",
+    }]
+```
+
+**两条硬规矩**：
+1. **只负责"取回 + 归一化"** —— 不要在这里 print / 落盘 / 写 DB
+   （相关性过滤、去重、入库都由 `pipeline.py` 统一做）
+2. **若该源支持"按引用量排序"**（用于 `--landmarks` 抓经典），
+   再加一个 `sort: str = "date"` 参数 —— 管线会**用签名检测自动判断**是否传它
+
+#### 第 2 步：注册（同一文件）
+
+```python
+SOURCES["xxx"] = harvest_xxx          # 平台检索式
+# 或
+EXTRA_SOURCES["xxx"] = harvest_xxx    # 聚合式
+```
+
+#### 第 3 步（可选）：配限速间隔
+
+```python
+SOURCE_INTERVALS = {
+    "openalex": 1.5,
+    "xxx": 2.0,        # ⭐ 新源若限速更严（如无 Key 的免费 API），加在这里
+}
+```
+
+#### 第 4 步：验证
+
+```bash
+python3 scripts/sources.py --selftest   # 离线秒级：校验签名契约 + 限速配置
+make test                               # 全套规则自测
+python3 scripts/probe_sources.py        # ⚠️ 联网探测（建议在 Actions 上跑）
+```
+
+> ⭐ `make test` 里的 `sources.py --selftest` 就是为了防这个坑：
+> **签名不满足调用约定的源，采集时会被静默跳过**（异常被 except 吞掉），
+> 表面看不出问题，只是"这个源好像没捞到东西"。自测把它变成**显式失败**。
+
+#### 常见坑
+
+| # | 坑 | 说明 |
+|---|----|------|
+| **1** | ⚠️ **签名不符** | 管线统一传 `(query, date_from, date_to[, sort])`。缺参数/参数名不对 → **静默跳过**，不易察觉 |
+| **2** | ⚠️ **聚合式误放进 SOURCES** | 被调用 41 次 → 浪费配额、易被封 |
+| **3** | ⚠️ **没填 `published_date`** | 列表和网站**按发表时间组织**（Boss 的明确口径），缺了就排不进去 |
+| **4** | ⚠️ **忘了配限速** | 新源若更严格 → 429 拖慢整轮（甚至挤掉其他源的时间预算） |
+| **5** | ⚠️ **在本机测不过就放弃** | **本机在中国大陆，很多源连不上 ≠ 云端连不上** → 必须用 `probe_sources.py` 在 Actions 上实测 |
+| **6** | ❌ **试图加回 arXiv API** | 已确认 **HTTP 406，封云 IP**，别加 |
+
+> 🔗 详见技能 `auto-updating-awesome-list`（含"本机连不上 ≠ 云端连不上"等经验）。
 
 ---
 

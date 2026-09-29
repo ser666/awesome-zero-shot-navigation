@@ -46,6 +46,9 @@ test:
 	@echo "── 链接提取与代码匹配 ──"
 	@python3 scripts/links.py
 	@echo ""
+	@echo "── 数据源注册表契约 ──"
+	@python3 scripts/sources.py --selftest
+	@echo ""
 	@python3 scripts/export.py > /dev/null && echo "── 导出 ✅ ──"
 
 audit:
