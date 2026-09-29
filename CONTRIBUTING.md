@@ -2,6 +2,11 @@
 
 Thanks for helping make this list better! Three ways to contribute, easiest first.
 
+> 📐 **Planning to extend the system itself?** Read
+> [`ARCHITECTURE.md`](ARCHITECTURE.md) first — it documents the planned
+> evolution (configurable sources, MCP server, Zotero integration) and the
+> design decisions behind it.
+
 ## 1. Suggest a paper (easiest)
 
 Open an [issue](../../issues/new) with:
