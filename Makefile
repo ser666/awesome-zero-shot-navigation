@@ -1,9 +1,10 @@
-.PHONY: help update full audit export serve test enrich backfill probe clean
+.PHONY: help update full audit export serve test enrich backfill probe clean extra
 
 help:
 	@echo "awesome-zero-shot-navigation — 常用命令"
 	@echo ""
 	@echo "  make update    增量采集（回看 21 天）→ 导出 README + 网站数据"
+	@echo "  make extra     ⭐ 只跑聚合式源（OpenReview / HuggingFace）→ 导出"
 	@echo "  make enrich    补数据（引用数 / 开放 PDF / 代码仓库），限流"
 	@echo "  make backfill  只重算派生字段（会议分级 / 子专题 / 链接），不联网"
 	@echo "  make export    只导出（不采集）"
@@ -17,6 +18,11 @@ help:
 update:
 	python3 scripts/pipeline.py --days 21
 	python3 scripts/pipeline.py --refilter
+	python3 scripts/pipeline.py --backfill
+	python3 scripts/export.py
+
+extra:
+	python3 scripts/pipeline.py --extra-only --budget 600
 	python3 scripts/pipeline.py --backfill
 	python3 scripts/export.py
 

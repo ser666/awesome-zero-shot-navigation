@@ -396,11 +396,18 @@ def call_extra_source(fn, date_from: str | None, *,
 # ══════════════════════════════════════════════════════════════
 def run(date_from: str | None = None, date_to: str | None = None,
         verbose: bool = True, sort: str = "date",
-        budget_s: int | None = 900) -> dict:
+        budget_s: int | None = 900, extra_only: bool = False) -> dict:
     """采集 → 过滤 → 入库。
 
     budget_s: 时间预算（秒）。超过后不再发起新查询（只收尾入库）。
               防某个查询疯狂重试把整个任务拖超时 —— 漏掉的明天会补回来。
+
+    extra_only: ⭐ 只跑**附加/聚合式源**（EXTRA_SOURCES），跳过按关键词的
+                主循环。用途：
+                  · 本地/CI 里**单独验证**聚合源是否工作
+                    （否则主循环会吃掉时间预算，EXTRA 阶段被跳过，
+                     表现为"聚合源好像没跑"，难以排查）
+                  · 运维时只想补聚合源的数据
     """
     import json
 
@@ -417,7 +424,8 @@ def run(date_from: str | None = None, date_to: str | None = None,
     cand: dict = {}
     skipped = 0
 
-    for q in QUERIES:
+    # extra_only 时迭代空序列 → 整个主循环被跳过（比 break 更直观）
+    for q in (() if extra_only else QUERIES):
         # ⭐ 源列表**从 SOURCES 直接取**（不写死）：
         #    新增采集源只需在 sources.py 注册，这里零改动。
         #
@@ -686,6 +694,9 @@ def main():
                     help="增强最多处理多少篇")
     ap.add_argument("--backfill", action="store_true",
                     help="只重算派生字段（会议分级/子专题/链接），不联网")
+    ap.add_argument("--extra-only", action="store_true",
+                    help="⭐ 只跑附加/聚合式源（OpenReview / HuggingFace），"
+                         "跳过按关键词的主循环 —— 用于单独验证聚合源")
     args = ap.parse_args()
 
     budget = None if args.budget == 0 else args.budget
@@ -696,6 +707,15 @@ def main():
 
     if args.backfill:
         res = backfill(verbose=True)
+        return res
+
+    if args.extra_only:
+        # ⭐ 只跑聚合式源。date_from 传 None：聚合源自己决定"新鲜度"口径
+        #    （OpenReview 用 OPENREVIEW_MAX_AGE_DAYS，HuggingFace 本身只给近期）
+        print("🔌 只跑附加/聚合式源（跳过关键词主循环）")
+        t0 = time.time()
+        res = run(date_from=None, date_to=None, budget_s=budget, extra_only=True)
+        print(f"⏱ 耗时 {time.time()-t0:.1f}s")
         return res
 
     if args.enrich or args.enrich_all:
