@@ -6,19 +6,19 @@
 
 > 🔎 **Browse & search the papers in a web UI → [**ser666.github.io/awesome-zero-shot-navigation**](https://ser666.github.io/awesome-zero-shot-navigation/)**
 
-<a href="https://ser666.github.io/awesome-zero-shot-navigation/"><img src="https://img.shields.io/badge/papers-717-0984e3?style=for-the-badge&logo=googlescholar&logoColor=white" alt="Papers"></a> <img src="https://img.shields.io/badge/Top%20venues-64-b0522c?style=for-the-badge" alt="Top venues"> <img src="https://img.shields.io/badge/with%20code-90-0f9d58?style=for-the-badge&logo=github" alt="with code"> <a href="https://github.com/ser666/awesome-zero-shot-navigation/actions"><img src="https://img.shields.io/badge/auto--updated%20weekly-2f6fb2?style=for-the-badge&logo=githubactions&logoColor=white" alt="Auto-updated weekly"></a> <img src="https://img.shields.io/badge/license-MIT-lightgrey?style=for-the-badge" alt="MIT">
+<a href="https://ser666.github.io/awesome-zero-shot-navigation/"><img src="https://img.shields.io/badge/papers-718-0984e3?style=for-the-badge&logo=googlescholar&logoColor=white" alt="Papers"></a> <img src="https://img.shields.io/badge/Top%20venues-64-b0522c?style=for-the-badge" alt="Top venues"> <img src="https://img.shields.io/badge/with%20code-91-0f9d58?style=for-the-badge&logo=github" alt="with code"> <a href="https://github.com/ser666/awesome-zero-shot-navigation/actions"><img src="https://img.shields.io/badge/auto--updated%20weekly-2f6fb2?style=for-the-badge&logo=githubactions&logoColor=white" alt="Auto-updated weekly"></a> <img src="https://img.shields.io/badge/license-MIT-lightgrey?style=for-the-badge" alt="MIT">
 
 ---
 
 ## 📊 Stats
 
-- **Total papers**: **717**
-- **New in the last 7 days**: **28**
+- **Total papers**: **718**
+- **New in the last 7 days**: **22**
 - **Published at top venues** (CCF-A / major robotics): **64**
-- **With PDF**: 470 ｜ **with code**: 90 ｜ **with project page**: 60
+- **With PDF**: 470 ｜ **with code**: 91 ｜ **with project page**: 60
 - **Categories**: 10
-- **Sources**: crossref (160), huggingface (1), openalex (619)
-- **Last updated**: 2026-09-28 09:01 UTC
+- **Sources**: crossref (161), huggingface (1), openalex (619)
+- **Last updated**: 2026-09-29 03:38 UTC
 
 ## 🏷 How to read an entry
 
@@ -35,7 +35,7 @@
 
 - [Object-Goal Navigation (ObjectNav)](#objectnav) — 167 papers
 - [Vision-and-Language Navigation (VLN)](#vln) — 145 papers
-- [Aerial VLN](#aerial-vln) — 86 papers
+- [Aerial VLN](#aerial-vln) — 87 papers
 - [Semantic & Open-Vocabulary Navigation](#semantic-nav) — 56 papers
 - [Image & Point-Goal Navigation](#image-goal) — 22 papers
 - [Multi-Object Navigation](#multi-object) — 16 papers
@@ -726,10 +726,12 @@
 
 <a id="aerial-vln"></a>
 
-## Aerial VLN (86)
+## Aerial VLN (87)
 
 ### 2026
 
+- [2026] [Electronics 2026] [PR-Nav: Potential-Shaped Reinforcement Learning with Physics-Modulated Manifolds for Agile Autonomous Navigation](https://doi.org/10.3390/electronics15194454)  
+  <a href="https://doi.org/10.3390/electronics15194454"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Qin, Ge, Wang, Tianlong, Zhong, Heng et al.
 - [2026] [Appl. Sci. 2026] [Perception-Aware Control for Aerial Robotics: LiDAR Integration and Its Effects on Quadcopter Navigation Performance](https://doi.org/10.3390/app16199507)  
   <a href="https://doi.org/10.3390/app16199507"><img src="https://img.shields.io/badge/PDF-b31b1b" alt="PDF"></a> <a href="https://doi.org/10.3390/app16199507"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Murrieta-Rico, Fabian N., Trujillo-Hernández, Gabriel, Amezquita-García, José A. et al. · 🔓 OA
 - [2026] [arXiv] [Skytopia: Monocular Drone Navigation with Action-Conditioned Latent World Models](https://doi.org/10.48550/arxiv.2609.26007)  
@@ -1194,7 +1196,7 @@
 - [2026] [arXiv] [SAGE: A Socially-Aware Generative Engine for Heterogeneous Multi-Agent Navigation](https://doi.org/10.48550/arxiv.2607.16619)  
   <a href="https://arxiv.org/pdf/2607.16619"><img src="https://img.shields.io/badge/arXiv%202607.16619-b31b1b" alt="arXiv 2607.16619"></a> <a href="https://doi.org/10.48550/arxiv.2607.16619"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Lan Hu, Minghui Liwang, Wenbo Zhu et al. · ⭐ 1 · 🔓 OA
 - [2026] [arXiv] [G2-Nav: Grounded and Guarded Vision-Language Costmaps for Robot Social Navigation](https://doi.org/10.48550/arxiv.2607.16956)  
-  <a href="https://arxiv.org/pdf/2607.16956"><img src="https://img.shields.io/badge/arXiv%202607.16956-b31b1b" alt="arXiv 2607.16956"></a> <a href="https://doi.org/10.48550/arxiv.2607.16956"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Yuwen Liao, Yihang Lan, Yizhuo Yang et al. · ⭐ 1 · 🔓 OA
+  <a href="https://arxiv.org/pdf/2607.16956"><img src="https://img.shields.io/badge/arXiv%202607.16956-b31b1b" alt="arXiv 2607.16956"></a> <a href="https://github.com/centiLinda/G2-Nav"><img src="https://img.shields.io/badge/code-0f9d58?logo=github" alt="code"></a> <img src="https://img.shields.io/github/stars/centiLinda/G2-Nav?label=%E2%AD%90" alt="stars"> <a href="https://doi.org/10.48550/arxiv.2607.16956"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Yuwen Liao, Yihang Lan, Yizhuo Yang et al. · ⭐ 1 · 🔓 OA
 - [2026] [arXiv] [Token-Wise Latent Streaming from Slow Reasoners to Fast Planners for Dynamic Vision Language Navigation](https://doi.org/10.48550/arxiv.2607.16806)  
   <a href="https://arxiv.org/pdf/2607.16806"><img src="https://img.shields.io/badge/arXiv%202607.16806-b31b1b" alt="arXiv 2607.16806"></a> <a href="https://hutslib.github.io/SPARK-VLN/"><img src="https://img.shields.io/badge/project-2f6fb2" alt="project"></a> <a href="https://doi.org/10.48550/arxiv.2607.16806"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Tianshuai Hu, Yangyi Zhong, Zeying Gong et al. · 🔓 OA
 - [2026] [arXiv] [Think When It Matters: Conditional VLM Reasoning for Social Navigation with RL Policies](https://doi.org/10.48550/arxiv.2607.10991)  
@@ -1752,4 +1754,4 @@ Open an [issue](../../issues) with the paper link and we'll fold it in. The whol
 
 ---
 
-*Auto-generated. Last update: 2026-09-28 09:01 UTC*
+*Auto-generated. Last update: 2026-09-29 03:38 UTC*
