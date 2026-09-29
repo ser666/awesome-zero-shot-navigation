@@ -205,6 +205,24 @@ python3 scripts/keepalive.py
 > **`Submitted to <会议>` 要保留** —— 那是"未决定"，不是否定，
 > 且 OpenReview 上有公开 PDF，对领域覆盖有价值。
 
+### ⚠️ 三层防线：**未决定状态**绝不能被算成"已发表"
+
+`Submitted to` 这类论文**保留**是对的（有价值），但**不能给它会议归属和级别**：
+
+| 层 | 位置 | 做什么 |
+|----|------|--------|
+| ① 采集层 | `sources_extra.py` | 丢弃 `Withdrawn` / `Rejected`（明确的否定） |
+| ② **归一化层** | `venues.py` `normalize()` | ⭐ **识别状态词 → 不归属会议、不给级别**，只给诚实标签（`Under review` / `Withdrawn` / `Rejected`） |
+| ③ 自测 | `venues.py` 的 25 条用例 | 含**对照组**（`ICLR 2026 Poster` → 仍须是 ICLR/A）防误杀 |
+
+> ⚠️ **为什么必须有第 ② 层**：venue 规则用 `re.search` 匹配，
+> `"Submitted to ICLR 2026"` 里的 **"ICLR" 子串会命中** →
+> 论文会显示成 `ICLR 2026` 且算 **A 级**，等于**把"投稿中"说成"已发表在顶会"**。
+> 实测线上有 **10 篇**处于这个状态（修复后 A 级计数 104 → 94）。
+>
+> 💡 **同类教训**：**`re.search` 的"子串命中"是这类误标的共同根因** ——
+> 之前还有 `gui` 命中 `guided`、把宇宙学论文收进来。**关键词匹配永远要想到边界。**
+
 > 🔍 **怎么自己复核**：`python3 scripts/probe_sources.py`
 > （**建议在 Actions 上跑** —— 本机在中国大陆，很多源连不上，测了也不代表云端）
 > 也可以在 GitHub 网页上手动触发 `Probe Sources` 工作流。

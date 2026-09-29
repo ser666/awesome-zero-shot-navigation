@@ -151,6 +151,34 @@ _YEAR_ANY = re.compile(r"\b((?:19|20)\d{2})\b")
 _PAREN = re.compile(r"\(([A-Za-z][A-Za-z0-9\-/&\. ]{1,28})\)")
 
 # 值不值得单独显示（这些"期刊"名对读者无信息量）
+# ⚠️ 未决定 / 否定状态词 —— 这类 venue **不能**按会议分级。
+#
+# 背景（2026-09-29 实测踩坑）：OpenReview 的 venue 字段会写成
+#   · "Submitted to ICLR 2026"                    ← 投稿中，**未录用**
+#   · "ICLR 2026 Conference Withdrawn Submission" ← 已撤稿
+# 而下面的规则用 `re.search` 匹配，**"ICLR" 子串命中** → 这些论文会被
+# 显示成 "ICLR 2026" 且算作 **A 级**，等于把"投稿中/已撤稿"当成
+# "已发表在顶会" —— 是明确的过度声称。
+#
+# 处理：识别到状态词时，**不归属会议、不给级别**，只保留一个诚实的标签。
+# 它们在 OpenReview 上有公开 PDF，对领域覆盖仍有用，所以**不丢弃**。
+# （撤稿在被采集层已经过滤，这里是**防御性**的兜底层 —— 其它源/其它字段
+#   也可能产出这类 venue。）
+_DECISION_STATE = re.compile(
+    r"submitted\s+to|under\s+review|withdraw|desk\s*reject|\brejected\b|"
+    r"\breject\b|\bwithdrawn\b", re.I)
+
+
+def _state_label(raw: str) -> str:
+    """非录用状态的展示标签。"""
+    low = raw.lower()
+    if "withdraw" in low:
+        return "Withdrawn"
+    if "reject" in low:
+        return "Rejected"
+    return "Under review"
+
+
 NOISE_VENUES = {
     "", "arxiv", "zenodo", "ssrn", "underline", "research sq.",
     "lncs", "openreview",
@@ -181,6 +209,12 @@ def normalize(venue: str | None, fallback_year: int | None = None
             year = int(m.group(1))
     if year is None:
         year = fallback_year
+
+    # 未决定 / 否定的状态（投稿中 / 已撤稿 / 被拒）→ 不归属会议、不给级别。
+    # ⚠️ 必须在规则匹配**之前**判断：规则是 re.search，会让 "ICLR" 子串命中，
+    #    从而把"投稿中"的论文误标成"已发表在 ICLR（A 级）"。
+    if _DECISION_STATE.search(raw):
+        return _state_label(raw), None, "preprint", year
 
     # 规则匹配（先具体后泛化；规则表已按此排序）
     for pattern, short, tier, kind in VENUE_RULES:
@@ -260,6 +294,18 @@ if __name__ == "__main__":
          "ICLR", "A", "conference"),
         ("2026 IEEE International Conference on Robotics and Automation (ICRA)",
          "ICRA", "A", "conference"),
+        # ── ⚠️ 未决定 / 否定状态：**不能**被算成该会议的录用论文 ──
+        #    这类 venue 含会议名子串（"ICLR"），而规则用 re.search 会误命中，
+        #    所以必须有专门的护栏（否则"投稿中"会被显示成"已发表在 ICLR A 级"）。
+        ("Submitted to ICLR 2026", "Under review", None, "preprint"),
+        ("Under review at NeurIPS 2025", "Under review", None, "preprint"),
+        ("ICLR 2026 Conference Withdrawn Submission",
+         "Withdrawn", None, "preprint"),
+        ("CoRL 2025 Rejected Submission", "Rejected", None, "preprint"),
+        # ── 对照组：**正常录用**的写法必须仍被正确识别（防误杀）──
+        ("ICLR 2026 Poster", "ICLR", "A", "conference"),
+        ("CoRL 2025 Poster", "CoRL", "A", "conference"),
+        ("NeurIPS 2025 oral", "NeurIPS", "A", "conference"),
     ]
     ok = bad = 0
     print("=" * 78)
