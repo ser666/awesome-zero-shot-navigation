@@ -158,7 +158,14 @@ class TestSubcollectionName(unittest.TestCase):
 # ══════════════════════════════════════════════════════════════════════
 class TestPushFlow(unittest.TestCase):
     def test_dry_run_writes_nothing(self):
-        """演练必须**完全不写入**（含状态文件）—— 联调时会反复用。"""
+        """⭐ 演练必须**完全不写入**（条目、目录、状态文件都不许动）。
+
+        ⚠️ 这条测试是从一个真 bug 来的：早先实现在 dry_run 时也调了
+        `_ensure_collections()`，导致"演练"真的在用户库里建了目录
+        （本地后端还会弹出授权对话框）。原来的断言只看 items 与状态文件，
+        **漏掉了 collections**，所以没抓到。
+        → 现在把"目录也不能动"和"不能触发授权"都写进断言。
+        """
         with TempDir() as tmp:
             client = FakeZoteroClient()
             svc = make_service([make_paper()], tmp, client=client)
@@ -166,7 +173,11 @@ class TestPushFlow(unittest.TestCase):
             self.assertEqual(report.pushed, 0)
             self.assertEqual(report.candidates, 1)      # 候选算了
             self.assertEqual(len(client.items), 0)      # 没写条目
+            self.assertEqual(client.collections, {}, "演练不该创建目录")
             self.assertFalse((tmp / "state.json").exists())
+            # 应当**报告**将会建哪些目录，供人预览
+            self.assertTrue(report.collections_planned, "应报告将建的目录")
+            self.assertEqual(report.collections_created, [], "演练不该真建")
 
     def test_push_creates_collections_and_items(self):
         with TempDir() as tmp:

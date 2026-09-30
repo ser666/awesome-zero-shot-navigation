@@ -146,10 +146,21 @@ def _build_zotero(raw: dict[str, Any]) -> ZoteroConfig:
     z = raw.get("zotero") or {}
     cfg = ZoteroConfig(
         enabled=bool(z.get("enabled", False)),
+        backend=str(z.get("backend", "auto")),
+        # 本地后端（不用云端）
+        local_api_base=str(z.get("local_api_base",
+                                 "http://127.0.0.1:23119")).rstrip("/"),
+        local_app_name=str(z.get("local_app_name",
+                                 "awesome-zero-shot-navigation")),
+        local_user_id=str(z.get("local_user_id", "0")),
+        local_key_file=str(z.get("local_key_file",
+                                 "data/zotero_local_keys.json")),
+        # Web 后端（需要账号）
         api_base=str(z.get("api_base", "https://api.zotero.org")).rstrip("/"),
         api_key_env=str(z.get("api_key_env", "ZOTERO_API_KEY")),
         library_type=str(z.get("library_type", "user")),
         library_id_env=str(z.get("library_id_env", "ZOTERO_LIBRARY_ID")),
+        # 共用
         collection_root=str(z.get("collection_root", "Zero-Shot Navigation")),
         create_subcollections=bool(z.get("create_subcollections", True)),
         state_file=str(z.get("state_file", "data/zotero_state.json")),

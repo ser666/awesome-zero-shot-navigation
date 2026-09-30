@@ -225,9 +225,17 @@ class TestConfigFilesAreTracked(unittest.TestCase):
                 self.assertTrue((ROOT / name).is_file(), f"缺少 {name}")
 
     def test_gitignore_excludes_secrets(self):
-        """⚠️ 密钥文件必须被 .gitignore 排除（防止误提交）。"""
+        """⚠️ 密钥文件必须被 .gitignore 排除（防止误提交）。
+
+        包括两类：
+          · config/secrets.env            —— web 后端的 zotero.org API Key
+          · data/zotero_local_keys.json   —— 本地后端的本地 API Key
+            （它等同于"改写你文献库的权力"，泄露后果更直接）
+        """
         text = (ROOT / ".gitignore").read_text(encoding="utf-8")
         self.assertIn("config/secrets.env", text)
+        self.assertIn("zotero_local_keys.json", text,
+                      "本地 Zotero API Key 必须被忽略")
 
     def test_gitignore_does_not_exclude_needed_data(self):
         """但数据文件不能被排除（它们是列表的历史）。"""

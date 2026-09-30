@@ -23,6 +23,11 @@ from zenav.errors import ConfigError
 VALID_LIBRARY_TYPES = ("user", "group")
 VALID_TRANSPORTS = ("stdio", "http")
 VALID_ITEM_TYPES = ("conferencePaper", "journalArticle", "preprint", "report")
+# ⭐ 推送后端：
+#   local = Zotero **本地** API（127.0.0.1:23119）—— 不用云端、无需账号/Key
+#   web   = Zotero **Web** API（api.zotero.org）—— 需要账号 + API Key
+#   auto  = 先探测本地是否可用；可用就用 local，否则回落到 web
+VALID_BACKENDS = ("auto", "local", "web")
 
 
 @dataclass(frozen=True)
@@ -97,16 +102,45 @@ class CatalogConfig:
 class ZoteroConfig:
     """Zotero 单向推送配置。
 
-    ⭐ 只做"推"，不做"读"（Boss 2026-09-30 明确）：
-    Zotero 官方客户端自带云同步，推上去本机自动就有了，
-    所以不需要 Local API、不需要装插件。
+    ⭐ **只做"推"，不做"读"**（Boss 2026-09-30 明确）。
+
+    两种后端（Boss 2026-09-30 追加要求："不想用 Zotero 云端"→ **默认 local**）：
+
+        backend = "local"   Zotero **本地** API（127.0.0.1:23119）★ 默认
+                            ⭐ 不用云端 · 无需账号 · 无需 API Key · 无需插件
+                            需要 Zotero 10+（写入）且**同一台机器**上运行
+
+        backend = "web"     Zotero Web API（api.zotero.org）
+                            需要账号 + API Key；依赖官方云同步
+
+        backend = "auto"    先探测本地，可用则用 local，否则回落 web
+                            （适合"两种都可能用"的场景）
+
+    ⚠️ 选择 local 时，`api_key_env` / `library_id_env` **完全不需要** ——
+       那条"去 zotero.org 申请 Key"的路径整个省掉。
+
+    ⚠️ 默认值刻意是 **local 而不是 auto**：auto 会在本地不可用时**静默回落到
+       云端并要求账号**，与本项目"不用云端"的定位相悖，也容易让人困惑
+       （"为什么突然让我去申请 Key？"）。默认 local 时，连不上就直接告诉你
+       怎么把本地 Zotero 配好 —— 错误信息更对路。
     """
 
     enabled: bool = False
+    backend: str = "local"                # local（默认，不用云端）| web | auto
+
+    # ── 本地后端（不用云端的路径） ──────────────────────────────────
+    local_api_base: str = "http://127.0.0.1:23119"
+    local_app_name: str = "awesome-zero-shot-navigation"
+    local_user_id: str = "0"              # 0 = 当前登录用户（本地 API 的别名）
+    local_key_file: str = "data/zotero_local_keys.json"
+
+    # ── Web 后端（需要账号） ────────────────────────────────────────
     api_base: str = "https://api.zotero.org"
     api_key_env: str = "ZOTERO_API_KEY"
     library_type: str = "user"
     library_id_env: str = "ZOTERO_LIBRARY_ID"
+
+    # ── 两者共用 ────────────────────────────────────────────────────
     collection_root: str = "Zero-Shot Navigation"
     create_subcollections: bool = True
     state_file: str = "data/zotero_state.json"
@@ -114,7 +148,22 @@ class ZoteroConfig:
     max_batch: int = 50
     default_item_type: str = "conferencePaper"
 
+    @property
+    def uses_local(self) -> bool:
+        return self.backend == "local"
+
+    @property
+    def needs_web_credentials(self) -> bool:
+        """是否需要 zotero.org 的账号凭据（本地后端不需要）。"""
+        return self.backend in ("web", "auto")
+
     def validate(self) -> None:
+        if self.backend not in VALID_BACKENDS:
+            raise ConfigError(
+                f"zotero.backend={self.backend!r} 非法",
+                hint=(f"可选值：{' / '.join(VALID_BACKENDS)}　"
+                      "（local = 不用云端；web = 需要 zotero.org 账号）"),
+            )
         if self.library_type not in VALID_LIBRARY_TYPES:
             raise ConfigError(
                 f"zotero.library_type={self.library_type!r} 非法",
@@ -129,6 +178,13 @@ class ZoteroConfig:
             raise ConfigError("zotero.collection_root 不能为空")
         if self.max_batch < 1:
             raise ConfigError("zotero.max_batch 必须 ≥ 1")
+        if not self.local_api_base.startswith(("http://", "https://")):
+            raise ConfigError(
+                f"zotero.local_api_base 必须是 http(s) URL，收到 {self.local_api_base!r}",
+                hint="本地 API 默认是 http://127.0.0.1:23119",
+            )
+        if not self.local_app_name.strip():
+            raise ConfigError("zotero.local_app_name 不能为空（授权对话框要显示它）")
 
 
 @dataclass(frozen=True)
@@ -208,8 +264,20 @@ class AppConfig:
             "",
             "Zotero 单向推送:",
             f"  {'✅ 已启用' if self.zotero.enabled else '⬜ 未启用'}"
+            f"  后端={self.zotero.backend}"
             f"  目录根：{self.zotero.collection_root}"
             f"  子目录：{'按分类自动建' if self.zotero.create_subcollections else '不建'}",
+        ]
+        if self.zotero.backend == "local":
+            lines.append(f"  ⭐ 本地 API：{self.zotero.local_api_base}"
+                         "（不用云端 / 不用账号 / 不用 API Key）")
+        elif self.zotero.backend == "auto":
+            lines.append(f"  自动：优先本地 {self.zotero.local_api_base}，"
+                         "不可用则回落 Web API（需账号）")
+        else:
+            lines.append(f"  ⚠️ Web API：{self.zotero.api_base}"
+                         "（需要 zotero.org 账号 + 云同步）")
+        lines += [
             "",
             "MCP:",
             f"  {self.mcp.server_name}  传输={self.mcp.transport}"

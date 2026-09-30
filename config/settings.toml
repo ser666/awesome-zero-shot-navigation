@@ -24,22 +24,53 @@ cache_ttl = 300                # 远程源的本地缓存秒数（0 = 不缓存�
 # ── Zotero 单向推送 ───────────────────────────────────────────────────
 #   设计取舍（Boss 2026-09-30 明确）：
 #     ⭐ **只做单向**：部署的服务 → 本地 Zotero。不做回读、不做双向同步。
-#        理由：Zotero 官方客户端自带云同步；推送完，本机 Zotero 自动就拿到了。
-#        ⇒ 因此**不需要**本地 Local API、**不需要**装插件，只要一个 API Key。
+#       幂等保证：已推送的论文记在 state_file 里（DOI/arXiv/标题指纹），
+#                 重复运行只会推新增的，不会产生重复条目。
 #
-#   幂等保证：已推送的论文记在 state_file 里（DOI/arXiv/标题指纹），
-#             重复运行只会推新增的，不会产生重复条目。
+#   ⭐⭐ 两种后端（Boss 说"不想用 Zotero 云端"→ 默认用本地）：
+#
+#     backend = "local"  Zotero **本地** API（127.0.0.1:23119）
+#                        · 不用 zotero.org 账号　· 不用网站 API Key
+#                        · 不用装插件　　　　　　· 完全离线、无限速
+#                        · 需要 Zotero **10+**（写入；7–9 只读）
+#                        · 需要 Zotero 桌面端**运行中**，且在同一台机器
+#                        一次性设置：设置 → 高级 → 勾选
+#                          "Allow other applications on this computer
+#                           to communicate with Zotero"
+#                        首次写入时 Zotero 会弹确认框 → 选 **Always Allow**
+#                        （选 Allow 只会签发一次性 key，下次还会弹）
+#
+#     backend = "web"    Zotero Web API（api.zotero.org）
+#                        · 需要账号 + 网站生成的 API Key
+#                        · 依赖官方云同步（数据会经过 Zotero 服务器）
+#
+#     backend = "auto"   先探测本地；可用就用 local，否则回落 web
 [zotero]
 enabled = true
+backend = "local"                       # ⭐ local（不用云端）| web | auto
+
+# ── 本地后端（不用云端） ─────────────────────────────────────────────
+local_api_base = "http://127.0.0.1:23119"
+local_user_id = "0"                     # 0 = 当前登录用户（本地 API 的别名）
+local_app_name = "awesome-zero-shot-navigation"
+                                        # ↑ 授权对话框上显示的名字，便于识别
+local_key_file = "data/zotero_local_keys.json"
+                                        # 本地 API Key（按 Zotero 实例分区，0600）
+
+# ── Web 后端（仅在 backend=web，或 auto 且本地不可用时才需要） ────────
+#    ⚠️ 这三个都只写"环境变量名"，绝不在配置里写值
 api_base = "https://api.zotero.org"
-api_key_env = "ZOTERO_API_KEY"          # ← 密钥只写环境变量名
+api_key_env = "ZOTERO_API_KEY"
 library_type = "user"                   # user | group
-library_id_env = "ZOTERO_LIBRARY_ID"    # 数字 ID（账户设置页可查）
+library_id_env = "ZOTERO_LIBRARY_ID"    # 数字 ID（不是用户名）
+
+# ── 两个后端共用 ─────────────────────────────────────────────────────
 collection_root = "Zero-Shot Navigation"  # 顶层目录（自动创建）
 create_subcollections = true            # 按论文分类自动建子目录
 state_file = "data/zotero_state.json"   # 幂等状态（哪些已推过）
-push_interval = 0.6                     # 每次写入之间的间隔（秒），Zotero 有速率限制
-max_batch = 50                          # 单次运行最多推送多少条（防止失控）
+push_interval = 0.6                     # 每次写入之间的间隔（秒）
+                                        # 本地后端其实无限速，保留只为稳妥
+max_batch = 50                          # 单次运行最多推送多少条（防失控）
 default_item_type = "conferencePaper"   # 无法判断类型时的兜底
 
 

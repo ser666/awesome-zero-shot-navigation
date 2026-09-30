@@ -351,6 +351,32 @@ class TestRealProjectConfig(unittest.TestCase):
         cfg = AppConfig.load()
         self.assertEqual(cfg.mcp.transport, "stdio")
 
+    def test_repo_zotero_uses_local_backend_by_default(self):
+        """⭐⭐ 守卫：Zotero 推送默认必须走**本地**，不得依赖云端。
+
+        背景：Boss 2026-09-30 明确「不想用 Zotero 云端」。
+        这条测试防止有人日后把默认改回 "web"/"auto" ——
+        那种改动不会报错，却会让项目静默变回"需要 zotero.org 账号"。
+        """
+        cfg = AppConfig.load()
+        self.assertEqual(cfg.zotero.backend, "local",
+                         "默认后端必须是 local（不用云端）")
+        self.assertTrue(cfg.zotero.uses_local)
+        self.assertFalse(
+            cfg.zotero.needs_web_credentials,
+            "本地后端不应需要任何 zotero.org 凭据",
+        )
+
+    def test_secrets_example_does_not_require_zotero_org_key(self):
+        """⭐ 密钥模板里 ZOTERO_API_KEY 必须是**注释掉的** ——
+        因为默认（本地后端）根本不需要它。未注释会诱导用户去申请云端 Key。
+        """
+        example = AppConfig.load().root / (SECRETS_FILE + ".example")
+        for ln in example.read_text(encoding="utf-8").splitlines():
+            s = ln.strip()
+            if s.startswith("ZOTERO_API_KEY") or s.startswith("ZOTERO_LIBRARY_ID"):
+                self.fail(f"该行应保持注释（本地后端不需要）：{ln}")
+
     def test_secrets_example_has_no_real_values(self):
         """模板文件里只能有占位符 —— 防止有人误提交真 key。"""
         example = AppConfig.load().root / (SECRETS_FILE + ".example")

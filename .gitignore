@@ -19,6 +19,11 @@ data/zotero_state.json
 data/zotero_state.json.tmp
 data/zotero_state.json.corrupt
 
+# ⚠️⚠️ 本地 Zotero API Key —— **等同于改写你文献库的权力**，绝不提交
+#       （由 Zotero 弹窗授权签发，按 Zotero 实例分区存储，权限 0600）
+data/zotero_local_keys.json
+data/zotero_local_keys.json.tmp
+
 # 服务层产物（本地预览/导出）
 *.bib
 *_overview.md

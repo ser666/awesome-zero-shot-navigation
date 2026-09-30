@@ -24,19 +24,31 @@ from zenav.services.zotero import (
     PushState,
     ZoteroClient,
     ZoteroPushService,
+    ZoteroWriter,
+)
+from zenav.services.zotero_local import (
+    DEFAULT_LOCAL_BASE,
+    LocalKeyStore,
+    ZoteroLocalClient,
+    probe_local,
 )
 
 __all__ = [
-    "SORT_FIELDS",
+    "DEFAULT_LOCAL_BASE",
+    "LocalKeyStore",
     "PaperService",
     "PushReport",
     "PushState",
+    "SORT_FIELDS",
     "SearchResult",
     "ZoteroClient",
+    "ZoteroLocalClient",
     "ZoteroPushService",
+    "ZoteroWriter",
     "citation_key",
     "entry_type",
     "escape_bibtex",
+    "probe_local",
     "render_overview_markdown",
     "to_bibtex",
     "to_bibtex_entry",

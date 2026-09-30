@@ -225,6 +225,10 @@ def _cmd_config(args, cfg: AppConfig, svc: PaperService) -> int:
             ],
             "zotero": {
                 "enabled": cfg.zotero.enabled,
+                "backend": cfg.zotero.backend,
+                "uses_local": cfg.zotero.uses_local,
+                "needs_zotero_org_account": cfg.zotero.needs_web_credentials,
+                "local_api_base": cfg.zotero.local_api_base,
                 "collection_root": cfg.zotero.collection_root,
                 "state_file": str(cfg.zotero_state_path),
                 "api_key_env": cfg.zotero.api_key_env,
@@ -236,10 +240,16 @@ def _cmd_config(args, cfg: AppConfig, svc: PaperService) -> int:
     print(cfg.summary())
     print("\n密钥状态（只显示掩码，不显示值）:")
     store = load_secret_store(cfg.root)
-    envs = [cfg.zotero.api_key_env, cfg.zotero.library_id_env,
-            *cfg.sources.key_envs(), cfg.mcp.auth_token_env]
+    envs = [cfg.mcp.auth_token_env, *cfg.sources.key_envs()]
+    # ⚠️ 只有 web 后端才需要 zotero.org 凭据 —— 本地后端一个都不需要
+    if cfg.zotero.needs_web_credentials:
+        envs = [cfg.zotero.api_key_env, cfg.zotero.library_id_env, *envs]
     for name in dict.fromkeys(e for e in envs if e):
         print(f"  {store.describe(name)}")
+    if cfg.zotero.uses_local:
+        print("\n  ⭐ Zotero 用**本地后端**：不需要上面任何 Zotero 相关密钥。")
+    elif not cfg.zotero.needs_web_credentials:
+        print("\n  ⭐ Zotero 用**本地后端**（backend=local）：无需 zotero.org 账号。")
     return 0
 
 
@@ -254,14 +264,32 @@ def _cmd_zotero(args, cfg: AppConfig, svc: PaperService) -> int:
             _emit(out, True)
             return 0
         conn = out.get("connection", {})
+        backend = out.get("backend_in_use", "?")
+        mode = ("⭐ 本地 API（不用云端）" if backend == "local"
+                else "Web API（需要 zotero.org 账号 + 云同步）")
         print("🔗 Zotero 单向推送状态")
-        print(f"   库        : {out['library']}")
-        print(f"   目录根    : {out['collection_root']}")
-        print(f"   状态文件  : {out['state_file']}")
-        print(f"   已推送    : {out['pushed_items']} 条")
-        print(f"   本地论文  : {out['catalog_total']} 篇 ｜ 未推送: {out['remaining']}")
-        print(f"   连接      : {'✅ 正常' if conn.get('ok') else '❌ 失败'}"
+        print(f"   后端        : {mode}")
+        print(f"   本机库      : {out['library']}")
+        print(f"   目录根      : {out['collection_root']}")
+        print(f"   状态文件    : {out['state_file']}")
+        print(f"   已推送      : {out['pushed_items']} 条")
+        print(f"   本地论文    : {out['catalog_total']} 篇 ｜ 未推送: {out['remaining']}")
+        if backend == "local":
+            print(f"   数据去向    : ⭐ 只写入本机 Zotero，不经过任何服务器")
+            print(f"   本地地址    : {conn.get('base_url', '')}")
+            print(f"   实例 ID     : {str(conn.get('server_id') or '')[:16]}")
+            has_key = conn.get("has_local_key")
+            print(f"   本地 Key    : {'✅ 已授权（已缓存）' if has_key else '⬜ 尚未授权（首次写入时会弹确认框）'}")
+            if conn.get("note"):
+                print(f"   提示        : {conn['note']}")
+        print(f"   连接        : {'✅ 正常' if conn.get('ok') else '❌ 失败'}"
               + (f"  {conn.get('error', '')}" if not conn.get("ok") else ""))
+        if not conn.get("ok") and backend == "local":
+            print("\n   ⚠️ 连不上本机 Zotero。请检查：")
+            print("      ① Zotero 桌面端**正在运行**（且是 10+ 版本）")
+            print("      ② Zotero → 设置 → 高级 → 勾选")
+            print("         「Allow other applications on this computer "
+                  "to communicate with Zotero」")
         return 0
 
     # push

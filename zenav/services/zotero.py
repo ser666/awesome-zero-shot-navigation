@@ -359,7 +359,8 @@ class PushReport:
     already: int = 0             # 已推过（跳过）
     pushed: int = 0              # 本次成功推送
     failed: int = 0
-    collections_created: list[str] = field(default_factory=list)
+    collections_created: list[str] = field(default_factory=list)   # 真的建了
+    collections_planned: list[str] = field(default_factory=list)   # 演练时：将会建
     by_category: dict[str, int] = field(default_factory=dict)
     errors: list[str] = field(default_factory=list)
     state_saved: bool = False
@@ -372,6 +373,7 @@ class PushReport:
             "pushed": self.pushed,
             "failed": self.failed,
             "collections_created": self.collections_created,
+            "collections_planned": self.collections_planned,
             "by_category": self.by_category,
             "errors": self.errors[:10],
             "state_saved": self.state_saved,
@@ -388,6 +390,11 @@ class PushReport:
             lines.append(f"  新建目录 {len(self.collections_created)} 个："
                          + "、".join(self.collections_created[:5])
                          + ("…" if len(self.collections_created) > 5 else ""))
+        if self.dry_run and self.collections_planned:
+            lines.append(f"  将会新建目录 {len(self.collections_planned)} 个："
+                         + "、".join(self.collections_planned[:5])
+                         + ("…" if len(self.collections_planned) > 5 else "")
+                         + "（演练未创建）")
         if self.by_category:
             lines.append("  按分类："
                          + " ｜ ".join(f"{k} {v}" for k, v in
@@ -430,14 +437,20 @@ class ZoteroPushService:
         catalog: PaperCatalog | None = None,
         secrets: SecretStore | None = None,
     ) -> ZoteroPushService:
-        """按配置装配（会读密钥；密钥缺失时抛 ConfigError，带修复指引）。
+        """按配置装配 —— ⭐ 会**自动选择后端**（本地 API / Web API）。
+
+        backend="auto"（默认）的处理：
+            先探测 Zotero 本地 API 是否可用（只读探测，**不触发授权弹窗**）：
+              可用   → 用 local（不用云端、不用账号、不用 API Key）
+              不可用 → 回落到 web（需要 zotero.org 账号 + API Key）
 
         Args:
             cfg: AppConfig。
             catalog: 论文目录；不传则按 cfg.catalog 自动建一个。
-            secrets: 密钥读取器；不传则从 config/secrets.env + 环境变量读。
+            secrets: 密钥读取器（**仅 web 后端需要**）。
         """
         from zenav.infra.catalog import create_catalog
+        from zenav.services.zotero_local import LocalKeyStore, ZoteroLocalClient
 
         zc: ZoteroConfig = cfg.zotero
         if not zc.enabled:
@@ -445,29 +458,57 @@ class ZoteroPushService:
                 "Zotero 推送未启用",
                 hint="把 config/settings.toml 里 [zotero] enabled 设为 true",
             )
-        store = secrets or _secret_store(cfg)
-        api_key = store.require(
-            zc.api_key_env, "Zotero 推送",
-            hint=(
-                "① 生成 Key：https://www.zotero.org/settings/keys/new\n"
-                "        （务必勾选 Allow write access）\n"
-                f"     ② 填入 config/secrets.env 的 {zc.api_key_env}\n"
-                f"     ③ 同时把数字 userID 填进 {zc.library_id_env}"
-            ),
-        )
-        lib_id = store.require(
-            zc.library_id_env, "Zotero 推送",
-            hint="见 https://www.zotero.org/settings/keys 页面的 "
-                 "「Your userID for use in API calls」",
-        )
-        client = ZoteroClient(
-            api_base=zc.api_base, api_key=api_key, library_id=lib_id,
-            library_type=zc.library_type, request_interval=zc.push_interval,
-        )
+
+        backend = cls._resolve_backend(zc)
+
+        if backend == "local":
+            key_path = (pathlib.Path(zc.local_key_file)
+                        if pathlib.Path(zc.local_key_file).is_absolute()
+                        else pathlib.Path(cfg.root) / zc.local_key_file)
+            client: Any = ZoteroLocalClient(
+                base_url=zc.local_api_base,
+                user_id=zc.local_user_id,
+                app_name=zc.local_app_name,
+                key_store=LocalKeyStore.load(key_path),
+            )
+            library_label = f"local:{zc.local_api_base}/users/{zc.local_user_id}"
+            log.info("Zotero 后端：**本地 API**（%s）—— 不用云端/账号/API Key",
+                     zc.local_api_base)
+        else:
+            store = secrets or _secret_store(cfg)
+            api_key = store.require(
+                zc.api_key_env, "Zotero 推送（web 后端）",
+                hint=(
+                    "⚠️ 若你**不想用 Zotero 云端**，不必配这些 Key ——\n"
+                    "     改用本地 API 即可：\n"
+                    "       ① 装 Zotero 10+ 并让它保持运行\n"
+                    "       ② Zotero → 设置 → 高级 → 勾选 "
+                    "「Allow other applications … communicate with Zotero」\n"
+                    "       ③ config/settings.toml 里 [zotero] backend = \"local\"\n"
+                    "\n"
+                    "     若确实要用云端（web 后端）：\n"
+                    "       ① 生成 Key：https://www.zotero.org/settings/keys/new\n"
+                    "          （务必勾选 Allow write access）\n"
+                    f"       ② 填入 config/secrets.env 的 {zc.api_key_env}\n"
+                    f"       ③ 同时把数字 userID 填进 {zc.library_id_env}"
+                ),
+            )
+            lib_id = store.require(
+                zc.library_id_env, "Zotero 推送（web 后端）",
+                hint="见 https://www.zotero.org/settings/keys 页面的 "
+                     "「Your userID for use in API calls」",
+            )
+            client = ZoteroClient(
+                api_base=zc.api_base, api_key=api_key, library_id=lib_id,
+                library_type=zc.library_type, request_interval=zc.push_interval,
+            )
+            library_label = f"{zc.library_type}:{lib_id}"
+            log.info("Zotero 后端：Web API（%s）—— 需要账号与云同步", zc.api_base)
+
         state_path = (pathlib.Path(zc.state_file)
                       if pathlib.Path(zc.state_file).is_absolute()
                       else pathlib.Path(cfg.root) / zc.state_file)
-        state = PushState.load(state_path, library=f"{zc.library_type}:{lib_id}")
+        state = PushState.load(state_path, library=library_label)
         return cls(
             catalog=catalog or create_catalog(cfg.catalog, cfg.root),
             config=zc,
@@ -475,11 +516,37 @@ class ZoteroPushService:
             client=client,
         )
 
+    @staticmethod
+    def _resolve_backend(zc: ZoteroConfig) -> str:
+        """决定用哪个后端。auto → 探测本地（只读，不弹授权框）。"""
+        if zc.backend in ("local", "web"):
+            return zc.backend
+        # auto
+        try:
+            from zenav.services.zotero_local import probe_local
+
+            probe = probe_local(zc.local_api_base)
+        except Exception as exc:                        # noqa: BLE001
+            log.debug("本地探测异常：%s", exc)
+            probe = {"available": False, "error": str(exc)}
+        if probe.get("available"):
+            log.info("backend=auto：检测到本地 Zotero（server_id=%s…）→ 用 local",
+                     str(probe.get("server_id", ""))[:8])
+            return "local"
+        log.info("backend=auto：本地 Zotero 不可用（%s）→ 回落 web",
+                 probe.get("error", "未知原因"))
+        return "web"
+
     # ── 状态 ────────────────────────────────────────────────────────
     def status(self) -> dict[str, Any]:
         """连通性 + 推送进度（不含密钥值）。"""
+        client = self._client
+        mode = "local" if type(client).__name__ == "ZoteroLocalClient" else "web"
         out: dict[str, Any] = {
             "enabled": self._cfg.enabled,
+            "backend_configured": self._cfg.backend,
+            "backend_in_use": mode,
+            "cloud": mode == "web",
             "library": self._state.library,
             "collection_root": self._cfg.collection_root,
             "state_file": str(self._state.path),
@@ -545,15 +612,24 @@ class ZoteroPushService:
             log.info("没有需要推送的新论文")
             return report
 
-        # ② 目录（dry_run 时也建 —— 否则演练结果会误报"目录不存在"；
-        #    目录是幂等的：已存在就复用，不会产生垃圾）
-        if sync_collections and self._client is not None:
-            self._ensure_collections(todo, report)
-
+        # ② ⭐ 演练必须**完全不写入** —— 包括不建目录。
+        #
+        #    ⚠️ 这里踩过一个真 bug：早先的实现在 dry_run 时也调了
+        #       `_ensure_collections()`，理由是"否则演练会误报目录不存在"。
+        #       后果有两个，都很糟：
+        #         · 本地后端会**弹授权对话框**（用户没要求写入，却看到弹窗）
+        #         · 真的在用户库里**建了目录** —— "演练"却产生了副作用
+        #       ⇒ 正确做法：演练时只**读**（list_collections 是只读的），
+        #         算出"将会建哪些目录"并报告，一个字节都不写。
         if dry_run:
+            report.collections_planned = self._plan_collections(todo)
             report.by_category = _count_by_category(todo)
             report.pushed = 0
             return report
+
+        # ③ 目录（仅真实推送时创建）
+        if sync_collections and self._client is not None:
+            self._ensure_collections(todo, report)
 
         if self._client is None:
             raise ConfigError(
@@ -592,6 +668,31 @@ class ZoteroPushService:
         return report
 
     # ── 内部 ────────────────────────────────────────────────────────
+    def _plan_collections(self, papers: list[Paper]) -> list[str]:
+        """演练用：算出"将会新建哪些目录" —— **只读，不写**。
+
+        `list_collections()` 属于读请求（本地/Web API 的读都无需认证），
+        所以演练阶段调它是安全的，不会弹授权框、不会产生副作用。
+        """
+        if self._client is None:
+            return []
+        try:
+            existing = {c.get("data", {}).get("name")
+                        for c in self._client.list_collections()}
+        except Exception as exc:                        # noqa: BLE001
+            log.debug("演练阶段读取目录失败（忽略）：%s", exc)
+            return []
+        planned: list[str] = []
+        root = self._cfg.collection_root
+        if root not in existing:
+            planned.append(root)
+        if self._cfg.create_subcollections:
+            for cat in sorted({p.category for p in papers}):
+                name = _subcollection_name(cat, root)
+                if name not in existing:
+                    planned.append(name)
+        return planned
+
     def _ensure_collections(self, papers: list[Paper], report: PushReport) -> None:
         """确保顶层目录 + 各分类子目录都存在（幂等）。"""
         existing = {c.get("data", {}).get("name"): c.get("key")
