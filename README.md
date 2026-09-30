@@ -6,6 +6,8 @@
 
 > 🔎 **Browse & search the papers in a web UI → [**ser666.github.io/awesome-zero-shot-navigation**](https://ser666.github.io/awesome-zero-shot-navigation/)**
 
+> 📖 **How everything works & how to use it (Chinese manual) → [**USAGE.md**](USAGE.md)**
+
 > 🤖 **Use it from an AI agent (MCP) / CLI / Zotero → see [**SERVICE.md**](SERVICE.md)**
 
 <a href="https://ser666.github.io/awesome-zero-shot-navigation/"><img src="https://img.shields.io/badge/papers-770-0984e3?style=for-the-badge&logo=googlescholar&logoColor=white" alt="Papers"></a> <img src="https://img.shields.io/badge/Top%20venues-94-b0522c?style=for-the-badge" alt="Top venues"> <img src="https://img.shields.io/badge/with%20code-95-0f9d58?style=for-the-badge&logo=github" alt="with code"> <a href="https://github.com/ser666/awesome-zero-shot-navigation/actions"><img src="https://img.shields.io/badge/auto--updated%20weekly-2f6fb2?style=for-the-badge&logo=githubactions&logoColor=white" alt="Auto-updated weekly"></a> <img src="https://img.shields.io/badge/license-MIT-lightgrey?style=for-the-badge" alt="MIT">
@@ -20,7 +22,7 @@
 - **With PDF**: 514 ｜ **with code**: 95 ｜ **with project page**: 66
 - **Categories**: 10
 - **Sources**: crossref (160), huggingface (1), openalex (620), openreview (51)
-- **Last updated**: 2026-09-30 10:48 UTC
+- **Last updated**: 2026-09-30 13:21 UTC
 
 ## 🏷 How to read an entry
 
@@ -1860,4 +1862,4 @@ Open an [issue](../../issues) with the paper link and we'll fold it in. The whol
 
 ---
 
-*Auto-generated. Last update: 2026-09-30 10:48 UTC*
+*Auto-generated. Last update: 2026-09-30 13:21 UTC*

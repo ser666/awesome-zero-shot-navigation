@@ -2,9 +2,13 @@
 
 Thanks for helping make this list better! Three ways to contribute, easiest first.
 
-> 📐 **Planning to extend the system itself?** Two docs, different jobs:
+> 📐 **Planning to extend the system itself?** Four docs, different jobs:
+> - [`USAGE.md`](USAGE.md) — **what & how to use**: the full manual (all features,
+>   every entry point, config, FAQ). Start here.
 > - [`ARCHITECTURE.md`](ARCHITECTURE.md) — **why**: the design, trade-offs, and
 >   evolution plan (configurable sources, MCP server, Zotero push).
+> - [`OPERATIONS.md`](OPERATIONS.md) — **ops**: where it runs, how often, and the
+>   traps already hit (60-day disable, concurrent-push races, …).
 > - [`SERVICE.md`](SERVICE.md) — **how**: the service layer's user manual
 >   (MCP setup, Zotero credentials, config files, extension points).
 >
