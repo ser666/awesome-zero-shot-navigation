@@ -36,7 +36,7 @@ import sys
 from typing import Any
 
 from zenav.config import AppConfig
-from zenav.errors import ZenavError
+from zenav.errors import ConfigError, ZenavError
 from zenav.log import get_logger, setup_logging
 
 log = get_logger(__name__)
@@ -73,13 +73,52 @@ def _clamp(value: int, low: int, high: int) -> int:
     return max(low, min(high, value))
 
 
+def _import_fastmcp() -> Any:
+    """导入 MCP 的 `FastMCP`，并在版本不兼容时给出**可执行的修复提示**。
+
+    ⚠️ 为什么需要这个包装（2026-09-30 实测踩到）：
+        `mcp` 2.x 把 `FastMCP` 改名成 `MCPServer`
+        （`mcp.server.fastmcp` → `mcp.server.mcpserver`），**且其他 API 也有变动**。
+        若 requirements 写成无上界的 `mcp>=1.9`，新环境会装到 2.x，
+        于是启动时抛 `ModuleNotFoundError: No module named 'mcp.server.fastmcp'`
+        —— 这个报错**完全看不出该怎么修**。
+
+        本机恰好装着 1.x，所以本地一切正常（"只在我机器上能跑"）。
+        ⇒ 现在：requirements 钉 `<2`，且这里主动检测并给出确切命令，
+          让报错本身就把人引到解法上（Agent 也能读懂）。
+    """
+    try:
+        from mcp.server.fastmcp import FastMCP  # noqa: PLC0415
+
+        return FastMCP
+    except ModuleNotFoundError as exc:
+        version = "未知"
+        try:
+            import importlib.metadata as md
+
+            version = md.version("mcp")
+        except Exception:                           # noqa: BLE001
+            pass
+        raise ConfigError(
+            f"当前安装的 mcp 版本（{version}）与本项目不兼容",
+            hint=(
+                "本项目目前需要 **mcp 1.x**（用的是 FastMCP 接口）。\n"
+                "     mcp 2.x 把 FastMCP 改名成 MCPServer，且其他 API 也有变动，\n"
+                "     尚未适配。装 1.x 即可：\n"
+                "         uv pip install 'mcp>=1.9,<2'\n"
+                "         # 或： pip install 'mcp>=1.9,<2'\n"
+                "     若你原本没装 mcp，直接装会拿到最新版（2.x），同样会触发。"
+            ),
+        ) from exc
+
+
 def build_server(cfg: AppConfig | None = None):
     """装配 MCP server（含全部工具）。
 
     单独抽成工厂的原因：测试可以 `build_server()` 后逐个调用工具函数，
     不需要真的启动 stdio 进程。
     """
-    from mcp.server.fastmcp import FastMCP
+    FastMCP = _import_fastmcp()      # 版本不兼容时给出可执行的修复提示
 
     from zenav.infra.catalog import create_catalog
     from zenav.services import bibtex as bibtex_svc

@@ -335,6 +335,91 @@ auth_token_env = "ZENAV_MCP_TOKEN"   # http 传输的 Bearer token
 
 ---
 
+## 5.5 ⭐ 别人怎么用？（自部署，不需要任何服务器）
+
+> **关键前提**：本项目**完全开源**（MIT），且数据已公开在 GitHub Pages 上。
+> ⇒ **任何人都不需要经过作者的服务器** —— 自己本地就能跑起来。
+
+### 三种形态，按需要挑
+
+| 形态 | 谁适合 | 需要什么 | 门槛 |
+|------|--------|----------|------|
+| **① 只看网页** | 大多数人 | 浏览器 | ⭐ 零门槛 |
+| **② 本地自部署** ⭐ | 想接自己 Agent 的人 | Python 3.11+ + 一条装依赖命令 | 低（3 条命令） |
+| **③ 用别人部署的 HTTP 服务** | 手机 / 不方便装环境 | 一个 URL + token | 最低，但依赖对方 |
+
+### ② 本地自部署：完整三步（**已实测走通**）
+
+```bash
+# ① 克隆（公开仓库，无需账号）
+git clone https://github.com/ser666/awesome-zero-shot-navigation.git
+cd awesome-zero-shot-navigation
+
+# ② 建环境 + 装依赖（核心零依赖，只有 MCP 需要 SDK）
+uv venv .venv
+uv pip install -r requirements.txt
+#   没有 uv？pip 也行：python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
+
+# ③ 立刻可用（数据随仓库自带，无需联网）
+.venv/bin/python -m zenav.interfaces.cli info      # 命令行
+.venv/bin/python -m zenav.interfaces.mcp_server    # MCP 服务
+```
+
+**这套流程的实测结果**（一次"模拟陌生人从零部署"的验证）：
+
+```
+克隆 7.2 MB → 建 venv → 装依赖 → 拉起 MCP → 官方 client 握手成功
+  工具数: 10 ｜ 库总量: 770 ｜ 检索命中 202
+```
+
+**依赖情况（很轻）**：
+
+```
+zenav/config · domain · infra · services   → **100% 标准库**（连 HTTP 都用 urllib）
+唯一的第三方依赖是 mcp（MCP 协议实现）
+   ⚠️ 必须钉 `mcp>=1.9,<2` —— requirements.txt 里已写死上界
+      （mcp 2.x 把 FastMCP 改名成 MCPServer，本项目尚未适配）
+```
+
+**数据从哪来（两种，改一行配置）**：
+
+```toml
+# config/settings.toml
+[catalog]
+source = "docs/data/papers.json"     # ① 仓库自带（克隆即有，离线可用）
+# source = "https://ser666.github.io/awesome-zero-shot-navigation/data/papers.json"
+                                      # ② 远程：自动跟随每周更新（推荐长期用）
+```
+
+> 💡 **推荐长期用 ②**：数据始终最新，且**仓库不需要更新**。
+
+### ③ 用别人部署的 HTTP 服务（可选）
+
+如果作者部署了 HTTP 版（见 §5.4），客户端一行接入：
+
+```bash
+claude mcp add --transport http zero-shot-nav https://<域名>/mcp \
+  --header "Authorization: Bearer <TOKEN>"
+```
+
+> ⚠️ 这条路依赖**对方**的服务器在线、且愿意发你 token。
+> 相比自己本地部署，它唯一的好处是**手机也能用**。
+
+### 为什么"看网页"不够，还得有 MCP？
+
+```
+网页：给人看的（你搜、你点、你读）
+MCP：给 Agent 用的（Agent 能检索、过滤、取单篇、导 BibTeX）
+两者是同一个数据源的两种出口 —— 网页不能替代 MCP。
+```
+
+> ⚠️ **常见误解**：GitHub Pages 是**纯静态托管**，只能返回文件，
+> **不能执行服务端代码** ⇒ 它**不可能**托管 MCP 服务。
+> 但 MCP 的工作方式是"读 Pages 上的 JSON 再加工"，
+> 所以**数据在 Pages 上、逻辑在你本机**，这个分工是合理的、也是免费的。
+
+---
+
 ## 6. 用法 D：命令行
 
 适合调试、脚本、cron。**与 MCP 共用同一套逻辑**，行为必然一致。
@@ -538,6 +623,23 @@ chmod 600 config/secrets.env
 
 ## 9. 常见问题
 
+**Q：别人想用这个 Agent 工具，必须走服务器部署吗？**
+A：❌ **不必**。项目完全开源，数据也公开在 Pages 上 ⇒
+   任何人 `git clone` 后建个 venv、装一条依赖，就能在**自己电脑上**跑起 MCP，
+   **完全不经过作者的服务器**。见 [§5.5](#55--别人怎么用自部署不需要任何服务器)。
+   只有"手机 / 不想装环境"时才需要有人部署 HTTP 服务。
+
+**Q：GitHub Pages 能托管这个 MCP 服务吗？**
+A：❌ 不能 —— Pages 是**纯静态托管**，只能返回文件、**不执行服务端代码**。
+   但这是**合理分工**：Pages 负责**数据**（papers.json，免费全球可访问），
+   MCP 负责**查询逻辑**（读那份 JSON 再加工）—— 逻辑跑在使用者自己的机器上。
+
+**Q：为什么依赖里要钉 `mcp<2`？**
+A：mcp 2.x 把 `FastMCP` 改名成 `MCPServer` 且其他 API 也有变动，本项目尚未适配。
+   ⚠️ 这是**实际踩过**的：原来写无上界的 `mcp>=1.9`，新环境装到 2.x 就启动失败，
+   而开发机恰好装着 1.x，所以长期是"只在我机器上能跑"。
+   现在既钉了上界，代码在 2.x 下也会给出**可执行的安装命令**而非晦涩报错。
+
 **Q：需要装 Zotero 插件吗？**
 A：**不需要，本项目也不提供插件** —— Zotero 10+ 官方自带本地 API（`127.0.0.1:23119`）
 可直接写入。我们直接调它，少一层中间件。详见 [§4.1](#41-先回答那个关键问题需要-zotero-插件吗)。
@@ -603,7 +705,7 @@ A：183 个离线用例 + 6 项仓库检查，专门守那些**不报错**的错
 
 | 文档 | 讲什么 | 什么时候看 |
 |------|--------|-----------|
-| **`USAGE.md`（本文）** | **怎么用：全功能 + 用法 + 配置 + FAQ** | ⭐ 想用起来 |
+| **`USAGE.md`（本文）** | **怎么用：全功能 + 用法 + 配置 + FAQ + 别人怎么自部署** | ⭐ 想用起来 |
 | [`SERVICE.md`](SERVICE.md) | 服务层使用手册（MCP / CLI / Zotero 细节） | 接 Agent、调 Zotero |
 | [`OPERATIONS.md`](OPERATIONS.md) | 运维：跑在哪、多久一次、坑与修复 | 出问题、想改流程 |
 | [`ARCHITECTURE.md`](ARCHITECTURE.md) | 架构设计与演进路线（为什么这么做） | 想扩展系统 |

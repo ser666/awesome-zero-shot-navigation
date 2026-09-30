@@ -18,8 +18,17 @@
 #    连 HTTP 客户端都用 urllib（见 zenav/infra/http.py 的设计说明）
 #
 #  唯一的例外是 MCP 协议实现 —— 它需要官方 SDK：
-mcp>=1.9
+mcp>=1.9,<2
 #
+#  ⚠️⚠️ 上界 `<2` 是**必须的**，不是保守 —— 2026-09-30 实际踩过：
+#     早期写成无上界的 `mcp>=1.9`，新环境会装到 **mcp 2.x**。
+#     2.x 把 `FastMCP` 改名成 `MCPServer`（`mcp.server.fastmcp` → 
+#     `mcp.server.mcpserver`）且**其他 API 也有变动** ⇒ 本项目启动时抛
+#         ModuleNotFoundError: No module named 'mcp.server.fastmcp'
+#     这个报错**看不出该怎么修**，而本机恰好装着 1.x 所以"我这儿是好的" ——
+#     典型的"只在我机器上能跑"。现已钉上界，并让代码在 2.x 下给出**明确提示**。
+#
+#     迁移到 mcp 2.x 是**独立任务**（不只是改个导入名），见 ARCHITECTURE.md §待办。
 #  为什么必须单独装（而不是写进核心）：MCP 只在"给 Agent 当接口"时用到。
 #  想让 CLI / Zotero 推送 / Python import 可用，**不需要**装 mcp。
 #  这让服务层的核心能力在最小环境下也能跑。
