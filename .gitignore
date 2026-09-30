@@ -10,7 +10,23 @@ venv/
 tmp/
 .cache/
 
+# ⚠️ 密钥 —— 永远不要提交（原则见 config/secrets.env.example）
+config/secrets.env
+
+# 运行态状态（Zotero 推送进度；每台机器/每个部署各自持有）
+# 为什么不提交：它是"本机推到哪了"的记账，跨环境共享会掩盖真实进度
+data/zotero_state.json
+data/zotero_state.json.tmp
+data/zotero_state.json.corrupt
+
+# 服务层产物（本地预览/导出）
+*.bib
+*_overview.md
+
 # 注意：以下【必须提交】—— 它们是数据源（让网站与列表有历史）
 #   data/papers.db
 #   docs/data/papers.json
 #   README.md
+#   config/sources.toml
+#   config/settings.toml
+#   config/secrets.env.example   ← 模板（只有占位符）

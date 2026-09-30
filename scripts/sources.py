@@ -412,6 +412,128 @@ def _selftest_registry() -> bool:
     return ok
 
 
+# ══════════════════════════════════════════════════════════════════════════
+#  ⭐ 运行时配置（需求 1）—— 从 config/sources.toml 读
+# ══════════════════════════════════════════════════════════════════════════
+#
+#  为什么这段在采集层里"再实现一次"读取逻辑，而不 import 服务层的 zenav.config：
+#
+#    采集层的硬约束是**零第三方依赖**（跑在 Actions，不做 pip install）。
+#    zenav 是服务层包，虽然核心也是标准库，但把它 import 进来会让
+#    "采集"依赖"服务"—— 分层就反了（服务层读采集层的产物，方向必须单向）。
+#
+#    所以两边各自用 stdlib 的 tomllib 读**同一份** config/sources.toml：
+#      唯一的共享物是文件格式，不是代码 —— 这才是正确的解耦。
+#
+#  ⚠️ 语义（很重要，别改错）：
+#     · 配置文件不存在      → 全部源按内置默认启用（**绝不因此禁用任何源**）
+#     · 源没出现在配置里    → 按 [defaults].enabled（默认 True）→ "注册即生效"
+#     · 配置里 enabled=false → 真的跳过
+#     → 这三种都保证：**加个源注册一下就能工作，不会静默躺平**。
+
+CONFIG_PATH = "config/sources.toml"
+
+
+def _config_path(root=None):
+    import pathlib
+    base = pathlib.Path(root) if root else pathlib.Path(__file__).resolve().parent.parent
+    return base / CONFIG_PATH
+
+
+def load_source_config(root=None) -> dict:
+    """读 config/sources.toml。失败/缺失一律返回 {}（→ 全用内置默认）。"""
+    import pathlib
+    import tomllib
+
+    path = _config_path(root)
+    if not pathlib.Path(path).is_file():
+        return {}
+    try:
+        with open(path, "rb") as fh:
+            return tomllib.load(fh)
+    except Exception as exc:  # noqa: BLE001
+        # ⚠️ 配置坏了不能"静默用默认值继续跑" —— 那会让人以为配置生效了
+        print(f"⚠️ {CONFIG_PATH} 解析失败（将使用内置默认值）：{exc}")
+        return {}
+
+
+def source_specs(root=None) -> dict:
+    """合并内置默认与配置文件 → {源名: {enabled, interval, options}}。"""
+    raw = load_source_config(root)
+    defaults = raw.get("defaults") or {}
+    default_enabled = bool(defaults.get("enabled", True))
+    default_interval = float(defaults.get("interval", DEFAULT_INTERVAL))
+
+    reserved = {"enabled", "interval", "api_key_env", "note"}
+    out: dict = {}
+
+    def add(name: str, body, group: str) -> None:
+        body = body if isinstance(body, dict) else {}
+        out[name] = {
+            "enabled": bool(body.get("enabled", default_enabled)),
+            "interval": float(body.get("interval", default_interval)),
+            "api_key_env": str(body.get("api_key_env", "") or ""),
+            "group": group,
+            "options": {k: v for k, v in body.items() if k not in reserved},
+        }
+
+    # 先铺内置默认（含限速表），再让配置覆盖
+    for name in SOURCES:
+        add(name, {"enabled": True,
+                   "interval": SOURCE_INTERVALS.get(name, default_interval)},
+            "sources")
+    for name in EXTRA_SOURCES:
+        add(name, {"enabled": True,
+                   "interval": SOURCE_INTERVALS.get(name, default_interval)},
+            "extra_sources")
+    # ⚠️ 配置文件里的未知源名要**报出来**，不能默默接收
+    known = set(SOURCES) | set(EXTRA_SOURCES)
+    for section, group in (("sources", "sources"),
+                           ("extra_sources", "extra_sources")):
+        for name, body in (raw.get(section) or {}).items():
+            if name not in known:
+                print(f"⚠️ {CONFIG_PATH} 配了未注册的源 "
+                      f"[{section}.{name}] —— 检查源名是否拼错或已改名")
+                continue
+            add(name, body, group)
+    return out
+
+
+def enabled_sources(root=None) -> dict:
+    """按配置过滤后的**检索式**源 {名: 函数}（供管线的关键词循环用）。"""
+    specs = source_specs(root)
+    return {n: SOURCES[n] for n in SOURCES if specs.get(n, {}).get("enabled", True)}
+
+
+def enabled_extra_sources(root=None) -> dict:
+    """按配置过滤后的**聚合式**源 {名: 函数}（每轮只调一次）。"""
+    specs = source_specs(root)
+    return {n: EXTRA_SOURCES[n] for n in EXTRA_SOURCES
+            if specs.get(n, {}).get("enabled", True)}
+
+
+def interval_for(name: str, root=None) -> float:
+    """该源的请求间隔（配置优先，其次内置限速表，最后默认值）。"""
+    specs = source_specs(root)
+    if name in specs:
+        return float(specs[name]["interval"])
+    return float(SOURCE_INTERVALS.get(name, DEFAULT_INTERVAL))
+
+
+def options_for(name: str, root=None) -> dict:
+    """该源的额外参数（如 openalex 的 per_page、crossref 的 rows）。
+
+    调用方需按函数签名过滤后再传入（见 pipeline.py），
+    这样配置里写错键名只会被忽略，不会让采集崩掉。
+    """
+    return dict((source_specs(root).get(name) or {}).get("options") or {})
+
+
+def key_env_for(name: str, root=None) -> str:
+    """该源需要的密钥环境变量名（空串 = 不需要密钥）。"""
+    return str((source_specs(root).get(name) or {}).get("api_key_env", "") or "")
+
+
 if __name__ == "__main__":
     import argparse as _ap
 

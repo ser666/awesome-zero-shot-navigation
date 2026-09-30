@@ -230,8 +230,9 @@ python3 scripts/keepalive.py
 ### 限速的三道闸
 
 ```
-① 单源间隔     ⭐ 按源配置（sources.py → SOURCE_INTERVALS，默认 0.8s）
-               现状：OpenAlex 1.5s / Crossref 0.8s / S2 0.6s / GitHub 2.2s
+① 单源间隔     ⭐ 按**配置**（config/sources.toml 的 interval）
+               回落顺序：toml → sources.SOURCE_INTERVALS → DEFAULT_INTERVAL(0.8s)
+               现状：OpenAlex 1.5s / Crossref 0.8s / 聚合源 0.8s
 ② 时间预算     采集 600s、增强 900s —— 超了就不再发新请求，直接收尾
 ③ 调用次数上限  GitHub 搜索 250 次/轮（最慢的一步单独限流）
 ```
@@ -241,11 +242,54 @@ python3 scripts/keepalive.py
 
 ---
 
+### ⭐ 配置化：哪些东西现在是"改配置就行"
+
+> 📌 2026-09-30 起，采集行为由 `config/sources.toml` 驱动。
+> **改配置 → 下一轮采集即生效**，不用改代码、不用等 CI 重跑镜像。
+
+| 想做什么 | 怎么做 |
+|---------|--------|
+| 关掉某个源 | 该节写 `enabled = false` |
+| 调某个源的请求间隔 | 该节写 `interval = 2.0` |
+| 改单次抓取量 | 写 `per_page = 100`（OpenAlex）/ `rows = 30`（Crossref） |
+| 改聚合源新鲜度窗口 | `[extra_sources.openreview] max_age_days = 550` |
+| 声明某源需要密钥 | `api_key_env = "SEMANTIC_SCHOLAR_API_KEY"` |
+| 调整全局默认 | `[defaults]` 的 `enabled` / `interval` |
+
+**⚠️ 三条语义（别搞错）**：
+
+```
+① 配置文件不存在        → 全部源按内置默认启用（绝不因此禁用任何源）
+② 源没出现在配置里      → 按 [defaults].enabled（默认 true）→ 注册即生效
+③ 配置里 enabled=false  → 真的跳过
+```
+
+⇒ 这三条保证了**"注册一个新源就能工作"**，不会因为忘了加配置而静默躺平。
+（反面：如果把"未配置"的默认值设成 false，就会出现"加了源却永远不跑"，
+这正是本项目反复在防的那类静默失效。）
+
+**⚠️ 两个防静默的检查**：
+
+```
+· 配置里写了**未注册**的源名 → 打印警告（防拼错/改名后残留无效配置）
+· 配置语法错误              → 打印警告并降级到内置默认（不静默）
+· 所有源都被关掉            → 整轮开始前打印警告
+   （否则表现为"运行成功但零采集"，极难发现）
+```
+
+**验证配置生效**（离线，秒级）：
+
+```bash
+python3 scripts/sources.py --selftest      # 注册表契约 + 限速配置
+```
+
+---
+
 ### ⭐ 如何新增一个数据源
 
 > 设计目标：**加源 = 配置动作，不改管线代码。**
 > （曾经是写死的 —— `pipeline.py` 里硬编码 `["openalex", "crossref"]`，
-> 导致"注册了新源却不生效"这个坑。已改为遍历 `SOURCES`。）
+> 导致"注册了新源却不生效"这个坑。已改为遍历配置里的启用源。）
 
 #### 第 0 步：先判断它属于哪一类
 
@@ -287,20 +331,31 @@ SOURCES["xxx"] = harvest_xxx          # 平台检索式
 EXTRA_SOURCES["xxx"] = harvest_xxx    # 聚合式
 ```
 
-#### 第 3 步（可选）：配限速间隔
+#### 第 3 步：在 `config/sources.toml` 加一节（可选，但推荐）
 
-```python
-SOURCE_INTERVALS = {
-    "openalex": 1.5,
-    "xxx": 2.0,        # ⭐ 新源若限速更严（如无 Key 的免费 API），加在这里
-}
+```toml
+# 平台检索式源
+[sources.xxx]
+enabled = true
+interval = 2.0            # 该源限速更严时写这里（比改代码好）
+per_page = 100            # 源特有参数：会按函数签名自动传给 harvest_xxx
+
+# 聚合式源
+[extra_sources.xxx]
+enabled = true
+max_age_days = 400        # 该源自己的新鲜度口径
 ```
+
+> ⭐ **不写也能跑**：未出现在配置里的源**默认启用**（注册即生效）。
+> 写它只是为了**调参**和**留档**。
+> 老写法 `SOURCE_INTERVALS = {...}` 仍可用（配置优先于它），
+> 但**新源请用 toml** —— 改配置不用改代码，也不会产生代码 diff。
 
 #### 第 4 步：验证
 
 ```bash
 python3 scripts/sources.py --selftest   # 离线秒级：校验签名契约 + 限速配置
-make test                               # 全套规则自测
+make test                               # 全套规则自测（含服务层 150 用例）
 python3 scripts/probe_sources.py        # ⚠️ 联网探测（建议在 Actions 上跑）
 ```
 
@@ -318,6 +373,7 @@ python3 scripts/probe_sources.py        # ⚠️ 联网探测（建议在 Action
 | **4** | ⚠️ **忘了配限速** | 新源若更严格 → 429 拖慢整轮（甚至挤掉其他源的时间预算） |
 | **5** | ⚠️ **在本机测不过就放弃** | **本机在中国大陆，很多源连不上 ≠ 云端连不上** → 必须用 `probe_sources.py` 在 Actions 上实测 |
 | **6** | ❌ **试图加回 arXiv API** | 已确认 **HTTP 406，封云 IP**，别加 |
+| **7** | ⚠️ **toml 里把源名写错** | 会打印警告但不生效（防拼错残留）。注意源名 = `harvest_` **后面**那部分 |
 
 > 🔗 详见技能 `auto-updating-awesome-list`（含"本机连不上 ≠ 云端连不上"等经验）。
 

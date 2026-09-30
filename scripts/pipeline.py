@@ -23,13 +23,13 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 
 from relevance import check as relevance_check  # noqa: E402
 from sources import (  # noqa: E402
-    DEFAULT_INTERVAL,
     EXTRA_QUERY,
-    EXTRA_SOURCES,
     QUERIES,
-    SOURCES,
-    SOURCE_INTERVALS,
+    enabled_extra_sources,
+    enabled_sources,
+    interval_for,
     now_iso,
+    options_for,
 )
 from topics import primary_category, topic_tags  # noqa: E402
 from venues import normalize as venue_normalize  # noqa: E402
@@ -366,7 +366,8 @@ def merge_into(existing: dict, new: dict):
 
 # ══════════════════════════════════════════════════════════════
 def call_extra_source(fn, date_from: str | None, *,
-                      name: str = "extra", verbose: bool = False):
+                      name: str = "extra", verbose: bool = False,
+                      options: dict | None = None):
     """调用一个**聚合式源**（EXTRA_SOURCES），返回归一化后的 list。
 
     为什么单独抽成函数：这段"按签名决定怎么调"的逻辑原先内联在 run() 里，
@@ -377,15 +378,21 @@ def call_extra_source(fn, date_from: str | None, *,
     调用约定（**签名检测，不写死源名**）：
       · date_from 恒传
       · query 若为**必填参数**（无默认值）→ 额外传 EXTRA_QUERY
+      · options（来自 config/sources.toml，如 openreview 的 max_age_days）
+        按签名过滤后传入 —— 配置写错键只会被忽略，不会让采集崩
       · 失败返回 None（调用方据此跳过；不抛异常，单源失败不影响整轮）
     """
     kwargs = {"date_from": date_from}
     try:
-        q_param = inspect.signature(fn).parameters.get("query")
+        params = inspect.signature(fn).parameters
     except (TypeError, ValueError):
-        q_param = None
+        params = {}
+    q_param = params.get("query")
     if q_param is not None and q_param.default is inspect.Parameter.empty:
         kwargs["query"] = EXTRA_QUERY
+    for k, v in (options or {}).items():
+        if k in params:
+            kwargs[k] = v
     try:
         return fn(**kwargs)
     except Exception as e:  # noqa: BLE001
@@ -424,25 +431,43 @@ def run(date_from: str | None = None, date_to: str | None = None,
     cand: dict = {}
     skipped = 0
 
+    # ⭐ 源列表来自**配置**（config/sources.toml），不是写死的常量。
+    #    见 sources.enabled_sources()：未出现在配置里的源默认启用（注册即生效），
+    #    配置里 enabled=false 才跳过。这样"加源/关源/调速"都不用改代码。
+    active_sources = enabled_sources()
+    active_extra = enabled_extra_sources()
+    if not active_sources and not active_extra:
+        # ⚠️ 全被关掉要吼一声 —— 否则整轮"成功但零采集"，属于静默失效
+        print("⚠️ 所有数据源都被配置关闭了（检查 config/sources.toml 的 enabled）")
+    elif verbose:
+        print(f"   启用源：检索式 {list(active_sources)}"
+              f" ｜ 聚合式 {list(active_extra)}")
+
     # extra_only 时迭代空序列 → 整个主循环被跳过（比 break 更直观）
     for q in (() if extra_only else QUERIES):
-        # ⭐ 源列表**从 SOURCES 直接取**（不写死）：
-        #    新增采集源只需在 sources.py 注册，这里零改动。
+        # ⭐ 源列表**从配置取**（不写死）：
+        #    新增采集源只需在 sources.py 注册 + 必要时在 toml 里配一行。
         #
-        # ⚠️ 但各源函数签名可能不同（例：OpenAlex 支持 sort 用于"抓经典"，
-        #    Crossref 不支持）。这里用**签名检测**自动决定是否传 sort ——
+        # ⚠️ 各源函数签名可能不同（例：OpenAlex 支持 sort 与 per_page，
+        #    Crossref 支持 rows）。这里用**签名检测**自动决定传哪些参数 ——
         #    避免再写 `if src_name == "openalex"` 这类硬编码判断
         #    （曾经就是写死的，导致"加了源却不生效"）。
-        for src_name, harvest_fn in SOURCES.items():
+        for src_name, harvest_fn in active_sources.items():
             if budget_s and (time.time() - t_start) > budget_s:
                 skipped += 1
                 continue
             if verbose:
                 print(f"  🔎 [{src_name}] {q}")
             try:
+                params = inspect.signature(harvest_fn).parameters
                 call_kwargs = {"date_from": date_from, "date_to": date_to}
-                if "sort" in inspect.signature(harvest_fn).parameters:
+                if "sort" in params:
                     call_kwargs["sort"] = sort
+                # 把配置里的额外参数（per_page / rows / …）按签名过滤后传入。
+                # 过滤的作用：配置里写错键名只是被忽略，不会让采集报错。
+                for k, v in options_for(src_name).items():
+                    if k in params:
+                        call_kwargs[k] = v
                 rows = harvest_fn(q, **call_kwargs)
             except Exception as e:  # noqa: BLE001
                 print(f"     ⚠️ {str(e)[:80]}")
@@ -464,20 +489,21 @@ def run(date_from: str | None = None, date_to: str | None = None,
                     cand[key] = {**p, "_sources": [p["source"]]}
             if verbose:
                 print(f"      → {len(rows)} 抓取 / {kept} 相关")
-            # 限速：按源配置的间隔（见 sources.SOURCE_INTERVALS）
-            time.sleep(SOURCE_INTERVALS.get(src_name, DEFAULT_INTERVAL))
+            # 限速：按**配置**里该源的间隔（config/sources.toml，回落内置限速表）
+            time.sleep(interval_for(src_name))
 
     # ── 附加源（每轮只调一次，不按关键词循环）
     #
     # 为什么单独处理：OpenReview / HuggingFace 是"平台聚合接口"，
     # 一次请求就能拿到一批论文，按 30+ 个关键词反复请求既浪费又易被封。
-    for src_name, fn in EXTRA_SOURCES.items():
+    for src_name, fn in active_extra.items():
         if budget_s and (time.time() - t_start) > budget_s * 0.8:
             skipped += 1
             continue
         if verbose:
             print(f"  🔎 [{src_name}] （平台聚合接口）")
-        rows = call_extra_source(fn, date_from, verbose=verbose, name=src_name)
+        rows = call_extra_source(fn, date_from, verbose=verbose, name=src_name,
+                                 options=options_for(src_name))
         if rows is None:
             continue
         fetched += len(rows)

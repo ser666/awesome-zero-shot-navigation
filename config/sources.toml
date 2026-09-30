@@ -1,0 +1,70 @@
+# ══════════════════════════════════════════════════════════════════════════
+#  数据源配置 —— 本文件是「有哪些源、怎么跑」的**唯一事实来源**
+# ══════════════════════════════════════════════════════════════════════════
+#
+#  为什么要有这个文件（而不是继续写在 scripts/sources.py 里）：
+#
+#    加一个源 / 改一次限速，都要改代码 —— 这类"本该配置的东西被写死"，
+#    在过去几周里造成了 3 个静默失效的 bug（详见 OPERATIONS.md）。
+#    把可变部分挪到配置里，代码只保留"怎么调这个源"的逻辑。
+#
+#  设计约定：
+#    · 源名 = scripts/sources.py 里注册的函数名（不带 harvest_ 前缀）
+#    · 密钥**只写环境变量名**，绝不写值 —— 见 config/secrets.env.example
+#    · 未知的键会被 loader 保留在 `options` 里（向前兼容：老版本读新配置不炸）
+#    · 本文件被两层共用：
+#        采集层 scripts/sources.py    读它来覆盖内置默认值（零依赖，用 tomllib）
+#        服务层 zenav/config/loader.py 读它来暴露配置状态
+#
+#  加一个新源的标准动作（3 步，不用改管线）：
+#    1) 在 scripts/sources.py 写 harvest_xxx()，注册进 SOURCES / EXTRA_SOURCES
+#    2) 在下面加一节 [sources.xxx] 或 [extra_sources.xxx]
+#    3) make test —— 契约自测会校验签名
+# ══════════════════════════════════════════════════════════════════════════
+
+
+# ── 全局默认值（未单独配置的源继承这里） ───────────────────────────────
+[defaults]
+enabled = true                 # 新源默认开启
+interval = 0.8                 # 请求间隔（秒），防止限流
+
+
+# ── 平台检索式源：按关键词逐个查询 ─────────────────────────────────────
+#   判别标准：这个源需要**按关键词逐个查**吗？
+#     是 → 放 [sources.*]（会被调用 len(QUERIES) 次）
+#     否 → 放 [extra_sources.*]（每轮只调 1 次）
+
+[sources.openalex]
+enabled = true
+interval = 1.5                 # OpenAlex 对高频请求敏感，间隔放大
+per_page = 200                 # 单次返回上限
+polite_email_env = "OPENALEX_EMAIL"   # 可选：加入 polite pool（读不到则用内置默认）
+
+[sources.crossref]
+enabled = true
+rows = 60                      # Crossref 分页粒度
+
+# ── 需要密钥的源（示例：默认关闭，开启前先配环境变量） ─────────────────
+#   ⭐ 这就是"密钥支持"的形态：配置里只出现**环境变量名**。
+#      实际值放在（三选一，按运行环境）：
+#        本机   → config/secrets.env（已在 .gitignore 中）
+#        CI     → GitHub Secrets（workflow 里 env: 注入）
+#        服务器 → 环境变量 / systemd EnvironmentFile
+[sources.semanticscholar]
+enabled = false
+api_key_env = "SEMANTIC_SCHOLAR_API_KEY"
+interval = 1.0
+note = "无 Key 时会被限流（429）；配 Key 后可稳定使用"
+
+
+# ── 聚合式源：每轮只调一次 ─────────────────────────────────────────────
+
+[extra_sources.openreview]
+enabled = true
+max_age_days = 550             # ⚠️ 独立新鲜度口径，不吃主循环的 21 天窗口
+                               #    原因：会议论文的 pdate 天然在过去，
+                               #    用 21 天会把所有录用论文滤掉（曾导致贡献恒为 0）
+
+[extra_sources.huggingface]
+enabled = true
+note = "每日热门榜；带热度值（hotness）"

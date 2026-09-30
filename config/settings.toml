@@ -1,0 +1,55 @@
+# ══════════════════════════════════════════════════════════════════════════
+#  服务层配置 —— zenav 包（MCP / CLI / Zotero 推送）的行为
+# ══════════════════════════════════════════════════════════════════════════
+#
+#  与 sources.toml 的分工：
+#    sources.toml   采集层怎么抓数据（跑在 GitHub Actions）
+#    settings.toml  服务层怎么用数据（跑在本机 / 服务器）
+#
+#  密钥同样只写环境变量名，不写值。
+# ══════════════════════════════════════════════════════════════════════════
+
+
+# ── 论文目录：服务层从哪里读数据 ───────────────────────────────────────
+#   ⭐ 这是采集层与服务层的**唯一耦合点**。换数据来源只改这一行。
+[catalog]
+# 支持三种写法：
+#   "docs/data/papers.json"                     本地文件（仓库内相对路径）
+#   "https://ser666.github.io/.../papers.json"  远程 URL（服务器部署时用）
+#   "data/papers.db"                            SQLite（本地开发）
+source = "docs/data/papers.json"
+cache_ttl = 300                # 远程源的本地缓存秒数（0 = 不缓存）
+
+
+# ── Zotero 单向推送 ───────────────────────────────────────────────────
+#   设计取舍（Boss 2026-09-30 明确）：
+#     ⭐ **只做单向**：部署的服务 → 本地 Zotero。不做回读、不做双向同步。
+#        理由：Zotero 官方客户端自带云同步；推送完，本机 Zotero 自动就拿到了。
+#        ⇒ 因此**不需要**本地 Local API、**不需要**装插件，只要一个 API Key。
+#
+#   幂等保证：已推送的论文记在 state_file 里（DOI/arXiv/标题指纹），
+#             重复运行只会推新增的，不会产生重复条目。
+[zotero]
+enabled = true
+api_base = "https://api.zotero.org"
+api_key_env = "ZOTERO_API_KEY"          # ← 密钥只写环境变量名
+library_type = "user"                   # user | group
+library_id_env = "ZOTERO_LIBRARY_ID"    # 数字 ID（账户设置页可查）
+collection_root = "Zero-Shot Navigation"  # 顶层目录（自动创建）
+create_subcollections = true            # 按论文分类自动建子目录
+state_file = "data/zotero_state.json"   # 幂等状态（哪些已推过）
+push_interval = 0.6                     # 每次写入之间的间隔（秒），Zotero 有速率限制
+max_batch = 50                          # 单次运行最多推送多少条（防止失控）
+default_item_type = "conferencePaper"   # 无法判断类型时的兜底
+
+
+# ── MCP 服务 ──────────────────────────────────────────────────────────
+#   两种传输方式用**同一份代码**：
+#     stdio  → 本机 Agent（Claude Code / Hermes）直接拉起，零网络暴露
+#     http   → 服务器部署，给手机/外部 Agent 用（需 token 认证）
+[mcp]
+server_name = "zero-shot-nav"
+transport = "stdio"            # stdio | http
+http_host = "127.0.0.1"        # ⚠️ 默认只监听回环；对外暴露必须改这里并配 token
+http_port = 8765
+auth_token_env = "ZENAV_MCP_TOKEN"   # http 传输的 Bearer token（stdio 不需要）
