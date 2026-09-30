@@ -1,8 +1,10 @@
 # 架构设计与演进路线（方案文档）
 
-> **提出**：2026-09-29 ｜ **状态**：📝 **方案稿 —— 待定方向后分期开发**
+> **提出**：2026-09-29 ｜ **状态**：⭐ **第 1、2、3 期已落地**（2026-09-30）｜ 第 4、5 期未做
 > **范围**：本文档回答「这套服务要做成什么形态、怎么和 Zotero 联动、要不要自建服务器」。
-> **原则**：本文档**只做设计**，不做实现；所有开源方案**均已实测核实**（见 §附录 B）。
+> **原则**：所有开源方案**均已实测核实**（见 §附录 B）。
+>
+> 📌 **本文档是"设计与取舍"；怎么用请看 [`SERVICE.md`](SERVICE.md)**。
 
 ---
 
@@ -403,57 +405,87 @@ if __name__ == "__main__":
 ## 五、分期落地（每期一个可验收的产出）
 
 > ⭐ **设计原则**：每期都**独立可用** —— 不要求"全做完才有价值"。
+>
+> 📅 **进度（2026-09-30）**：
+> **第 1、2、3 期已落地** ✅ —— 见 [`SERVICE.md`](SERVICE.md) 使用手册。
+> 第 4、5 期未做（Boss 明确"社媒先放一放"）。
+> 实际实现与下面原计划的差异已在每期末尾注明。
 
-### 第 1 期 · 配置化 + 密钥（建议先做，地基）
+### 第 1 期 · 配置化 + 密钥 ✅ 已落地
 ```
-产出  config/sources.toml + pipeline 读配置 + secrets 走环境变量
-验收  改配置能开关一个源；无密钥时不崩（优雅降级）
-成本  小（半天内）
+产出  config/sources.toml + config/settings.toml + config/secrets.env.example
+      zenav/config/（loader + models + secrets）
+验收  ✅ 改配置即改行为；密钥只走环境变量；缺密钥时给出"怎么配"的指引
+成本  小
 ```
 > 📌 为什么先做：**后面每一期都要加源**，不做这个，每加一个源就改一次代码。
+>
+> **实现说明**：配置文件是**唯一事实来源**，采集层用 `tomllib`（标准库）读它，
+> 服务层用 `zenav.config` 读它 —— 两边共用一份配置，但都不引入第三方依赖。
 
-### 第 2 期 · MCP 服务（本地 stdio 版）
+### 第 2 期 · MCP 服务 ✅ 已落地（10 个工具）
 ```
-产出  mcp_server/（FastMCP）+ 6-8 个工具
-      · search_papers / get_paper
-      · list_categories / category_overview   ← ⭐ 总览表
-      · export_bibtex
-      · add_note / list_notes
-验收  在 Claude Code / Hermes 里能直接调用查到论文、拿到分类总览表
+产出  zenav/interfaces/mcp_server.py（FastMCP）+ zenav/interfaces/cli.py
+工具  get_dataset_info / list_categories / list_topics
+      search_papers / get_paper / latest_papers
+      category_overview            ← ⭐ 总览表
+      export_bibtex
+      zotero_status / push_to_zotero
+验收  ✅ 官方 MCP client 端到端调通（10 个工具全部可用）
 成本  中
 ```
 > ⭐ **这一期就是 Boss 要的「MCP 协议工具 + API 接口」的核心**。
 > 先跑 stdio 本地版：**零安全风险、立刻能用**。
+>
+> **实现说明（与原计划的 3 处差异）**：
+> ① 工具数 6-8 → **10 个**（多了 `latest_papers` / `list_topics` / `zotero_status`）
+> ② 加了一个**命令行入口**（`zenav.interfaces.cli`）—— 调试和 cron 都用得上
+> ③ `add_note` / `list_notes` **延后** —— 笔记的"单一事实来源"放到 Zotero，
+>    等第 5 期一起做（避免现在做一套、到时候推翻）
 
-### 第 3 期 · Zotero 联动
+### 第 3 期 · Zotero 单向推送 ✅ 已落地（简化版）
 ```
-产出  ① Boss 装 Zotero 插件（cookjohn/zotero-mcp）或 54yyyu/zotero-mcp
-      ② 我们实现 push_to_zotero：按分类建 collection + 推论文
-      ③ 我们实现 category_overview → 生成 Zotero note（总览表）
-      ④ 读标注工具（list_zotero_annotations）
-验收  Zotero 里出现「Zero-Shot Navigation」目录，下有分类，
-      每类挂一张总览表；能读到自己在 Zotero 的标注
-前置  ⭐ 需要 Boss 去 Zotero 官网申请一个 API Key（免费）
+产出  zenav/services/zotero.py（Client / State / Service 三层）
+      make zotero-status / zotero-push / zotero-push-yes
+验收  ✅ Zotero 里出现「Zero-Shot Navigation」目录，按分类建子目录；
+      幂等（已推过的不重复推）
+前置  ⭐ 需要一个 Zotero API Key（免费，需勾 write access）
 成本  中
 ```
+> ⭐ **本期的关键简化（Boss 2026-09-30 决策）**：
+> **只做单向（服务 → Zotero），砍掉读标注与双向同步。**
+>
+> 为什么能砍：Zotero **官方客户端自带云同步** ——
+> 往 Zotero 云写条目，本机 Zotero 自动就同步到了。
+> ⇒ **不需要本地 Local API、不需要装插件、不需要常驻进程**。
+> 原计划的 ①②④ 三步直接省掉，第 3 期从"中偏大"变成"中"。
+>
+> **因此与原计划的差异**：
+> · ❌ 不装 `cookjohn/zotero-mcp` 或 `54yyyu/zotero-mcp`（不需要了）
+> · ❌ 不实现 `list_zotero_annotations`（超出"单向"边界）
+> · ✅ 改为自建轻量推送（约 300 行，含幂等状态与分批）
+> · ⏸ `category_overview → Zotero note` 总览表暂缓（Boss 未确认要）
 
-### 第 4 期 · 信息源 + 媒体页
+### 第 4 期 · 信息源 + 媒体页 ⏸ 未做
 ```
 产出  config 里加 media 源 + /media 页面（按发表时间梳理）
 验收  网页能看到该主题的媒体动态；论文列表不受影响
 成本  中
 ```
 > ⚠️ 放在这里而不是前面：**法律/稳定性风险最高，价值最不确定**，
-> 先用 1-3 期把"论文主线"做扎实。
+> 先 用 1-3 期把"论文主线"做扎实。
+> 📌 **Boss 2026-09-30 明确"社媒先放一放"** —— 本期冻结。
 
-### 第 5 期 · 网站写能力 + 远程服务（可选）
+### 第 5 期 · 网站写能力 + 远程服务（可选）⏸ 未做
 ```
-产出  ① 网站笔记 UI → API → 写进 Zotero
-      ② MCP 部署到阿里云（Streamable HTTP + token 认证）
-验收  手机/外部 Agent 能查到、能写笔记
-成本  中大（含安全加固）
-前置  阿里云 ECS（已有）+ HTTPS（已有）
+产出  ① 网站加"记录灵感/标注"（写入走 Zotero，网站只做入口）
+      ② MCP 服务部署到服务器（HTTP 传输 + token 认证）
+      ③ 自己的 Zotero 标注提供 MCP 工具查看
+验收  手机上能记灵感；外部 Agent 能连远程服务
+成本  中大（涉及公网暴露与认证）
 ```
+> 📌 **部分组件已就绪**：`zenav.interfaces.mcp_server` 已支持
+> `--transport http`（含对外暴露的安全校验），只差部署与前端入口。
 
 ---
 

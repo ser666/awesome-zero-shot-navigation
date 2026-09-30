@@ -2,10 +2,18 @@
 
 Thanks for helping make this list better! Three ways to contribute, easiest first.
 
-> 📐 **Planning to extend the system itself?** Read
-> [`ARCHITECTURE.md`](ARCHITECTURE.md) first — it documents the planned
-> evolution (configurable sources, MCP server, Zotero integration) and the
-> design decisions behind it.
+> 📐 **Planning to extend the system itself?** Two docs, different jobs:
+> - [`ARCHITECTURE.md`](ARCHITECTURE.md) — **why**: the design, trade-offs, and
+>   evolution plan (configurable sources, MCP server, Zotero push).
+> - [`SERVICE.md`](SERVICE.md) — **how**: the service layer's user manual
+>   (MCP setup, Zotero credentials, config files, extension points).
+>
+> ⚠️ Two rules that are easy to break accidentally:
+> 1. **The collection layer (`scripts/`) must stay zero-dependency.**
+>    It runs in GitHub Actions without `pip install`. Only the service layer
+>    (`zenav/`) may depend on the MCP SDK.
+> 2. **Business logic lives only in `zenav/services/`.** The MCP tools and the
+>    CLI are thin adapters — never copy logic into them, or the two will drift.
 
 ## 1. Suggest a paper (easiest)
 

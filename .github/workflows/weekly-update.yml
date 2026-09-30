@@ -45,6 +45,26 @@ jobs:
           python-version: "3.11"
 
       # 本项目只用标准库，无需 pip install ✅（更快、更稳）
+      # ⚠️ 服务层核心（zenav）也是标准库 —— 所以下面的自测**不需要装 mcp**
+
+      - name: Self-test (rules · contracts · service layer)
+        # ⭐ 为什么在采集**之前**跑：
+        #    这些是纯离线、秒级的规则与契约校验。若有失败，
+        #    说明代码/配置被改坏了 —— 此时**不该**去写数据，
+        #    否则坏规则会把脏数据写进库（比直接失败更难收拾）。
+        #
+        # ⚠️ 故意**不**跑 `make test`：那个目标结尾会跑 export.py，
+        #    会重写 README.md / papers.json —— 在采集之前重写数据文件
+        #    会让后面几步基于过期数据工作，也污染 diff。
+        run: |
+          set -e
+          echo "── 相关性过滤 ──";      python3 scripts/relevance.py
+          echo "── 分类与子专题 ──";    python3 scripts/topics.py
+          echo "── 会议/期刊分级 ──";   python3 scripts/venues.py
+          echo "── 链接与代码匹配 ──";  python3 scripts/links.py
+          echo "── 数据源注册表契约 ──"; python3 scripts/sources.py --selftest
+          echo "── 仓库一致性 ──";      python3 scripts/selftest.py
+          echo "── 服务层单元测试 ──";  python3 -m unittest discover -s tests -t . -q
 
       - name: Harvest new papers
         # 增量更新：回看 21 天（每周跑一次，留足容错窗口，漏抓的能补回）

@@ -6,6 +6,8 @@
 
 > 🔎 **Browse & search the papers in a web UI → [**ser666.github.io/awesome-zero-shot-navigation**](https://ser666.github.io/awesome-zero-shot-navigation/)**
 
+> 🤖 **Use it from an AI agent (MCP) / CLI / Zotero → see [**SERVICE.md**](SERVICE.md)**
+
 <a href="https://ser666.github.io/awesome-zero-shot-navigation/"><img src="https://img.shields.io/badge/papers-756-0984e3?style=for-the-badge&logo=googlescholar&logoColor=white" alt="Papers"></a> <img src="https://img.shields.io/badge/Top%20venues-94-b0522c?style=for-the-badge" alt="Top venues"> <img src="https://img.shields.io/badge/with%20code-92-0f9d58?style=for-the-badge&logo=github" alt="with code"> <a href="https://github.com/ser666/awesome-zero-shot-navigation/actions"><img src="https://img.shields.io/badge/auto--updated%20weekly-2f6fb2?style=for-the-badge&logo=githubactions&logoColor=white" alt="Auto-updated weekly"></a> <img src="https://img.shields.io/badge/license-MIT-lightgrey?style=for-the-badge" alt="MIT">
 
 ---
@@ -13,12 +15,12 @@
 ## 📊 Stats
 
 - **Total papers**: **756**
-- **New in the last 7 days**: **22**
+- **New in the last 7 days**: **17**
 - **Published at top venues** (CCF-A / major robotics): **94**
 - **With PDF**: 509 ｜ **with code**: 92 ｜ **with project page**: 62
 - **Categories**: 10
 - **Sources**: crossref (159), huggingface (1), openalex (607), openreview (51)
-- **Last updated**: 2026-09-29 04:49 UTC
+- **Last updated**: 2026-09-30 09:31 UTC
 
 ## 🏷 How to read an entry
 
@@ -1830,4 +1832,4 @@ Open an [issue](../../issues) with the paper link and we'll fold it in. The whol
 
 ---
 
-*Auto-generated. Last update: 2026-09-29 04:49 UTC*
+*Auto-generated. Last update: 2026-09-30 09:31 UTC*
