@@ -128,16 +128,55 @@ jobs:
           PY
 
       - name: Commit changes
+        # ⚠️ 为什么不直接 `git push`（2026-09-30 实测踩过）：
+        #
+        #   本步骤是整个任务的**最后一步**，而它之前要跑约 20 分钟采集。
+        #   如果在这段时间里远程 main 前进了（人推代码、其他机器人推数据、
+        #   或工作流被并发触发），直接 push 会因"非 fast-forward"被拒 ——
+        #   于是**整轮采集白跑**，且失败点在最末尾，很难一眼看出原因。
+        #
+        #   实际发生：run #13 就是这样失败的
+        #     [rejected] main -> main (fetch first)
+        #     Updates were rejected because the remote contains work ...
+        #
+        #   解法：先 rebase 到远程最新再 push，并允许重试（并发是瞬时的）。
+        #   已用真实仓库模拟验证：旧写法必失败、新写法第 1 次即成功。
         run: |
+          set -uo pipefail
           git config user.name  "ser666"
           git config user.email "1035534180@qq.com"
           git add README.md docs/data/papers.json data/papers.db
+
           if git diff --staged --quiet; then
             echo "无变化，跳过提交"
-          else
-            git commit -m "chore(data): weekly update $(date -u +'%Y-%m-%d %H:%M UTC')"
-            git push
+            exit 0
           fi
+
+          git commit -m "chore(data): weekly update $(date -u +'%Y-%m-%d %H:%M UTC')"
+
+          BRANCH="${GITHUB_REF_NAME:-main}"
+          for attempt in 1 2 3; do
+            echo "── 尝试 ${attempt}：pull --rebase 后推送 ──"
+            if git pull --rebase --autostash origin "$BRANCH"; then
+              if git push origin "HEAD:$BRANCH"; then
+                echo "✅ 已推送（第 ${attempt} 次尝试）"
+                exit 0
+              fi
+              echo "⚠️ push 失败（远程可能又前进了），重试中…"
+            else
+              # data/papers.db 是**二进制**，rebase 时可能冲突。
+              # 放弃本次尝试：数据下一轮会重新生成（列表是长期资产，不急一轮）。
+              # ⚠️ 但必须打印出来，不能静默 —— 否则又是一次"看不出的失败"。
+              echo "⚠️ rebase 冲突（很可能 data/papers.db 是二进制）"
+              git rebase --abort 2>/dev/null || true
+            fi
+            sleep 5
+          done
+
+          echo "❌ 推送失败（已重试 3 次）"
+          echo "   数据已生成但未提交；下一轮采集会重新生成。"
+          echo "   排查：本步骤之前是否有并发推送到 main？"
+          exit 1
 
       - name: Summary
         if: always()

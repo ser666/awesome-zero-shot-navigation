@@ -391,6 +391,30 @@ python3 scripts/probe_sources.py        # ⚠️ 联网探测（建议在 Action
 | 会议名/子专题不对 | —— | 改 `scripts/venues.py` / `scripts/topics.py`，跑 `--backfill`（秒级，不联网） |
 | **代码链接挂错仓库** | 抽查 `data/papers.db` | 改 `scripts/links.py`（**精度优先于召回**：宁可没有，也不能挂错） |
 | 网站打不开 | Pages 设置 | 确认 Settings → Pages → Source = **GitHub Actions** |
+| ⭐ **整轮采集白跑（最后一步 Commit 失败）** | 本步骤前是否有并发推送到 main | 已修：Commit 步骤先 `pull --rebase` 再 push（含重试）。见下方《已踩过的坑》 |
+
+### ⚠️ 已踩过的坑（按"最末尾失败"排序 —— 这类最难查）
+
+```
+【2026-09-30】Commit changes 失败：非 fast-forward
+  现象  前 10 步全绿（自测/采集/去重/回填/增强/导出/校验），
+        只有最后一步「Commit changes」❌ —— 整轮 20 分钟采集白跑
+  日志  [rejected] main -> main (fetch first)
+        Updates were rejected because the remote contains work
+        that you do not have locally
+  根因  CI 检出的是 8ad87bf，运行期间有人（我）推了新提交 →
+        到 push 时远程已前进 ⇒ 直接 push 被拒
+  修法  Commit 步骤改为：commit → 循环【pull --rebase --autostash → push】
+        （重试 3 次；rebase 冲突则 abort 并明确报错，不静默）
+  已验  用真实仓库模拟：旧写法必失败、新写法第 1 次即成功
+  已护  scripts/selftest.py 新增检查④：push 前必须有**真命令**跑 pull --rebase
+        ⚠️ 这个检查第一版是空转的（只搜 "pull --rebase" 字符串，
+           连 echo 里的同名文字都能骗过它）——
+           反向验证时发现并修强：剥掉注释行 + 命令位正则匹配
+```
+
+**⭐ 通用教训**：**任务越靠后的步骤失败，损失越大。**
+所以对"最后一步"要格外加固（重试、幂等、明确报错）。
 
 ### ⚠️ 一个要接受的现实：每周都会进来几篇杂音
 

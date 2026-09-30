@@ -8,6 +8,10 @@
      （改了文件名忘了改 workflow → 云端跑起来才报错）
   ③ 工作流里引用 secrets 的地方，只允许白名单内的名字
      （防止写错 secret 名导致 token 装载失败且不报错）
+  ④ ⭐ 提交数据的步骤必须先 pull --rebase 再 push
+     （2026-09-30 实测：并发推送会让最后一步失败 ⇒ 整轮采集白跑）
+  ⑤ ⭐ 自测步骤必须排在采集之前
+     （坏规则若先写数据，会污染库 —— 比直接失败更难收拾）
 
 不联网，秒级。用法：
     python3 scripts/selftest.py
@@ -37,6 +41,15 @@ def fail(msg: str) -> None:
 
 def good(msg: str) -> None:
     print(f"   ✅ {msg}")
+
+
+def step_block(text: str, name: str) -> str | None:
+    """取出某个 step 的源文本（从 `- name: X` 到下一个同级 `- name:`）。"""
+    m = re.search(
+        rf"^\s*- name:\s*{re.escape(name)}\s*$(.*?)(?=^\s*- name:|\Z)",
+        text, re.M | re.S,
+    )
+    return m.group(0) if m else None
 
 
 print("=" * 72)
@@ -83,6 +96,80 @@ for wf in sorted(WF_DIR.glob("*.yml")):
         else:
             fail(f"{wf.name:22s} secrets.{n} —— 未登记（拼错会导致 token 装不上）")
             print(f"      登记位置: scripts/selftest.py → ALLOWED_SECRETS")
+
+print()
+print("=" * 72)
+print("④ ⭐ 提交数据的步骤：push 前必须**真正执行** pull --rebase")
+print("=" * 72)
+# 背景：采集耗时约 20 分钟，期间远程 main 可能前进（人/机器人推送）。
+#      直接 push 会因非 fast-forward 被拒 ⇒ **整轮采集白跑**，
+#      且失败点在最末尾（很难一眼看出原因）。
+#      2026-09-30 run #13 就是这样失败的。
+#
+# ⚠️ 检查方式很讲究：必须校验"有一个**真命令**在跑 pull --rebase"，
+#    而不是"文本里出现过这个词"。
+#    第一版就写成了简单的 `"pull --rebase" in block` ——
+#    结果连 `echo "── 尝试 1：pull --rebase 后推送 ──"` 都能骗过它
+#    （反向验证时才发现：删掉真命令、只留 echo，检查居然还通过）。
+#    ⇒ 现在的做法：先剥掉注释行，再用"命令位"正则匹配。
+PULL_CMD_RE = re.compile(
+    r"^\s*(?:if\s+|&&\s*|;\s*|\|\|\s*|then\s+|else\s+)*!?\s*"
+    r"git\s+pull\s+[^\n]*--rebase",
+    re.M,
+)
+
+
+def strip_comments(text: str) -> str:
+    """去掉整行注释（`#` 开头的行）—— 注释里提到 pull --rebase 不算数。"""
+    return "\n".join(
+        ln for ln in text.splitlines() if not ln.strip().startswith("#")
+    )
+
+
+FOUND_ANY = False
+for wf in sorted(WF_DIR.glob("*.yml")):
+    text = wf.read_text(encoding="utf-8")
+    if "git push" not in text:
+        continue
+    FOUND_ANY = True
+    for name in re.findall(r"^\s*- name:\s*(.+?)\s*$", text, re.M):
+        block = step_block(text, name.strip())
+        if not block or "git push" not in block:
+            continue
+        if PULL_CMD_RE.search(strip_comments(block)):
+            good(f"{wf.name:22s} 「{name.strip()}」确有 pull --rebase 命令")
+        else:
+            fail(f"{wf.name:22s} 「{name.strip()}」直接 push，"
+                 f"未先执行 pull --rebase（并发推送会致整体失败）")
+            print("      → 修法：git pull --rebase --autostash origin "
+                  "$BRANCH && git push origin HEAD:$BRANCH")
+            print("        并加重试循环（并发是瞬时的）")
+if not FOUND_ANY:
+    print("   ℹ️ 没有工作流执行 git push（跳过）")
+
+print()
+print("=" * 72)
+print("⑤ ⭐ 自测步骤必须排在采集之前")
+print("=" * 72)
+# 理由：规则/契约/服务层测试若失败，说明代码被改坏了 ——
+#      此时**不该**去写数据，否则坏规则会把脏数据写进库。
+for wf in sorted(WF_DIR.glob("*.yml")):
+    text = wf.read_text(encoding="utf-8")
+    names = [n.strip() for n in re.findall(r"^\s*- name:\s*(.+?)\s*$", text, re.M)]
+    idx_selftest = next((i for i, n in enumerate(names)
+                         if "Self-test" in n), None)
+    if idx_selftest is None:
+        continue
+    idx_harvest = next((i for i, n in enumerate(names)
+                        if n.startswith("Harvest") or "采集" in n), None)
+    if idx_harvest is None:
+        good(f"{wf.name:22s} 有 Self-test，无采集步骤（顺序无冲突）")
+    elif idx_selftest < idx_harvest:
+        good(f"{wf.name:22s} Self-test（#{idx_selftest}）在采集"
+             f"（#{idx_harvest}）之前")
+    else:
+        fail(f"{wf.name:22s} Self-test 排在采集**之后** —— "
+             f"坏规则会先把脏数据写进库")
 
 print()
 print("=" * 72)
