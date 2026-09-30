@@ -173,6 +173,43 @@ for wf in sorted(WF_DIR.glob("*.yml")):
 
 print()
 print("=" * 72)
+print("⑥ ⭐ README 里的相对链接是否指向真实文件")
+print("=" * 72)
+# 背景：README.md 由 scripts/export.py **自动生成**。
+#      若生成器里写了一个链接（如 SERVICE.md），而该文件被改名/删除，
+#      或生成器的改动**没有被提交**（2026-09-30 实际发生过：
+#      export.py 的改动漏提交 → CI 用旧版生成器重写 README → 链接丢失），
+#      读者就会点到一个 404。这类问题不报错，只能靠检查。
+readme = ROOT / "README.md"
+if not readme.is_file():
+    fail("README.md 不存在")
+else:
+    text = readme.read_text(encoding="utf-8")
+    # markdown 链接：](target)
+    links = set(re.findall(r"\]\(([^)\s]+)\)", text))
+    # ⚠️ 只查"**仓库内**的相对路径"：
+    #    · 跳过 http(s)/mailto/锚点/绝对路径
+    #    · 跳过以 `../` 开头的 —— 那是 GitHub **网页**相对链接
+    #      （如 `../../issues` → GitHub 仓库的 Issues 页），不是本地文件。
+    #      第一版没排除，导致 `../../issues` 被误报成"文件不存在"。
+    #      ⇒ 教训：检查项也会误报，必须用真实仓库调准，别一写完就信。
+    rel = sorted(
+        l for l in links
+        if not l.startswith(("http://", "https://", "mailto:", "#", "/", "../"))
+    )
+    if not rel:
+        print("   ℹ️ README 里没有仓库内相对链接（跳过）")
+    for l in rel:
+        target = l.split("#")[0]
+        if not target:
+            continue
+        if (ROOT / target).exists():
+            good(f"README → {target}")
+        else:
+            fail(f"README 链接到 {target} —— **文件不存在**（读者会看到 404）")
+
+print()
+print("=" * 72)
 print("总判定:", "✅ 全部通过" if ok else "❌ 有失败")
 print("=" * 72)
 sys.exit(0 if ok else 1)

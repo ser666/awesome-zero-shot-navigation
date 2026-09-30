@@ -214,6 +214,9 @@ def build_readme(rows: list) -> str:
     L.append(
         f"> 🔎 **Browse & search the papers in a web UI → "
         f"[**{SITE.replace('https://', '').rstrip('/')}**]({SITE})**\n")
+    L.append(
+        "> 🤖 **Use it from an AI agent (MCP) / CLI / Zotero → "
+        "see [**SERVICE.md**](SERVICE.md)**\n")
 
     # ── 徽章行
     L.append(
