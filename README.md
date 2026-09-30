@@ -10,19 +10,19 @@
 
 > 🤖 **Use it from an AI agent (MCP) / CLI / Zotero → see [**SERVICE.md**](SERVICE.md)**
 
-<a href="https://ser666.github.io/awesome-zero-shot-navigation/"><img src="https://img.shields.io/badge/papers-770-0984e3?style=for-the-badge&logo=googlescholar&logoColor=white" alt="Papers"></a> <img src="https://img.shields.io/badge/Top%20venues-94-b0522c?style=for-the-badge" alt="Top venues"> <img src="https://img.shields.io/badge/with%20code-95-0f9d58?style=for-the-badge&logo=github" alt="with code"> <a href="https://github.com/ser666/awesome-zero-shot-navigation/actions"><img src="https://img.shields.io/badge/auto--updated%20weekly-2f6fb2?style=for-the-badge&logo=githubactions&logoColor=white" alt="Auto-updated weekly"></a> <img src="https://img.shields.io/badge/license-MIT-lightgrey?style=for-the-badge" alt="MIT">
+<a href="https://ser666.github.io/awesome-zero-shot-navigation/"><img src="https://img.shields.io/badge/papers-771-0984e3?style=for-the-badge&logo=googlescholar&logoColor=white" alt="Papers"></a> <img src="https://img.shields.io/badge/Top%20venues-94-b0522c?style=for-the-badge" alt="Top venues"> <img src="https://img.shields.io/badge/with%20code-95-0f9d58?style=for-the-badge&logo=github" alt="with code"> <a href="https://github.com/ser666/awesome-zero-shot-navigation/actions"><img src="https://img.shields.io/badge/auto--updated%20weekly-2f6fb2?style=for-the-badge&logo=githubactions&logoColor=white" alt="Auto-updated weekly"></a> <img src="https://img.shields.io/badge/license-MIT-lightgrey?style=for-the-badge" alt="MIT">
 
 ---
 
 ## 📊 Stats
 
-- **Total papers**: **770**
+- **Total papers**: **771**
 - **New in the last 7 days**: **31**
 - **Published at top venues** (CCF-A / major robotics): **94**
 - **With PDF**: 514 ｜ **with code**: 95 ｜ **with project page**: 66
 - **Categories**: 10
-- **Sources**: crossref (160), huggingface (1), openalex (620), openreview (51)
-- **Last updated**: 2026-09-30 13:21 UTC
+- **Sources**: crossref (161), huggingface (1), openalex (620), openreview (51)
+- **Last updated**: 2026-09-30 13:46 UTC
 
 ## 🏷 How to read an entry
 
@@ -39,7 +39,7 @@
 
 - [Object-Goal Navigation (ObjectNav)](#objectnav) — 171 papers
 - [Vision-and-Language Navigation (VLN)](#vln) — 158 papers
-- [Aerial VLN](#aerial-vln) — 92 papers
+- [Aerial VLN](#aerial-vln) — 93 papers
 - [Semantic & Open-Vocabulary Navigation](#semantic-nav) — 59 papers
 - [Image & Point-Goal Navigation](#image-goal) — 25 papers
 - [Multi-Object Navigation](#multi-object) — 18 papers
@@ -764,7 +764,7 @@
 
 <a id="aerial-vln"></a>
 
-## Aerial VLN (92)
+## Aerial VLN (93)
 
 ### 2026
 
@@ -778,6 +778,8 @@
   <a href="https://arxiv.org/pdf/2609.26007"><img src="https://img.shields.io/badge/arXiv%202609.26007-b31b1b" alt="arXiv 2609.26007"></a> <a href="https://doi.org/10.48550/arxiv.2609.26007"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Yuhang Zhang, Rangya Zhang, Yujing Shang et al. · 🔓 OA
 - [2026] [The Aeronautical Journal 2026] [A collaborative navigation method based on a delay-aware factor graph](https://doi.org/10.1017/aer.2026.10227)  
   <a href="https://doi.org/10.1017/aer.2026.10227"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Wang, Hongru, Fang, Tongen
+- [2026] [Electronics 2026] [Formulation of a Navigation Path for an Unmanned Aerial Vehicle in a Dynamic Environment](https://doi.org/10.18372/1990-5548.89.21476)  
+  <a href="https://doi.org/10.18372/1990-5548.89.21476"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Voitekh, Mykola, Nechyporuk, Vitaly
 - [2026] [arXiv] [TADreamer: Zero-Shot Language-Guided 3D Navigation for Terrestrial-Aerial Bimodal Robots via Video Imagination](https://doi.org/10.48550/arxiv.2609.19824)  
   <a href="https://arxiv.org/pdf/2609.19824"><img src="https://img.shields.io/badge/arXiv%202609.19824-b31b1b" alt="arXiv 2609.19824"></a> <a href="https://doi.org/10.48550/arxiv.2609.19824"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Xiangyu Li, Tiancheng Lai, Xijie Huang et al. · 🔓 OA
 - [2026] [Unmanned Systems 2026] [A Multi-UAV Cooperative Navigation Method Based on Policy Decomposition Structure](https://doi.org/10.1142/s2301385028500719)  
@@ -1862,4 +1864,4 @@ Open an [issue](../../issues) with the paper link and we'll fold it in. The whol
 
 ---
 
-*Auto-generated. Last update: 2026-09-30 13:21 UTC*
+*Auto-generated. Last update: 2026-09-30 13:46 UTC*
