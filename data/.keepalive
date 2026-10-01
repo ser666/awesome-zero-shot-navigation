@@ -1,0 +1,4 @@
+keepalive by ser666 (ser666 account commit)
+purpose: GitHub disables scheduled workflows after 60 days of no
+          repository activity — this commit keeps the schedule alive.
+updated: 2026-10-01T03:00:43.160750+00:00
