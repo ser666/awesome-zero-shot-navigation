@@ -10,19 +10,19 @@
 
 > 🤖 **Use it from an AI agent (MCP) / CLI / Zotero → see [**SERVICE.md**](SERVICE.md)**
 
-<a href="https://ser666.github.io/awesome-zero-shot-navigation/"><img src="https://img.shields.io/badge/papers-798-0984e3?style=for-the-badge&logo=googlescholar&logoColor=white" alt="Papers"></a> <img src="https://img.shields.io/badge/Top%20venues-94-b0522c?style=for-the-badge" alt="Top venues"> <img src="https://img.shields.io/badge/with%20code-101-0f9d58?style=for-the-badge&logo=github" alt="with code"> <a href="https://github.com/ser666/awesome-zero-shot-navigation/actions"><img src="https://img.shields.io/badge/auto--updated%20weekly-2f6fb2?style=for-the-badge&logo=githubactions&logoColor=white" alt="Auto-updated weekly"></a> <img src="https://img.shields.io/badge/license-MIT-lightgrey?style=for-the-badge" alt="MIT">
+<a href="https://ser666.github.io/awesome-zero-shot-navigation/"><img src="https://img.shields.io/badge/papers-799-0984e3?style=for-the-badge&logo=googlescholar&logoColor=white" alt="Papers"></a> <img src="https://img.shields.io/badge/Top%20venues-94-b0522c?style=for-the-badge" alt="Top venues"> <img src="https://img.shields.io/badge/with%20code-101-0f9d58?style=for-the-badge&logo=github" alt="with code"> <a href="https://github.com/ser666/awesome-zero-shot-navigation/actions"><img src="https://img.shields.io/badge/auto--updated%20weekly-2f6fb2?style=for-the-badge&logo=githubactions&logoColor=white" alt="Auto-updated weekly"></a> <img src="https://img.shields.io/badge/license-MIT-lightgrey?style=for-the-badge" alt="MIT">
 
 ---
 
 ## 📊 Stats
 
-- **Total papers**: **798**
-- **New in the last 7 days**: **26**
+- **Total papers**: **799**
+- **New in the last 7 days**: **27**
 - **Published at top venues** (CCF-A / major robotics): **94**
-- **With PDF**: 550 ｜ **with code**: 101 ｜ **with project page**: 72
+- **With PDF**: 551 ｜ **with code**: 101 ｜ **with project page**: 72
 - **Categories**: 10
-- **Sources**: crossref (170), huggingface (1), openalex (640), openreview (51)
-- **Last updated**: 2026-10-06 02:49 UTC
+- **Sources**: crossref (171), huggingface (1), openalex (641), openreview (51)
+- **Last updated**: 2026-10-06 03:08 UTC
 
 ## 🏷 How to read an entry
 
@@ -43,7 +43,7 @@
 - [Semantic & Open-Vocabulary Navigation](#semantic-nav) — 60 papers
 - [Image & Point-Goal Navigation](#image-goal) — 25 papers
 - [Multi-Object Navigation](#multi-object) — 18 papers
-- [Social Navigation](#social-nav) — 41 papers
+- [Social Navigation](#social-nav) — 42 papers
 - [Exploration](#exploration) — 22 papers
 - [LLM / VLM Navigation Agents](#llm-agents) — 89 papers
 - [Other](#other) — 107 papers
@@ -120,7 +120,7 @@
 - [2026] [arXiv] [ViTL: Temporal Logic-Guided Zero-Shot Natural Language Navigation via Vision-Language Models](https://doi.org/10.48550/arxiv.2606.30696)  
   <a href="https://arxiv.org/pdf/2606.30696"><img src="https://img.shields.io/badge/arXiv%202606.30696-b31b1b" alt="arXiv 2606.30696"></a> <a href="https://doi.org/10.48550/arxiv.2606.30696"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Kaier Liang, Hengde Dai, Cristian-Ioan Vasile · 🔓 OA
 - [2026] [arXiv] [SAGE-Nav: Leveraging LLM Planning and Alignment Fusion for Hierarchical Scene Graph-Guided Navigation](https://doi.org/10.48550/arxiv.2606.25497)  
-  <a href="https://arxiv.org/pdf/2606.25497"><img src="https://img.shields.io/badge/arXiv%202606.25497-b31b1b" alt="arXiv 2606.25497"></a> <a href="https://doi.org/10.48550/arxiv.2606.25497"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Hao Su, Y Huang, Yukai Ma et al. · ⭐ 1 · 🔓 OA
+  <a href="https://arxiv.org/pdf/2606.25497"><img src="https://img.shields.io/badge/arXiv%202606.25497-b31b1b" alt="arXiv 2606.25497"></a> <a href="https://doi.org/10.48550/arxiv.2606.25497"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Hao Su, Y Huang, Yukai Ma et al. · ⭐ 2 · 🔓 OA
 - [2026] [RA-L 2026] [IRAZON: Iterative ReAct With LLMs for Adaptive Zero-Shot Object Goal Navigation](https://doi.org/10.1109/lra.2026.3706949)  
   <a href="https://doi.org/10.1109/lra.2026.3706949"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Y N Li, Longlei Mei, Mao Qin et al.
 - [2026] [arXiv] [SurveilNav: Collaborative Object Goal Navigation with Robot and Surveillance System](https://doi.org/10.48550/arxiv.2606.25119)  
@@ -1267,14 +1267,16 @@
 
 <a id="social-nav"></a>
 
-## Social Navigation (41)
+## Social Navigation (42)
 
 ### 2026
 
+- [2026] [Journal of Sensor and Actuator Networks 2026] [BRiDGENav: Belief-Driven Risk-Aware Dynamic Guidance and Event-Triggered Navigation](https://doi.org/10.3390/jsan15050080)  
+  <a href="https://doi.org/10.3390/jsan15050080"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Adikaram, Nimantha, Dombawala, Charitha, Moratuwage, Diluka et al.
 - [2026] [arXiv] [Social-WM: Safety-Aware Latent World Models for Robot Social Navigation](https://doi.org/10.48550/arxiv.2609.40177)  
   <a href="https://arxiv.org/pdf/2609.40177"><img src="https://img.shields.io/badge/arXiv%202609.40177-b31b1b" alt="arXiv 2609.40177"></a> <a href="https://doi.org/10.48550/arxiv.2609.40177"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Zhihao Zheng, Mooi Choo Chuah · 🔓 OA
 - [2026] [ACM Transactions on Human-Robot Interaction 2026] [Human-inspired Route Selection for Efficient Social Robot Navigation in Narrow Spaces](https://doi.org/10.1145/3850155)  
-  <a href="https://doi.org/10.1145/3850155"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Liu, Yuyi, Satake, Satoru, Kanda, Takayuki
+  <a href="https://dl.acm.org/doi/pdf/10.1145/3850155?download=true"><img src="https://img.shields.io/badge/PDF-b31b1b" alt="PDF"></a> <a href="https://doi.org/10.1145/3850155"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Liu, Yuyi, Satake, Satoru, Kanda, Takayuki · 🔓 OA
 - [2026] [arXiv] [Rethinking Legibility in Social Robot Hallway Navigation: Impact of Intent Representation and Human Distraction](https://doi.org/10.48550/arxiv.2609.40158)  
   <a href="https://arxiv.org/pdf/2609.40158"><img src="https://img.shields.io/badge/arXiv%202609.40158-b31b1b" alt="arXiv 2609.40158"></a> <a href="https://github.com/fluentrobotics/Legible_MPPI"><img src="https://img.shields.io/badge/code-0f9d58?logo=github" alt="code"></a> <img src="https://img.shields.io/github/stars/fluentrobotics/Legible_MPPI?label=%E2%AD%90" alt="stars"> <a href="https://doi.org/10.48550/arxiv.2609.40158"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Pranav Goyal, Andrew Stratton, Christoforos Mavrogiannis · 🔓 OA
 - [2026] [arXiv] [Learning Social Navigation from Internet Videos in the Policy State Space](https://doi.org/10.48550/arxiv.2609.37476)  
@@ -1627,7 +1629,7 @@
 ### 2026
 
 - [2026] [ACM Computing Surveys 2026] [A Survey of Robotic Navigation and Manipulation with Physics Simulators in the Era of Embodied AI](https://doi.org/10.1145/3856802)  
-  <a href="https://doi.org/10.1145/3856802"><img src="https://img.shields.io/badge/PDF-b31b1b" alt="PDF"></a> <a href="https://doi.org/10.1145/3856802"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Wong, Lik Hang Kenny, Kang, Xueyang, Bai, Kaixin et al. · 🔓 OA
+  <a href="https://doi.org/10.1145/3856802"><img src="https://img.shields.io/badge/PDF-b31b1b" alt="PDF"></a> <a href="https://doi.org/10.1145/3856802"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Wong, Lik Hang Kenny, Kang, Xueyang, Bai, Kaixin et al. · ⭐ 22 · 🔓 OA
 - [2026] [International Journal of Electrical and Com… 2026] [Navigation and steering control of a service robot using Kinectv2 and LiDAR](https://doi.org/10.11591/ijece.v16i5.pp2454-2472)  
   <a href="https://ijece.iaescore.com/index.php/IJECE/article/download/42287/18872"><img src="https://img.shields.io/badge/PDF-b31b1b" alt="PDF"></a> <a href="https://doi.org/10.11591/ijece.v16i5.pp2454-2472"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Dwijayanti, Suci, Miranda, Silfani Sandra, Suprapto, Bhakti Yudho et al. · 🔓 OA
 - [2026] [Appl. Sci. 2026] [Mode-Aware Adaptive Navigation for Autonomous Underwater Vehicles Using Multimodal Sensing and Optical Feedback in Simulation Environment](https://doi.org/10.3390/app16199653)  
@@ -1713,7 +1715,7 @@
 - [2026] [arXiv] [NavWM: A Unified Navigation World Model for Foresight-Driven Planning](https://doi.org/10.48550/arxiv.2606.24101)  
   <a href="https://arxiv.org/pdf/2606.24101"><img src="https://img.shields.io/badge/arXiv%202606.24101-b31b1b" alt="arXiv 2606.24101"></a> <a href="https://doi.org/10.48550/arxiv.2606.24101"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Y. Mei, Longteng Guo, YU Ming-ming et al. · ⭐ 4 · 🔓 OA
 - [2026] [arXiv] [RAVEN: Long-Horizon Reasoning & Navigation with a Visuo-Spatio-Temporal Memory](https://doi.org/10.48550/arxiv.2606.25206)  
-  <a href="https://arxiv.org/pdf/2606.25206"><img src="https://img.shields.io/badge/arXiv%202606.25206-b31b1b" alt="arXiv 2606.25206"></a> <a href="https://doi.org/10.48550/arxiv.2606.25206"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Yixun Hu, Zhicheng Zheng, Lihan Zha et al. · ⭐ 2 · 🔓 OA
+  <a href="https://arxiv.org/pdf/2606.25206"><img src="https://img.shields.io/badge/arXiv%202606.25206-b31b1b" alt="arXiv 2606.25206"></a> <a href="https://doi.org/10.48550/arxiv.2606.25206"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Yixun Hu, Zhicheng Zheng, Lihan Zha et al. · ⭐ 3 · 🔓 OA
 - [2026] [arXiv] [Asymmetric physics enables efficient learning in quadrupedal robot swarms](https://doi.org/10.48550/arxiv.2606.23153)  
   <a href="https://arxiv.org/pdf/2606.23153"><img src="https://img.shields.io/badge/arXiv%202606.23153-b31b1b" alt="arXiv 2606.23153"></a> <a href="https://doi.org/10.48550/arxiv.2606.23153"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Yuang Zhang, Y Song, Zhihao He et al. · 🔓 OA
 - [2026] [Zenodo] [DRLAlgoMapfree: Reproducibility Repository for DRL Algorithms in Map-Free Robot Navigation](https://doi.org/10.5281/zenodo.20715169)  
@@ -1933,4 +1935,4 @@ Open an [issue](../../issues) with the paper link and we'll fold it in. The whol
 
 ---
 
-*Auto-generated. Last update: 2026-10-06 02:49 UTC*
+*Auto-generated. Last update: 2026-10-06 03:08 UTC*
