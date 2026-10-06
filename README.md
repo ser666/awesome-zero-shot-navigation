@@ -17,12 +17,12 @@
 ## 📊 Stats
 
 - **Total papers**: **798**
-- **New in the last 7 days**: **36**
+- **New in the last 7 days**: **26**
 - **Published at top venues** (CCF-A / major robotics): **94**
 - **With PDF**: 550 ｜ **with code**: 101 ｜ **with project page**: 72
 - **Categories**: 10
 - **Sources**: crossref (170), huggingface (1), openalex (640), openreview (51)
-- **Last updated**: 2026-10-05 09:25 UTC
+- **Last updated**: 2026-10-06 02:49 UTC
 
 ## 🏷 How to read an entry
 
@@ -47,7 +47,7 @@
 - [Exploration](#exploration) — 22 papers
 - [LLM / VLM Navigation Agents](#llm-agents) — 89 papers
 - [Other](#other) — 107 papers
-- [Related awesome lists](#-related-awesome-lists)
+- [Related lists & tools](#-related-lists--tools)
 - [How it works / Contributing](#-about)
 
 ---
@@ -1862,9 +1862,11 @@
 
 ---
 
-## 🔗 Related Awesome Lists
+## 🔗 Related Lists & Tools
 
-This list is intentionally **narrow and deep** (zero-shot navigation only). For broader coverage see:
+This list is intentionally **narrow and deep** (zero-shot navigation only). Here is where it sits in the wider ecosystem.
+
+**Broader curated lists** (embodied AI / VLA / VLN)
 
 - [jonyzhang2023/awesome-embodied-vla-va-vln](https://github.com/jonyzhang2023/awesome-embodied-vla-va-vln) — Embodied AI, VLA, VA and VLN — the largest curated list
 - [UCSB-AI/awesome-vision-language-navigation](https://github.com/UCSB-AI/awesome-vision-language-navigation) — Vision-and-Language Navigation (ACL 2022 survey companion)
@@ -1873,6 +1875,19 @@ This list is intentionally **narrow and deep** (zero-shot navigation only). For 
 - [zchoi/Awesome-Embodied-Robotics-and-Agent](https://github.com/zchoi/Awesome-Embodied-Robotics-and-Agent) — Embodied robotics + LLM agents
 - [daqingliu/awesome-vln](https://github.com/daqingliu/awesome-vln) — Vision-Language Navigation papers
 - [luohongkun.top/Embodied-AI-Daily](https://luohongkun.top/Embodied-AI-Daily) — Daily arXiv digest with fine-grained topic tags
+
+**Auto-updated paper lists** (same *form* as this project)
+
+- [longxiang-ai/awesome-gaussians](https://github.com/longxiang-ai/awesome-gaussians) — 3D Gaussian Splatting — daily automated updates from arXiv
+- [NickDee96/ASR-TTS-paper-daily](https://github.com/NickDee96/ASR-TTS-paper-daily) — ASR/TTS — daily arXiv curation, published as a site
+
+**Paper search & agent tooling** (tools, not datasets)
+
+- [blazickjp/arxiv-mcp-server](https://github.com/blazickjp/arxiv-mcp-server) — MCP server for agent literature work (LaTeX section reads, BibTeX from arXiv metadata)
+- [openags/paper-search-mcp](https://github.com/openags/paper-search-mcp) — MCP / CLI — search and download across arXiv, PubMed, bioRxiv
+- [Future-House/paper-qa](https://github.com/Future-House/paper-qa) — High-accuracy RAG for answering questions from scientific docs
+
+> This project differs from the lists above in one respect: it ships a **structured, machine-readable dataset** (`papers.json`) plus an **MCP / CLI / Zotero service layer**, so the same content serves both humans (web UI) and AI agents — most lists stop at a hand-maintained `README.md`.
 
 ---
 
@@ -1918,4 +1933,4 @@ Open an [issue](../../issues) with the paper link and we'll fold it in. The whol
 
 ---
 
-*Auto-generated. Last update: 2026-10-05 09:25 UTC*
+*Auto-generated. Last update: 2026-10-06 02:49 UTC*

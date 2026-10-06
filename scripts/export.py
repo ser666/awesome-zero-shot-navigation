@@ -277,7 +277,7 @@ def build_readme(rows: list) -> str:
         if cats.get(c):
             L.append(f"- [{c}](#{CAT_ANCHOR.get(c, 'other')}) — "
                      f"{len(cats[c])} papers")
-    L.append("- [Related awesome lists](#-related-awesome-lists)")
+    L.append("- [Related lists & tools](#-related-lists--tools)")
     L.append("- [How it works / Contributing](#-about)\n")
     L.append("---\n")
 
@@ -302,30 +302,53 @@ def build_readme(rows: list) -> str:
         L.append("")
     L.append("---\n")
 
-    # ── 相关列表
-    L.append("## 🔗 Related Awesome Lists\n")
+    # ── 相关列表与工具（三组：宽口径同类 / 同形态 / 生态工具）
+    L.append("## 🔗 Related Lists & Tools\n")
     L.append("This list is intentionally **narrow and deep** (zero-shot navigation "
-             "only). For broader coverage see:\n")
-    for name, desc in [
-        ("jonyzhang2023/awesome-embodied-vla-va-vln",
-         "Embodied AI, VLA, VA and VLN — the largest curated list"),
-        ("UCSB-AI/awesome-vision-language-navigation",
-         "Vision-and-Language Navigation (ACL 2022 survey companion)"),
-        ("visitworld123/Awesome-Robot-Use-Agent",
-         "Robot-use agents, with badge-style entries"),
-        ("Franky-X/Awesome-Embodied-Navigation",
-         "Embodied navigation: concept, paradigm and SOTA"),
-        ("zchoi/Awesome-Embodied-Robotics-and-Agent",
-         "Embodied robotics + LLM agents"),
-        ("daqingliu/awesome-vln", "Vision-Language Navigation papers"),
-        ("luohongkun.top/Embodied-AI-Daily",
-         "Daily arXiv digest with fine-grained topic tags"),
+             "only). Here is where it sits in the wider ecosystem.\n")
+    for group, items in [
+        ("**Broader curated lists** (embodied AI / VLA / VLN)", [
+            ("jonyzhang2023/awesome-embodied-vla-va-vln",
+             "Embodied AI, VLA, VA and VLN — the largest curated list"),
+            ("UCSB-AI/awesome-vision-language-navigation",
+             "Vision-and-Language Navigation (ACL 2022 survey companion)"),
+            ("visitworld123/Awesome-Robot-Use-Agent",
+             "Robot-use agents, with badge-style entries"),
+            ("Franky-X/Awesome-Embodied-Navigation",
+             "Embodied navigation: concept, paradigm and SOTA"),
+            ("zchoi/Awesome-Embodied-Robotics-and-Agent",
+             "Embodied robotics + LLM agents"),
+            ("daqingliu/awesome-vln", "Vision-Language Navigation papers"),
+            ("luohongkun.top/Embodied-AI-Daily",
+             "Daily arXiv digest with fine-grained topic tags"),
+        ]),
+        ("**Auto-updated paper lists** (same *form* as this project)", [
+            ("longxiang-ai/awesome-gaussians",
+             "3D Gaussian Splatting — daily automated updates from arXiv"),
+            ("NickDee96/ASR-TTS-paper-daily",
+             "ASR/TTS — daily arXiv curation, published as a site"),
+        ]),
+        ("**Paper search & agent tooling** (tools, not datasets)", [
+            ("blazickjp/arxiv-mcp-server",
+             "MCP server for agent literature work (LaTeX section reads, "
+             "BibTeX from arXiv metadata)"),
+            ("openags/paper-search-mcp",
+             "MCP / CLI — search and download across arXiv, PubMed, bioRxiv"),
+            ("Future-House/paper-qa",
+             "High-accuracy RAG for answering questions from scientific docs"),
+        ]),
     ]:
-        if name.startswith("luohongkun"):
-            L.append(f"- [{name}](https://{name}) — {desc}")
-        else:
-            L.append(f"- [{name}](https://github.com/{name}) — {desc}")
-    L.append("")
+        L.append(f"{group}\n")
+        for name, desc in items:
+            url = (f"https://{name}" if name.startswith("luohongkun")
+                   else f"https://github.com/{name}")
+            L.append(f"- [{name}]({url}) — {desc}")
+        L.append("")
+    L.append("> This project differs from the lists above in one respect: it ships a "
+             "**structured, machine-readable dataset** (`papers.json`) plus an "
+             "**MCP / CLI / Zotero service layer**, so the same content serves both "
+             "humans (web UI) and AI agents — most lists stop at a hand-maintained "
+             "`README.md`.\n")
     L.append("---\n")
 
     # ── About
