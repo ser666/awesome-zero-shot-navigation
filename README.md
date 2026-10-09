@@ -10,19 +10,19 @@
 
 > 🤖 **Use it from an AI agent (MCP) / CLI / Zotero → see [**SERVICE.md**](SERVICE.md)**
 
-<a href="https://ser666.github.io/awesome-zero-shot-navigation/"><img src="https://img.shields.io/badge/papers-799-0984e3?style=for-the-badge&logo=googlescholar&logoColor=white" alt="Papers"></a> <img src="https://img.shields.io/badge/Top%20venues-94-b0522c?style=for-the-badge" alt="Top venues"> <img src="https://img.shields.io/badge/with%20code-101-0f9d58?style=for-the-badge&logo=github" alt="with code"> <a href="https://github.com/ser666/awesome-zero-shot-navigation/actions"><img src="https://img.shields.io/badge/auto--updated%20weekly-2f6fb2?style=for-the-badge&logo=githubactions&logoColor=white" alt="Auto-updated weekly"></a> <img src="https://img.shields.io/badge/license-MIT-lightgrey?style=for-the-badge" alt="MIT">
+<a href="https://ser666.github.io/awesome-zero-shot-navigation/"><img src="https://img.shields.io/badge/papers-824-0984e3?style=for-the-badge&logo=googlescholar&logoColor=white" alt="Papers"></a> <img src="https://img.shields.io/badge/Top%20venues-94-b0522c?style=for-the-badge" alt="Top venues"> <img src="https://img.shields.io/badge/with%20code-107-0f9d58?style=for-the-badge&logo=github" alt="with code"> <a href="https://github.com/ser666/awesome-zero-shot-navigation/actions"><img src="https://img.shields.io/badge/auto--updated%20weekly-2f6fb2?style=for-the-badge&logo=githubactions&logoColor=white" alt="Auto-updated weekly"></a> <img src="https://img.shields.io/badge/license-MIT-lightgrey?style=for-the-badge" alt="MIT">
 
 ---
 
 ## 📊 Stats
 
-- **Total papers**: **799**
-- **New in the last 30 days**: **107**
+- **Total papers**: **824**
+- **New in the last 30 days**: **132**
 - **Published at top venues** (CCF-A / major robotics): **94**
-- **With PDF**: 551 ｜ **with code**: 101 ｜ **with project page**: 72
+- **With PDF**: 562 ｜ **with code**: 107 ｜ **with project page**: 75
 - **Categories**: 10
-- **Sources**: crossref (171), huggingface (1), openalex (641), openreview (51)
-- **Last updated**: 2026-10-09 11:11 UTC
+- **Sources**: crossref (176), huggingface (3), openalex (659), openreview (51)
+- **Last updated**: 2026-10-09 11:30 UTC
 
 ## 🏷 How to read an entry
 
@@ -37,16 +37,16 @@
 
 ## 🗂 Contents
 
-- [Object-Goal Navigation (ObjectNav)](#objectnav) — 171 papers
-- [Vision-and-Language Navigation (VLN)](#vln) — 167 papers
-- [Aerial VLN](#aerial-vln) — 98 papers
-- [Semantic & Open-Vocabulary Navigation](#semantic-nav) — 60 papers
-- [Image & Point-Goal Navigation](#image-goal) — 25 papers
+- [Object-Goal Navigation (ObjectNav)](#objectnav) — 173 papers
+- [Vision-and-Language Navigation (VLN)](#vln) — 170 papers
+- [Aerial VLN](#aerial-vln) — 103 papers
+- [Semantic & Open-Vocabulary Navigation](#semantic-nav) — 61 papers
+- [Image & Point-Goal Navigation](#image-goal) — 26 papers
 - [Multi-Object Navigation](#multi-object) — 18 papers
-- [Social Navigation](#social-nav) — 42 papers
-- [Exploration](#exploration) — 22 papers
-- [LLM / VLM Navigation Agents](#llm-agents) — 89 papers
-- [Other](#other) — 107 papers
+- [Social Navigation](#social-nav) — 46 papers
+- [Exploration](#exploration) — 23 papers
+- [LLM / VLM Navigation Agents](#llm-agents) — 92 papers
+- [Other](#other) — 112 papers
 - [Related lists & tools](#-related-lists--tools)
 - [How it works / Contributing](#-about)
 
@@ -54,7 +54,7 @@
 
 <a id="objectnav"></a>
 
-## Object-Goal Navigation (ObjectNav) (171)
+## Object-Goal Navigation (ObjectNav) (173)
 
 ### 2027
 
@@ -65,12 +65,16 @@
 
 - [2026] [Neurocomputing 2026] [AnchorNav: Training-free object-goal navigation via anchor co-verification and semantic spatial priors](https://doi.org/10.1016/j.neucom.2026.134929)  
   <a href="https://doi.org/10.1016/j.neucom.2026.134929"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Dai, Mingyu, Huang, ChenXi, Zheng, Boyuan et al.
+- [2026] [arXiv] [Lifelong small-object navigation in changing object layouts: a benchmark and method](https://doi.org/10.48550/arxiv.2610.10125)  
+  <a href="https://doi.org/10.48550/arxiv.2610.10125"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Jiagan Huang, Zikun Zhou, Zijian Ni et al. · 🔓 OA
+- [2026] [arXiv] [MarvisNav: Making Memory Visible on Route Choices for Zero-Shot Object Navigation](https://doi.org/10.48550/arxiv.2610.06510)  
+  <a href="https://arxiv.org/pdf/2610.06510"><img src="https://img.shields.io/badge/arXiv%202610.06510-b31b1b" alt="arXiv 2610.06510"></a> <a href="https://wangjincheng1998.github.io/MarvisNav/"><img src="https://img.shields.io/badge/project-2f6fb2" alt="project"></a> <a href="https://doi.org/10.48550/arxiv.2610.06510"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Jincheng Wang, Chi Pui Chan, Wei Zeng et al. · 🔓 OA
 - [2026] [RA-L 2026] [DRIVE-Nav: Directional Reasoning, Inspection, and Verification for Efficient Open-Vocabulary Navigation](https://doi.org/10.1109/lra.2026.3723310)  
   <a href="https://arxiv.org/pdf/2603.28691"><img src="https://img.shields.io/badge/arXiv%202603.28691-b31b1b" alt="arXiv 2603.28691"></a> <a href="https://github.com/coolmaoguo/DRIVE-Nav"><img src="https://img.shields.io/badge/code-0f9d58?logo=github" alt="code"></a> <img src="https://img.shields.io/github/stars/coolmaoguo/DRIVE-Nav?label=%E2%AD%90" alt="stars"> <a href="https://doi.org/10.1109/lra.2026.3723310"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Gao, Maoguo, Zhu, Zejun, Sun, Zhiming et al. · ⭐ 3 · 🔓 OA
 - [2026] [arXiv] [SOR-Nav: Search or Relocate? Context-Gated Exploration and Cross-Region Relocation for Object Navigation](https://doi.org/10.48550/arxiv.2609.34707)  
   <a href="https://arxiv.org/pdf/2609.34707"><img src="https://img.shields.io/badge/arXiv%202609.34707-b31b1b" alt="arXiv 2609.34707"></a> <a href="https://doi.org/10.48550/arxiv.2609.34707"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Yuan Ji, Zirui Li, Yuxin Cai et al. · 🔓 OA
 - [2026] [arXiv] [NavProbe: Evidence-Grounded Reasoning with Active Memory Retrieval for Zero-Shot Navigation](https://doi.org/10.48550/arxiv.2609.27526)  
-  <a href="https://arxiv.org/pdf/2609.27526"><img src="https://img.shields.io/badge/arXiv%202609.27526-b31b1b" alt="arXiv 2609.27526"></a> <a href="https://doi.org/10.48550/arxiv.2609.27526"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Jingyang Liu, Sujia Yao, Jiayuan Gu et al. · 🔓 OA
+  <a href="https://arxiv.org/pdf/2609.27526"><img src="https://img.shields.io/badge/arXiv%202609.27526-b31b1b" alt="arXiv 2609.27526"></a> <a href="https://github.com/liujy25/NavProbe"><img src="https://img.shields.io/badge/code-0f9d58?logo=github" alt="code"></a> <img src="https://img.shields.io/github/stars/liujy25/NavProbe?label=%E2%AD%90" alt="stars"> <a href="https://doi.org/10.48550/arxiv.2609.27526"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Jingyang Liu, Sujia Yao, Jiayuan Gu et al. · 🔓 OA
 - [2026] [arXiv] [NaviScale: Generating Large-Scale Semantic Map Datasets for Object Navigation](https://arxiv.org/abs/2609.27218)  
   <a href="https://arxiv.org/pdf/2609.27218"><img src="https://img.shields.io/badge/arXiv%202609.27218-b31b1b" alt="arXiv 2609.27218"></a>  · Chuanlin Lan, Yanwei Zheng, Weijian Liu et al. · 🔓 OA
 - [2026] [arXiv] [HarnessVLN: Unifying Training-Free Embodied Navigation through an Agent Harness](https://doi.org/10.48550/arxiv.2609.15195)  
@@ -86,7 +90,7 @@
 - [2026] [arXiv] [RTNav: Towards Real-Time Zero-Shot Object Navigation](https://doi.org/10.48550/arxiv.2608.26496)  
   <a href="https://arxiv.org/pdf/2608.26496"><img src="https://img.shields.io/badge/arXiv%202608.26496-b31b1b" alt="arXiv 2608.26496"></a> <a href="https://github.com/generalroboticslab/RTNav"><img src="https://img.shields.io/badge/code-0f9d58?logo=github" alt="code"></a> <img src="https://img.shields.io/github/stars/generalroboticslab/RTNav?label=%E2%AD%90" alt="stars"> <a href="https://doi.org/10.48550/arxiv.2608.26496"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Easop Lee, Lingyu Zhang, Boyuan Chen · 🔓 OA
 - [2026] [**IJCV 2026**] [TopV-Nav: Unlocking the Top-View Spatial Reasoning Potential of MLLM for Zero-Shot Object Navigation](https://doi.org/10.1007/s11263-026-02996-9)  
-  <a href="https://arxiv.org/pdf/2411.16425"><img src="https://img.shields.io/badge/arXiv%202411.16425-b31b1b" alt="arXiv 2411.16425"></a> <a href="https://doi.org/10.1007/s11263-026-02996-9"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Linqing Zhong, Chen Gao, Zihan Ding et al. · ⭐ 34 · 🔓 OA
+  <a href="https://arxiv.org/pdf/2411.16425"><img src="https://img.shields.io/badge/arXiv%202411.16425-b31b1b" alt="arXiv 2411.16425"></a> <a href="https://doi.org/10.1007/s11263-026-02996-9"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Linqing Zhong, Chen Gao, Zihan Ding et al. · ⭐ 36 · 🔓 OA
 - [2026] [arXiv] [SAP-Nav: Spatial Semantic Representation Meets Active Perception for Hierarchical Open-Vocabulary Object Navigation](https://doi.org/10.48550/arxiv.2608.12707)  
   <a href="https://arxiv.org/pdf/2608.12707"><img src="https://img.shields.io/badge/arXiv%202608.12707-b31b1b" alt="arXiv 2608.12707"></a> <a href="https://doi.org/10.48550/arxiv.2608.12707"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Xuetong Pei, Jian Liu, Vidura Munasinghe et al. · 🔓 OA
 - [2026] [arXiv] [AECNav: Active Evidence Consolidation for Efficient Zero-Shot Open-Vocabulary Object Navigation](https://doi.org/10.48550/arxiv.2608.10817)  
@@ -422,10 +426,16 @@
 
 <a id="vln"></a>
 
-## Vision-and-Language Navigation (VLN) (167)
+## Vision-and-Language Navigation (VLN) (170)
 
 ### 2026
 
+- [2026] [Human Factors and Ergonomics Society Annual… 2026] [Instruction-Following LLM Agent for Simulating Human Memory Retrieval Process in Household Tasks](https://doi.org/10.1177/10711813261485906)  
+  <a href="https://github.com/HCAI-Lab/IFA_MRP"><img src="https://img.shields.io/badge/code-0f9d58?logo=github" alt="code"></a> <img src="https://img.shields.io/github/stars/HCAI-Lab/IFA_MRP?label=%E2%AD%90" alt="stars"> <a href="https://doi.org/10.1177/10711813261485906"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Pyeon, Jongchan, Tehranchi, Farnaz
+- [2026] [arXiv] [What the Elevation Map Cannot See: Semantic-Aware Locomotion and Execution-Aware Navigation for Humanoid Robot](https://doi.org/10.48550/arxiv.2610.07396)  
+  <a href="https://doi.org/10.48550/arxiv.2610.07396"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Shunyu Yao, Songyang Liu, Dinghao Chen et al. · 🔓 OA
+- [2026] [arXiv] [GeoScaffold: Learning Compact Geometric Latents via Reconstruction for Efficient Vision-Language Navigation](https://arxiv.org/abs/2610.02697)  
+  <a href="https://arxiv.org/pdf/2610.02697"><img src="https://img.shields.io/badge/arXiv%202610.02697-b31b1b" alt="arXiv 2610.02697"></a>  · Yixuan Jiang, Wentong Li, An Liu et al. · 🔓 OA
 - [2026] [arXiv] [UniTrackPLA: Unified Panorama-Language-Action Model for Instruction-Guided Navigation and Dynamic Person Tracking](https://doi.org/10.48550/arxiv.2610.00878)  
   <a href="https://arxiv.org/pdf/2610.00878"><img src="https://img.shields.io/badge/arXiv%202610.00878-b31b1b" alt="arXiv 2610.00878"></a> <a href="https://tw5775.github.io/UniTrackPLA"><img src="https://img.shields.io/badge/project-2f6fb2" alt="project"></a> <a href="https://doi.org/10.48550/arxiv.2610.00878"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Pengfei Qi, Haoran Lin, Sizhuang Chen et al. · 🔓 OA
 - [2026] [arXiv] [ASENA: Self-evolving Agents for Embodied Navigation](https://doi.org/10.48550/arxiv.2609.39207)  
@@ -483,13 +493,13 @@
 - [2026] [arXiv] [LightNav-0: Eliciting VLM Spatial Intelligence for Generalist Embodied Navigation](https://doi.org/10.48550/arxiv.2608.30935)  
   <a href="https://arxiv.org/pdf/2608.30935"><img src="https://img.shields.io/badge/arXiv%202608.30935-b31b1b" alt="arXiv 2608.30935"></a> <a href="https://doi.org/10.48550/arxiv.2608.30935"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Shaoan Wang, Aocheng Luo, Fei Huang et al. · 🔓 OA
 - [2026] [RA-L 2026] [CAST: Counterfactual Labels Improve Instruction Following in Vision-Language-Action Models](https://doi.org/10.1109/lra.2026.3726383)  
-  <a href="https://arxiv.org/pdf/2508.13446"><img src="https://img.shields.io/badge/arXiv%202508.13446-b31b1b" alt="arXiv 2508.13446"></a> <a href="https://doi.org/10.1109/lra.2026.3726383"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Catherine Glossop, William  C. Chen, Arjun Bhorkar et al. · ⭐ 37 · 🔓 OA
+  <a href="https://arxiv.org/pdf/2508.13446"><img src="https://img.shields.io/badge/arXiv%202508.13446-b31b1b" alt="arXiv 2508.13446"></a> <a href="https://doi.org/10.1109/lra.2026.3726383"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Catherine Glossop, William  C. Chen, Arjun Bhorkar et al. · ⭐ 41 · 🔓 OA
 - [2026] [arXiv] [OpenBelief-Nav: Evidence-Preserving Object Memory for Open-Vocabulary Language-Guided Navigation](https://doi.org/10.48550/arxiv.2608.13923)  
   <a href="https://arxiv.org/pdf/2608.13923"><img src="https://img.shields.io/badge/arXiv%202608.13923-b31b1b" alt="arXiv 2608.13923"></a> <a href="https://openbelief-nav.github.io/"><img src="https://img.shields.io/badge/project-2f6fb2" alt="project"></a> <a href="https://doi.org/10.48550/arxiv.2608.13923"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Dinh Tuan Nguyen, Anh Dao, Phuong Nam Dang et al. · 🔓 OA
 - [2026] [Appl. Sci. 2026] [Vision-and-Language Navigation: A Component-Centric Survey of Interactions, Coupling, and Deployment](https://doi.org/10.3390/app16168050)  
   <a href="https://doi.org/10.3390/app16168050"><img src="https://img.shields.io/badge/PDF-b31b1b" alt="PDF"></a> <a href="https://doi.org/10.3390/app16168050"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Xiangxun Wu, Yinsheng Wu, Xiaojiang Peng · 🔓 OA
 - [2026] [arXiv] [HAM-VLN: Harnessing Hierarchical Agentic Memory for Zero-Shot Vision-and-Language Navigation](https://doi.org/10.48550/arxiv.2607.29600)  
-  <a href="https://arxiv.org/pdf/2607.29600"><img src="https://img.shields.io/badge/arXiv%202607.29600-b31b1b" alt="arXiv 2607.29600"></a> <a href="https://doi.org/10.48550/arxiv.2607.29600"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · An Liu, Bingxi Liu, Hongyu Ding et al. · ⭐ 1 · 🔓 OA
+  <a href="https://arxiv.org/pdf/2607.29600"><img src="https://img.shields.io/badge/arXiv%202607.29600-b31b1b" alt="arXiv 2607.29600"></a> <a href="https://github.com/an1iu/HAM-VLN"><img src="https://img.shields.io/badge/code-0f9d58?logo=github" alt="code"></a> <img src="https://img.shields.io/github/stars/an1iu/HAM-VLN?label=%E2%AD%90" alt="stars"> <a href="https://doi.org/10.48550/arxiv.2607.29600"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · An Liu, Bingxi Liu, Hongyu Ding et al. · ⭐ 2 · 🔓 OA
 - [2026] [Token pruning in MLLM-based vision-and-language navigation](https://doi.org/10.1117/12.3119075)  
   <a href="https://doi.org/10.1117/12.3119075"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Liangyu Zhou, Rui Xue, Xiaoyan Luo
 - [2026] [arXiv] [Embodied Agents Take Control: Minimal-Interface Zero-Shot Agents Rival Industrial-Scale Policies in Vision-and-Language Navigation](https://doi.org/10.48550/arxiv.2607.26148)  
@@ -782,10 +792,20 @@
 
 <a id="aerial-vln"></a>
 
-## Aerial VLN (98)
+## Aerial VLN (103)
 
 ### 2026
 
+- [2026] [A Machine-Learning and Cybernetic Control Framework for RGB--Geometric UAV Navigation](https://doi.org/10.21203/rs.3.rs-11140604/v1)  
+  <a href="https://doi.org/10.21203/rs.3.rs-11140604/v1"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Zhang, Minghu, Cao, Yulin, Zhang, Enzhan et al.
+- [2026] [Satellite Division's International Technica… 2026] [Conformal Prediction for Statistically Controlled Perception Risk in Semantic Segmentation for GNSS-Integrated Navigation Systems](https://doi.org/10.33012/2026.20690)  
+  <a href="https://doi.org/10.33012/2026.20690"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Sudharsan Gopalakrishnan, Livia Ordonez, Adyasha Mohanty
+- [2026] [arXiv] [Sensor-Layout-Agnostic Navigation via Geometric Observation Canonicalization](https://doi.org/10.48550/arxiv.2610.08306)  
+  <a href="https://doi.org/10.48550/arxiv.2610.08306"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Welf Rehberg, Kostas Alexis · 🔓 OA
+- [2026] [Sixth International Conference on Advanced … 2026] [Investigation of a CNN-LSTM neural network-augmented Kalman filter for loosely coupled navigation amidst GNSS signal interruptions](https://doi.org/10.1117/12.3130489)  
+  <a href="https://doi.org/10.1117/12.3130489"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Gao, Yujie
+- [2026] [arXiv] [WareFly-VLA: A Vision-Language-Action Framework for UAV Navigation and Human Tracking in Smart Warehouses](https://doi.org/10.48550/arxiv.2610.08526)  
+  <a href="https://doi.org/10.48550/arxiv.2610.08526"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Thinh D. Le, Son T. Nguyen, Duong Q. Nguyen et al. · 🔓 OA
 - [2026] [Advanced Information Systems 2026] [METHODOLOGY OF RESOURCE-EFFICIENT INTELLIGENT VISUAL NAVIGATION AND POSITIONING OF AUTONOMOUS AERIAL PLATFORMS](https://doi.org/10.20998/2522-9052.2026.4.08)  
   <a href="https://doi.org/10.20998/2522-9052.2026.4.08"><img src="https://img.shields.io/badge/PDF-b31b1b" alt="PDF"></a> <a href="https://doi.org/10.20998/2522-9052.2026.4.08"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Dergachov, Kostiantyn, Ovdiyuk, Eugene, Kyselev, Andrii et al. · 🔓 OA
 - [2026] [Jurnal Penelitian Sains Teknologi 2026] [Edge-Assisted Multi-Agent Reinforcement Learning for Decentralized Autonomous Swarm Drone Navigation under Bandwidth Constraints](https://doi.org/10.23917/saintek.v3i1.20053)  
@@ -1001,12 +1021,14 @@
 
 <a id="semantic-nav"></a>
 
-## Semantic & Open-Vocabulary Navigation (60)
+## Semantic & Open-Vocabulary Navigation (61)
 
 ### 2026
 
 - [2026] [Journal of Computing in Civil Engineering 2026] [ZIVIL: Zero-Shot Incremental Vision–Language Maps and Spatial Graph Representation of Construction Sites](https://doi.org/10.1061/jccee5.cpeng-7640)  
   <a href="https://doi.org/10.1061/jccee5.cpeng-7640"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Raines, Charles M., Fernandez, Ivan A., Sun, Mandy et al.
+- [2026] [arXiv] [CORNAV: Construction-Aware Reasoning for Robot Navigation on Active Worksites](https://doi.org/10.48550/arxiv.2610.03622)  
+  <a href="https://arxiv.org/pdf/2610.03622"><img src="https://img.shields.io/badge/arXiv%202610.03622-b31b1b" alt="arXiv 2610.03622"></a> <a href="https://doi.org/10.48550/arxiv.2610.03622"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Parastoo Ali Pour, Deepak Prakash Kumar, Tommy Zhou et al. · 🔓 OA
 - [2026] [Sensors 2026] [Flat-IIN: Instance Image Navigation Based on 2D Multi-Channel Semantic Maps and Driven by Vision-Language Models](https://doi.org/10.3390/s26196251)  
   <a href="https://doi.org/10.3390/s26196251"><img src="https://img.shields.io/badge/PDF-b31b1b" alt="PDF"></a> <a href="https://doi.org/10.3390/s26196251"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Wang, Weicheng, Lin, Rui, Hu, Jian et al. · 🔓 OA
 - [2026] [arXiv] [CoRelNav: Collaborative Relational Navigation for Multi-Robot Spatially Constrained Semantic Navigation](https://doi.org/10.48550/arxiv.2609.27720)  
@@ -1144,12 +1166,14 @@
 
 <a id="image-goal"></a>
 
-## Image & Point-Goal Navigation (25)
+## Image & Point-Goal Navigation (26)
 
 ### 2026
 
 - [2026] [arXiv] [Scanning While Imagining: A Scene-Graph World Model for Robotic Ultrasound Navigation](https://doi.org/10.48550/arxiv.2609.32837)  
   <a href="https://arxiv.org/pdf/2609.32837"><img src="https://img.shields.io/badge/arXiv%202609.32837-b31b1b" alt="arXiv 2609.32837"></a> <a href="https://noseefood.github.io/us-sonograph-wm/"><img src="https://img.shields.io/badge/project-2f6fb2" alt="project"></a> <a href="https://doi.org/10.48550/arxiv.2609.32837"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Xuesong Li, Shuai Chen, Feng Li et al. · 🔓 OA
+- [2026] [arXiv] [Taming an End-to-End Autonomous Driving Policy for Urban Navigation of Quadruped Robots](https://doi.org/10.48550/arxiv.2610.08812)  
+  <a href="https://doi.org/10.48550/arxiv.2610.08812"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Joochan Kim, Chanuk Yang, Tackgeun You et al. · 🔓 OA
 - [2026] [arXiv] [A Topological Representation with Object-Path Graphs for Open-Vocabulary Instance Navigation](https://doi.org/10.48550/arxiv.2609.24189)  
   <a href="https://arxiv.org/pdf/2609.24189"><img src="https://img.shields.io/badge/arXiv%202609.24189-b31b1b" alt="arXiv 2609.24189"></a> <a href="https://doi.org/10.48550/arxiv.2609.24189"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Linwei Zheng, Daojie Peng, Bingtao Wang et al. · 🔓 OA
 - [2026] [arXiv] [Visual Navigation Transformer with Pose Attention](https://doi.org/10.48550/arxiv.2609.21212)  
@@ -1267,12 +1291,20 @@
 
 <a id="social-nav"></a>
 
-## Social Navigation (42)
+## Social Navigation (46)
 
 ### 2026
 
+- [2026] [Applied and Computational Engineering 2026] [Robust Navigation and Obstacle Avoidance Control of Inspection Robots in Complex Confined Environments](https://doi.org/10.54254/2755-2721/2026.37566)  
+  <a href="https://doi.org/10.54254/2755-2721/2026.37566"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Liu, Ziyao
 - [2026] [Journal of Sensor and Actuator Networks 2026] [BRiDGENav: Belief-Driven Risk-Aware Dynamic Guidance and Event-Triggered Navigation](https://doi.org/10.3390/jsan15050080)  
-  <a href="https://doi.org/10.3390/jsan15050080"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Adikaram, Nimantha, Dombawala, Charitha, Moratuwage, Diluka et al.
+  <a href="https://doi.org/10.3390/jsan15050080"><img src="https://img.shields.io/badge/PDF-b31b1b" alt="PDF"></a> <a href="https://doi.org/10.3390/jsan15050080"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Adikaram, Nimantha, Dombawala, Charitha, Moratuwage, Diluka et al. · 🔓 OA
+- [2026] [arXiv] [End-to-End Safe Social Navigation via Multi-Task Reinforcement Learning and Probabilistic Perception](https://doi.org/10.48550/arxiv.2610.05733)  
+  <a href="https://doi.org/10.48550/arxiv.2610.05733"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Tommaso Van Der Meer Andrea Garulli, Andrea Garulli, Antonio Giannitrapani et al. · 🔓 OA
+- [2026] [arXiv] [TACET: Context-Appropriate Acoustic-Social Navigation for Quadrupeds](https://doi.org/10.48550/arxiv.2610.03828)  
+  <a href="https://arxiv.org/pdf/2610.03828"><img src="https://img.shields.io/badge/arXiv%202610.03828-b31b1b" alt="arXiv 2610.03828"></a> <a href="https://doi.org/10.48550/arxiv.2610.03828"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · 박성산, Young-Sik Shin, 김상현 · 🔓 OA
+- [2026] [Manufacturing Letters 2026] [HorizonGPTNav: An LLM-based Intelligent Obstacle Avoidance Navigation Framework](https://doi.org/10.1016/j.mfglet.2026.08.040)  
+  <a href="https://www.sciencedirect.com/science/article/pii/S2213846326002014/pdf"><img src="https://img.shields.io/badge/PDF-b31b1b" alt="PDF"></a> <a href="https://doi.org/10.1016/j.mfglet.2026.08.040"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Yang Meng, Jiajia Xie, Michael Pagan et al. · 🔓 OA
 - [2026] [arXiv] [Social-WM: Safety-Aware Latent World Models for Robot Social Navigation](https://doi.org/10.48550/arxiv.2609.40177)  
   <a href="https://arxiv.org/pdf/2609.40177"><img src="https://img.shields.io/badge/arXiv%202609.40177-b31b1b" alt="arXiv 2609.40177"></a> <a href="https://doi.org/10.48550/arxiv.2609.40177"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Zhihao Zheng, Mooi Choo Chuah · 🔓 OA
 - [2026] [ACM Transactions on Human-Robot Interaction 2026] [Human-inspired Route Selection for Efficient Social Robot Navigation in Narrow Spaces](https://doi.org/10.1145/3850155)  
@@ -1368,10 +1400,12 @@
 
 <a id="exploration"></a>
 
-## Exploration (22)
+## Exploration (23)
 
 ### 2026
 
+- [2026] [Edith Cowan University Research Online (Edi… 2026] [Multimodal scene understanding for mobile robot navigation in unstructured outdoor environments](https://doi.org/10.25958/dv27-0x32)  
+  <a href="https://doi.org/10.25958/dv27-0x32"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Liyana Wijayathunga · 🔓 OA
 - [2026] [arXiv] [AquaBEV-Nav: Learned BEV Occupancy for Underwater Navigation and Exploration](https://doi.org/10.48550/arxiv.2609.32156)  
   <a href="https://arxiv.org/pdf/2609.32156"><img src="https://img.shields.io/badge/arXiv%202609.32156-b31b1b" alt="arXiv 2609.32156"></a> <a href="https://doi.org/10.48550/arxiv.2609.32156"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Trung Tien Dong, Zhenqi Wu, Sahasra Kondapalli et al. · 🔓 OA
 - [2026] [SAE Technical Paper Series 2026] [Hybridnav: A Hybrid Approach to Zero-Shot Object Detection with Adaptive Exploration for Autonomous Reconnaissance](https://doi.org/10.4271/2026-01-7517)  
@@ -1429,10 +1463,16 @@
 
 <a id="llm-agents"></a>
 
-## LLM / VLM Navigation Agents (89)
+## LLM / VLM Navigation Agents (92)
 
 ### 2026
 
+- [2026] [arXiv] [SuperNav: An Agentic Navigation System for Any Task in Any Scene](https://huggingface.co/papers/2610.12126)  
+  <a href="https://arxiv.org/pdf/2610.12126"><img src="https://img.shields.io/badge/arXiv%202610.12126-b31b1b" alt="arXiv 2610.12126"></a> <a href="https://zju3dv.github.io/SuperNav/"><img src="https://img.shields.io/badge/project-2f6fb2" alt="project"></a> <a href="https://github.com/The0xKa1/SuperNav-assets"><img src="https://img.shields.io/badge/code-0f9d58?logo=github" alt="code"></a> <img src="https://img.shields.io/github/stars/The0xKa1/SuperNav-assets?label=%E2%AD%90" alt="stars">  · Jinkai Zhang, Jingyi Xu, Yuanhong Yu et al. · 🔓 OA
+- [2026] [arXiv] [PreAct-Nav: Agentic Reasoning Before Action for Urban Navigation](https://doi.org/10.48550/arxiv.2610.04916)  
+  <a href="https://arxiv.org/pdf/2610.04916"><img src="https://img.shields.io/badge/arXiv%202610.04916-b31b1b" alt="arXiv 2610.04916"></a> <a href="https://github.com/JJingXie/preact-nav-website"><img src="https://img.shields.io/badge/code-0f9d58?logo=github" alt="code"></a> <img src="https://img.shields.io/github/stars/JJingXie/preact-nav-website?label=%E2%AD%90" alt="stars"> <a href="https://doi.org/10.48550/arxiv.2610.04916"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Jing Xie, Shouwei Ruan, Yubin Wang et al. · 🔓 OA
+- [2026] [arXiv] [CSIR: Contextually and Socially Informed Robots for Efficient Person Goal Navigation](https://arxiv.org/abs/2610.02750)  
+  <a href="https://arxiv.org/pdf/2610.02750"><img src="https://img.shields.io/badge/arXiv%202610.02750-b31b1b" alt="arXiv 2610.02750"></a> <a href="https://anonymous.4open.science/r/personnavsite-4ED2/index.html"><img src="https://img.shields.io/badge/project-2f6fb2" alt="project"></a>  · Tyler Chung, Nahl Farhan, Hao Zhang et al. · 🔓 OA
 - [2026] [arXiv] [Beyond the Remembered World: Predictive 4D Belief for Persistent Navigation in Evolving Worlds](https://doi.org/10.48550/arxiv.2609.39166)  
   <a href="https://arxiv.org/pdf/2609.39166"><img src="https://img.shields.io/badge/arXiv%202609.39166-b31b1b" alt="arXiv 2609.39166"></a> <a href="https://doi.org/10.48550/arxiv.2609.39166"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Mingjian Gao, Zhaocheng Li, Haoyang Huang et al. · 🔓 OA
 - [2026] [arXiv] [WayFinder: Hierarchical Visual-Language-Action for Zero-Shot Waypoint Generation and Low-Level Kinematic Control](https://doi.org/10.48550/arxiv.2609.37922)  
@@ -1624,12 +1664,22 @@
 
 <a id="other"></a>
 
-## Other (107)
+## Other (112)
 
 ### 2026
 
+- [2026] [Satellite Division's International Technica… 2026] [GVG-SLAM: GNSS/VGGT-SLAM Integrated Navigation Method for Outdoor Environments](https://doi.org/10.33012/2026.20725)  
+  <a href="https://github.com/Twilight-0922/Indoor-Outdoor-Integrated-Positioning-Map"><img src="https://img.shields.io/badge/code-0f9d58?logo=github" alt="code"></a> <img src="https://img.shields.io/github/stars/Twilight-0922/Indoor-Outdoor-Integrated-Positioning-Map?label=%E2%AD%90" alt="stars"> <a href="https://doi.org/10.33012/2026.20725"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Dai Wuran, Francisco Clemente Braga, Saurav Uprety et al.
+- [2026] [UTUPub (University of Turku) 2026] [Deep learning for robust multi-robot perception and control](https://www.utupub.fi/handle/11111/64299)  
+  · Sahar Salimpour
+- [2026] [Sensors 2026] [Deadlock-Resistant Safety-Critical Mobile Robot Navigation Using Guiding Vector Fields and Model Predictive Control](https://doi.org/10.3390/s26196304)  
+  <a href="https://doi.org/10.3390/s26196304"><img src="https://img.shields.io/badge/PDF-b31b1b" alt="PDF"></a> <a href="https://doi.org/10.3390/s26196304"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Gao, Liang, Gao, Yongfeng, Zhao, Xinhui et al. · 🔓 OA
+- [2026] [arXiv] [Nudge Before You Push: Physics-Aware Navigation via Tactile Probing](https://doi.org/10.48550/arxiv.2610.04924)  
+  <a href="https://arxiv.org/pdf/2610.04924"><img src="https://img.shields.io/badge/arXiv%202610.04924-b31b1b" alt="arXiv 2610.04924"></a> <a href="https://doi.org/10.48550/arxiv.2610.04924"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Xianyao Li, Fang Xu, Ruitong Tian et al. · 🔓 OA
 - [2026] [ACM Computing Surveys 2026] [A Survey of Robotic Navigation and Manipulation with Physics Simulators in the Era of Embodied AI](https://doi.org/10.1145/3856802)  
   <a href="https://doi.org/10.1145/3856802"><img src="https://img.shields.io/badge/PDF-b31b1b" alt="PDF"></a> <a href="https://doi.org/10.1145/3856802"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Wong, Lik Hang Kenny, Kang, Xueyang, Bai, Kaixin et al. · ⭐ 22 · 🔓 OA
+- [2026] [arXiv] [Autonomous Droplet Navigation via Model-Based Reinforcement Learning: Zero-Shot Transfer and Emergent Dynamics](https://doi.org/10.48550/arxiv.2610.08852)  
+  <a href="https://doi.org/10.48550/arxiv.2610.08852"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Rajneesh Anand, Mayuresh V. Kothare · 🔓 OA
 - [2026] [International Journal of Electrical and Com… 2026] [Navigation and steering control of a service robot using Kinectv2 and LiDAR](https://doi.org/10.11591/ijece.v16i5.pp2454-2472)  
   <a href="https://ijece.iaescore.com/index.php/IJECE/article/download/42287/18872"><img src="https://img.shields.io/badge/PDF-b31b1b" alt="PDF"></a> <a href="https://doi.org/10.11591/ijece.v16i5.pp2454-2472"><img src="https://img.shields.io/badge/DOI-6b6659" alt="DOI"></a>  · Dwijayanti, Suci, Miranda, Silfani Sandra, Suprapto, Bhakti Yudho et al. · 🔓 OA
 - [2026] [Appl. Sci. 2026] [Mode-Aware Adaptive Navigation for Autonomous Underwater Vehicles Using Multimodal Sensing and Optical Feedback in Simulation Environment](https://doi.org/10.3390/app16199653)  
@@ -1935,4 +1985,4 @@ Open an [issue](../../issues) with the paper link and we'll fold it in. The whol
 
 ---
 
-*Auto-generated. Last update: 2026-10-09 11:11 UTC*
+*Auto-generated. Last update: 2026-10-09 11:30 UTC*
