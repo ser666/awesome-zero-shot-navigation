@@ -17,12 +17,12 @@
 ## 📊 Stats
 
 - **Total papers**: **799**
-- **New in the last 7 days**: **27**
+- **New in the last 30 days**: **107**
 - **Published at top venues** (CCF-A / major robotics): **94**
 - **With PDF**: 551 ｜ **with code**: 101 ｜ **with project page**: 72
 - **Categories**: 10
 - **Sources**: crossref (171), huggingface (1), openalex (641), openreview (51)
-- **Last updated**: 2026-10-06 03:08 UTC
+- **Last updated**: 2026-10-09 11:11 UTC
 
 ## 🏷 How to read an entry
 
@@ -1935,4 +1935,4 @@ Open an [issue](../../issues) with the paper link and we'll fold it in. The whol
 
 ---
 
-*Auto-generated. Last update: 2026-10-06 03:08 UTC*
+*Auto-generated. Last update: 2026-10-09 11:11 UTC*

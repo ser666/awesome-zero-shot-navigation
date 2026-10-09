@@ -18,13 +18,14 @@ README 条目格式（参考高 star 列表的做法，Boss 指定）
 
 from __future__ import annotations
 
+import calendar
 import json
 import pathlib
 import re
 import sqlite3
 import sys
 from collections import defaultdict
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 DB_PATH = ROOT / "data" / "papers.db"
@@ -187,11 +188,15 @@ def paper_line(r: dict) -> str:
     return line1
 
 
-def build_readme(rows: list) -> str:
+def build_readme(rows: list, now: datetime | None = None) -> str:
     total = len(rows)
-    now = datetime.now(timezone.utc)
-    week_ago = (now - timedelta(days=7)).strftime("%Y-%m-%d")
-    recent = [r for r in rows if (r.get("published_date") or "") >= week_ago]
+    now = now or datetime.now(timezone.utc)
+    # ⭐ 与网站**同源**：同一个 is_fresh / NEW_DAYS。
+    #   原先这里是 `published_date >= (now-7天)` 的**字符串比较**，有两处错：
+    #     · "2026-11"（未来月份）> "2026-10-02" → 被算成"最近 7 天"
+    #     · "2026-10"（月精度）  < "2026-10-02" → 当月的论文反而被漏掉
+    #   现在"新"在整个仓库只有一处定义（scripts/export.py 的 is_fresh）。
+    recent = [r for r in rows if is_fresh(r.get("published_date"), now.date())]
 
     cats: dict[str, list] = defaultdict(list)
     for r in rows:
@@ -240,7 +245,7 @@ def build_readme(rows: list) -> str:
     # ── 统计
     L.append("## 📊 Stats\n")
     L.append(f"- **Total papers**: **{total}**")
-    L.append(f"- **New in the last 7 days**: **{len(recent)}**")
+    L.append(f"- **New in the last {NEW_DAYS} days**: **{len(recent)}**")
     L.append(f"- **Published at top venues** "
              f"(CCF-A / major robotics): **{n_tier_a}**")
     L.append(f"- **With PDF**: {n_pdf} ｜ **with code**: {n_code} ｜ "
@@ -405,8 +410,76 @@ def build_readme(rows: list) -> str:
     return "\n".join(L)
 
 
-def build_site_json(rows: list) -> dict:
-    """网站数据：字段精简但保留浏览所需的全部维度"""
+# ══════════════════════════════════════════════════════════════════════
+#  「新论文」判据 —— NEW 徽章的依据
+# ══════════════════════════════════════════════════════════════════════
+#  ⭐ 为什么在数据侧算、而不是交给前端：
+#     published_date 有**三种精度**（YYYY / YYYY-MM / YYYY-MM-DD）。
+#     前端 `new Date("2026-11" + "T00:00:00Z")` → Invalid Date → 判据**静默失效**；
+#     未来日期还会得到负差值 → **永远**显示 NEW（期刊 "in press"）。
+#     放到数据侧后：① 可被单元测试（tests/test_freshness.py）
+#                   ② 所有访客看到一致结果（不依赖浏览器时钟）
+#                   ③ 前端只剩一个布尔字段要渲染
+NEW_DAYS = 30     # 回看窗口（天）。每周更新一次 ⇒ 30 天 ≈ 4 个更新周期
+
+_PARTIAL_DATE = re.compile(r"^(\d{4})(?:-(\d{2}))?(?:-(\d{2}))?$")
+
+
+def parse_partial_date(s):
+    """宽松解析 → `(date, precision)`；无法解析 → `(None, "")`
+
+    precision ∈ {"day", "month", "year"}。
+    ⚠️ 缺失的精度按**最早**补齐（月 → 1 日，年 → 1 月 1 日）——
+       这是给「排序 / 展示」用的保守取值；NEW 判据另有精度规则（见 is_fresh）。
+    """
+    if not s:
+        return None, ""
+    m = _PARTIAL_DATE.match(str(s).strip())
+    if not m:
+        return None, ""
+    y, mo, d = int(m.group(1)), m.group(2), m.group(3)
+    try:
+        if d:
+            return date(y, int(mo), int(d)), "day"
+        if mo:
+            return date(y, int(mo), 1), "month"
+        return date(y, 1, 1), "year"
+    except ValueError:          # 例如 2026-13-01 或 2026-02-30 —— 数据脏
+        return None, ""
+
+
+def is_fresh(published, ref, window_days=NEW_DAYS):
+    """published 是否算「新」：0 <= (ref - published) <= window_days
+
+    精度处理（关键 —— 直接决定会不会漏掉新论文）：
+      · `day`   直接用该日
+      · `month` 用**该月最后一天**（不足月则取 ref 当天）。
+                ⭐ 若取月初会**系统性漏掉**：9 月号的论文到 10/08 就已过期，
+                   而它其实可能是 9/28 上线的。判据的目的是"别漏新论文"，
+                   宁可多标几天。当月（未过完）则夹到 ref，避免"未来日期"。
+      · `year`  **一律不算新** —— 精度太粗，无法判定；标 NEW 是误导。
+
+    ⚠️ 未来日期返回 False：期刊 "in press" 会给未来月份/年份，
+       旧前端差值恒为负 ⇒ **永远**顶着 NEW（实测 40 篇）。
+    """
+    d, prec = parse_partial_date(published)
+    if d is None or prec == "year":
+        return False
+    if prec == "month":
+        if (d.year, d.month) > (ref.year, ref.month):
+            return False                      # 未来月份 = 尚未发表
+        last = date(d.year, d.month, calendar.monthrange(d.year, d.month)[1])
+        d = min(last, ref)                    # 当月未过完 → 取今天
+    return 0 <= (ref - d).days <= window_days
+
+
+def build_site_json(rows: list, now: datetime | None = None) -> dict:
+    """网站数据：字段精简但保留浏览所需的全部维度
+
+    ⭐ `now` 可注入 —— 让「NEW 判据」在测试里可复现（否则结果随运行时钟漂移）。
+    """
+    now = now or datetime.now(timezone.utc)
+    ref_day = now.date()
     papers = []
     for r in rows:
         ab = re.sub(r"\s+", " ", (r.get("abstract") or "").strip())
@@ -430,6 +503,7 @@ def build_site_json(rows: list) -> dict:
             "arx": r.get("arxiv_id") or "",
             "cite": r.get("citations") or 0,
             "oa": 1 if r.get("open_access") else 0,
+            "nw": 1 if is_fresh(r.get("published_date"), ref_day) else 0,  # ⭐ NEW 徽章
             "hot": r.get("hotness") or 0,
             "s": ab[:1800],          # abstract（保留全文，前端按需展示）
             "tl": tldr[:400],
@@ -451,7 +525,8 @@ def build_site_json(rows: list) -> dict:
 
     return {
         "total": len(papers),
-        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "generated_at": now.isoformat(),
+        "new_days": NEW_DAYS,          # ⭐ 前端据此显示窗口（避免数字两处硬编码）
         "site": SITE,
         "repo": f"https://github.com/{REPO}",
         "categories": dict(sorted(cat_count.items(),

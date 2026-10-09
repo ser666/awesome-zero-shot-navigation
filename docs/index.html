@@ -71,6 +71,14 @@
   label.chk{display:flex;align-items:center;gap:7px;font-size:13px;
     color:var(--text-body);cursor:pointer;user-select:none;padding:4px 0}
   label.chk input{accent-color:var(--accent);width:15px;height:15px;cursor:pointer}
+  /* 复选框右侧的数量（和分类列表的数字同一套视觉，便于横向扫读） */
+  label.chk .cnt{color:var(--text-muted);font-size:11.5px;
+    font-variant-numeric:tabular-nums;margin-left:auto;flex:none}
+  /* 「NEW 窗口」说明：把判据直接写在界面上，读者不用猜 */
+  .side-note{font-size:11px;color:var(--text-muted);line-height:1.55;
+    margin-top:9px;padding-top:8px;border-top:1px dashed var(--border)}
+  kbd{background:var(--surface-3);border-radius:4px;padding:0 5px;
+    font-size:10.5px;font-family:inherit}
 
   /* 侧边栏里的分类 / 子专题列表（纵向列表比 chips 更好扫读） */
   .navlist{display:flex;flex-direction:column;gap:1px}
@@ -197,8 +205,25 @@
         <option value="year">Sort: Year (desc)</option>
         <option value="title">Sort: Title A–Z</option>
       </select>
-      <label class="chk"><input type="checkbox" id="top"> 🏆 Top venues only</label>
-      <label class="chk"><input type="checkbox" id="oa"> 🔓 Open access only</label>
+      <label class="chk"><input type="checkbox" id="top"> 🏆 Top venues only
+        <span class="cnt" id="c-top"></span></label>
+      <label class="chk"><input type="checkbox" id="fnew"> 🆕 New only
+        <span class="cnt" id="c-new"></span></label>
+    </div>
+
+    <!-- 资源可得性：三类「有东西可点」的筛选合为一组 -->
+    <div class="side-block">
+      <div class="side-title">
+        <span>Resources</span>
+        <span class="clr" id="clr-res">clear</span>
+      </div>
+      <label class="chk"><input type="checkbox" id="fcode"> 💻 With code
+        <span class="cnt" id="c-code"></span></label>
+      <label class="chk"><input type="checkbox" id="fproj"> 🌐 With project page
+        <span class="cnt" id="c-proj"></span></label>
+      <label class="chk"><input type="checkbox" id="oa"> 🔓 Open access
+        <span class="cnt" id="c-oa"></span></label>
+      <div class="side-note" id="newnote"></div>
     </div>
 
     <div class="side-block">
@@ -264,10 +289,30 @@ let activeTopic = "";
 
 const $ = id => document.getElementById(id);
 const esc = s => (s||"").replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const isNew = d => {
-  if (!d) return false;
-  const t = new Date(d + "T00:00:00Z");
-  return (Date.now() - t.getTime()) / 86400000 <= 14;   // 每周更新 → 14 天窗口
+/* 「新论文」标记 ════════════════════════════════════════════════════
+   ⭐ 判据在【数据侧】算好（scripts/export.py → papers.json 的 `nw` 字段），
+      前端只负责渲染。这样做的三个理由：
+        ① 判据可被测试（tests/test_freshness.py）
+        ② 每个访客看到同一结果 —— 旧实现用 Date.now() 比较，
+           同一份数据换个日期打开，NEW 的数量就会变
+        ③ 前端不必解析 3 种日期格式（YYYY / YYYY-MM / YYYY-MM-DD）
+
+   ⚠️ 旧实现（已修）的两个 bug，均为实测：
+        · 未来日期的论文 → 差值恒为负 → 【永远】显示 NEW
+          （期刊的 "in press" 论文，40 篇）
+        · `new Date("2026-11" + "T00:00:00Z")` → Invalid Date
+          → 静默永不显示 NEW（YYYY / YYYY-MM 格式，共 40 篇）
+   ════════════════════════════════════════════════════════════════ */
+const NEW_DAYS = () => DATA.new_days || 14;
+const isNew = p => !!p.nw;
+
+/* 日期归一：'2026' → '2026-01-01'、'2026-11' → '2026-11-01'
+   —— 三种精度归一到定长串，排序时才能直接 localeCompare */
+const normDate = d => {
+  const s = (d || "").trim();
+  if (/^\d{4}$/.test(s)) return s + "-01-01";
+  if (/^\d{4}-\d{2}$/.test(s)) return s + "-01";
+  return s;
 };
 
 /* 分类名去掉尾部括号（"Object-Goal Navigation (ObjectNav)" → "Object-Goal Navigation"） */
@@ -277,14 +322,32 @@ function badges() {
   const n = DATA.papers.length;
   const top = DATA.papers.filter(p => p.vt === "A").length;
   const code = DATA.papers.filter(p => p.co).length;
+  const fresh = DATA.papers.filter(isNew).length;
+  const w = NEW_DAYS();
   $("badges").innerHTML = [
     `<span class="badge">📄 <b>${n}</b> papers</span>`,
     `<span class="badge acc">🏆 <b>${top}</b> at top venues</span>`,
     `<span class="badge">💻 <b>${code}</b> with code</span>`,
-    `<span class="badge">🆕 <b>${DATA.papers.filter(p => isNew(p.d)).length}</b> in last 14 days</span>`,
+    `<span class="badge" title="Published within ${w} days of the last data update">🆕 <b>${fresh}</b> in last ${w} days</span>`,
     `<span class="badge">🔄 updated <b>${(DATA.generated_at||"").slice(0,10)}</b></span>`,
     `<a class="badge" href="${DATA.repo}" target="_blank" rel="noopener">⭐ GitHub</a>`,
   ].join("");
+}
+
+/* 侧边栏复选框右侧的数量 —— 点之前就知道「筛完还剩多少」 */
+function resCounts() {
+  const ps = DATA.papers;
+  $("c-top").textContent  = `(${ps.filter(p => p.vt === "A").length})`;
+  $("c-code").textContent = `(${ps.filter(p => p.co).length})`;
+  $("c-proj").textContent = `(${ps.filter(p => p.pr).length})`;
+  $("c-oa").textContent   = `(${ps.filter(p => p.oa).length})`;
+  $("c-new").textContent  = `(${ps.filter(isNew).length} in ${NEW_DAYS()}d)`;
+  /* ⭐ 把 NEW 的判据直接写在界面上 —— 读者最常问的就是「NEW 会挂多久」 */
+  $("newnote").innerHTML =
+    `🆕 <b>NEW</b> = published within <b>${NEW_DAYS()} days</b> of the last data `
+    + `update (${(DATA.generated_at||"").slice(0,10)}). Journals often carry only `
+    + `month precision — a whole recent month counts as new. Records with `
+    + `<b>year only</b> are never marked NEW (too coarse to judge).`;
 }
 
 function fillSelects() {
@@ -317,8 +380,6 @@ function sidebarLists() {
 
   $("catlist").querySelectorAll("[data-cat]").forEach(el => el.onclick = () => {
     activeCat = el.dataset.cat;
-    $("catlist").querySelectorAll("[data-cat]").forEach(x => x.classList.remove("on"));
-    el.classList.add("on");
     $("clr-cat").classList.toggle("show", !!activeCat);
     shown = PAGE; render();
   });
@@ -326,23 +387,15 @@ function sidebarLists() {
   $("tclist").querySelectorAll("[data-topic]").forEach(el => el.onclick = () => {
     const t = el.dataset.topic;
     activeTopic = (activeTopic === t) ? "" : t;
-    $("tclist").querySelectorAll("[data-topic]").forEach(x =>
-      x.classList.toggle("on", x.dataset.topic === activeTopic));
     $("clr-topic").classList.toggle("show", !!activeTopic);
     shown = PAGE; render();
   });
 
-  $("clr-cat").onclick = () => {
-    activeCat = "";
-    $("catlist").querySelectorAll("[data-cat]").forEach(x =>
-      x.classList.toggle("on", x.dataset.cat === ""));
-    $("clr-cat").classList.remove("show");
-    shown = PAGE; render();
-  };
-  $("clr-topic").onclick = () => {
-    activeTopic = "";
-    $("tclist").querySelectorAll("[data-topic]").forEach(x => x.classList.remove("on"));
-    $("clr-topic").classList.remove("show");
+  $("clr-cat").onclick = () => { activeCat = ""; shown = PAGE; render(); };
+  $("clr-topic").onclick = () => { activeTopic = ""; shown = PAGE; render(); };
+  /* 资源组一键清空（三个复选框一起清） */
+  $("clr-res").onclick = () => {
+    ["fcode", "fproj", "oa"].forEach(id => { $(id).checked = false; });
     shown = PAGE; render();
   };
 
@@ -353,27 +406,56 @@ function sidebarLists() {
   };
 }
 
+/* ⭐ 所有「筛选控件 → 侧边栏高亮 / clear 按钮」的同步只在这一处做。
+   （原先在 3 个地方各写一遍 —— 加筛选条件时必然会漏掉某处，实测已漂移） */
+function syncSidebarState() {
+  $("catlist").querySelectorAll("[data-cat]").forEach(x =>
+    x.classList.toggle("on", x.dataset.cat === activeCat));
+  $("tclist").querySelectorAll("[data-topic]").forEach(x =>
+    x.classList.toggle("on", x.dataset.topic === activeTopic));
+  $("clr-cat").classList.toggle("show", !!activeCat);
+  $("clr-topic").classList.toggle("show", !!activeTopic);
+  const f = readFilters();
+  $("clr-res").classList.toggle("show", !!(f.code || f.proj || f.oa));
+}
+
 /* 清空全部筛选（侧边栏 + 结果栏都用它） */
 function resetAll() {
   $("q").value = ""; $("ven").value = ""; $("yr").value = "";
-  $("sort").value = "date"; $("top").checked = false; $("oa").checked = false;
+  $("sort").value = "date";
+  ["top", "oa", "fcode", "fproj", "fnew"].forEach(id => { $(id).checked = false; });
   activeCat = ""; activeTopic = "";
-  $("catlist").querySelectorAll("[data-cat]").forEach(x =>
-    x.classList.toggle("on", x.dataset.cat === ""));
-  $("tclist").querySelectorAll("[data-topic]").forEach(x => x.classList.remove("on"));
-  $("clr-cat").classList.remove("show"); $("clr-topic").classList.remove("show");
   shown = PAGE; render();
 }
 
-function matches(p, q, tpc, ven, yr, topOnly, oaOnly) {
+/* 一处读取全部筛选条件 —— 避免 render / chips / URL 各读一半、互相漂移 */
+function readFilters() {
+  return {
+    q: $("q").value.trim(),
+    topic: activeTopic,
+    ven: $("ven").value,
+    yr: $("yr").value,
+    sort: $("sort").value,
+    top: $("top").checked,
+    oa: $("oa").checked,
+    code: $("fcode").checked,      // ⭐ 新增：有代码
+    proj: $("fproj").checked,      // ⭐ 新增：有项目主页
+    fresh: $("fnew").checked,      // ⭐ 新增：近 NEW_DAYS 天内的新论文
+  };
+}
+
+function matches(p, f) {
   if (activeCat && p.c !== activeCat) return false;
-  if (tpc && !(p.tp||[]).includes(tpc)) return false;
-  if (ven && p.v !== ven) return false;
-  if (yr && String(p.y) !== yr) return false;
-  if (topOnly && p.vt !== "A") return false;
-  if (oaOnly && !p.oa) return false;
-  if (!q) return true;
-  q = q.toLowerCase();
+  if (f.topic && !(p.tp||[]).includes(f.topic)) return false;
+  if (f.ven && p.v !== f.ven) return false;
+  if (f.yr && String(p.y) !== f.yr) return false;
+  if (f.top && p.vt !== "A") return false;
+  if (f.oa && !p.oa) return false;
+  if (f.code && !p.co) return false;
+  if (f.proj && !p.pr) return false;
+  if (f.fresh && !isNew(p)) return false;
+  if (!f.q) return true;
+  const q = f.q.toLowerCase();
   return (p.t||"").toLowerCase().includes(q)
       || (p.a||[]).join(" ").toLowerCase().includes(q)
       || (p.s||"").toLowerCase().includes(q)
@@ -385,7 +467,7 @@ function matches(p, q, tpc, ven, yr, topOnly, oaOnly) {
 function card(p) {
   const bits = [];
   if (p.y) bits.push(`<span class="tag yr">${p.y}</span>`);
-  if (isNew(p.d)) bits.push(`<span class="tag new">NEW</span>`);
+  if (isNew(p)) bits.push(`<span class="tag new" title="Published within ${NEW_DAYS()} days of the last data update">NEW</span>`);
   if (p.v) {
     const label = (p.vk === "preprint" || p.vk === "proceedings" || p.vk === "other")
       ? p.v : (p.y ? `${p.v} ${p.y}` : p.v);
@@ -422,14 +504,17 @@ function card(p) {
 /* 结果栏上方的「当前筛选」小标签（点 × 即清掉该项） */
 function activeFilterChips() {
   const out = [];
-  const q = $("q").value.trim();
+  const f = readFilters();
   if (activeCat) out.push(["cat", `Category: <b>${esc(shortCat(activeCat))}</b>`]);
-  if (activeTopic) out.push(["topic", `Sub-topic: <b>${esc(activeTopic)}</b>`]);
-  if (q) out.push(["q", `Search: <b>${esc(q.slice(0,26))}</b>`]);
-  if ($("ven").value) out.push(["ven", `Venue: <b>${esc($("ven").value)}</b>`]);
-  if ($("yr").value) out.push(["yr", `Year: <b>${$("yr").value}</b>`]);
-  if ($("top").checked) out.push(["top", `🏆 Top venues`]);
-  if ($("oa").checked) out.push(["oa", `🔓 Open access`]);
+  if (f.topic) out.push(["topic", `Sub-topic: <b>${esc(f.topic)}</b>`]);
+  if (f.q) out.push(["q", `Search: <b>${esc(f.q.slice(0,26))}</b>`]);
+  if (f.ven) out.push(["ven", `Venue: <b>${esc(f.ven)}</b>`]);
+  if (f.yr) out.push(["yr", `Year: <b>${f.yr}</b>`]);
+  if (f.top) out.push(["top", `🏆 Top venues`]);
+  if (f.oa) out.push(["oa", `🔓 Open access`]);
+  if (f.code) out.push(["code", `💻 With code`]);
+  if (f.proj) out.push(["proj", `🌐 With project page`]);
+  if (f.fresh) out.push(["fresh", `🆕 New (${NEW_DAYS()}d)`]);
   // ⚠️ 没有筛选时必须**清空容器**再返回 ——
   //    早期版本直接 `return ""`，导致重置后残留上一次的标签（实测抓到）。
   if (!out.length) { $("af").innerHTML = ""; return; }
@@ -438,6 +523,8 @@ function activeFilterChips() {
     `<span class="afchip" data-k="${k}">${html}<span class="x" title="remove">×</span></span>`
   ).join("") + `<span class="afchip" id="afreset" style="cursor:pointer"><b>Reset</b></span>`;
 
+  /* 复选框类筛选：key 名 → 元素 id 的映射（加新筛选只改这一行） */
+  const CHK = { top: "top", oa: "oa", code: "fcode", proj: "fproj", fresh: "fnew" };
   $("af").querySelectorAll(".afchip[data-k]").forEach(el => el.onclick = () => {
     const k = el.dataset.k;
     if (k === "cat") activeCat = "";
@@ -445,33 +532,23 @@ function activeFilterChips() {
     else if (k === "q") $("q").value = "";
     else if (k === "ven") $("ven").value = "";
     else if (k === "yr") $("yr").value = "";
-    else if (k === "top") $("top").checked = false;
-    else if (k === "oa") $("oa").checked = false;
-    $("catlist").querySelectorAll("[data-cat]").forEach(x =>
-      x.classList.toggle("on", x.dataset.cat === activeCat));
-    $("tclist").querySelectorAll("[data-topic]").forEach(x =>
-      x.classList.toggle("on", x.dataset.topic === activeTopic));
-    $("clr-cat").classList.toggle("show", !!activeCat);
-    $("clr-topic").classList.toggle("show", !!activeTopic);
+    else if (CHK[k]) $(CHK[k]).checked = false;
     shown = PAGE; render();
   });
   $("afreset").onclick = resetAll;
 }
 
 function render() {
-  const q = $("q").value.trim();
-  const tpc = activeTopic, ven = $("ven").value;
-  const yr = $("yr").value, sort = $("sort").value;
-  const topOnly = $("top").checked, oaOnly = $("oa").checked;
+  const f = readFilters();
+  let res = DATA.papers.filter(p => matches(p, f));
 
-  let res = DATA.papers.filter(p => matches(p, q, tpc, ven, yr, topOnly, oaOnly));
-
-  if (sort === "date") res.sort((a,b) => (b.d||"").localeCompare(a.d||"") || b.cite-a.cite);
-  else if (sort === "cite") res.sort((a,b) => b.cite-a.cite);
-  else if (sort === "year") res.sort((a,b) => b.y-a.y || (b.d||"").localeCompare(a.d||""));
+  if (f.sort === "date") res.sort((a,b) => normDate(b.d).localeCompare(normDate(a.d)) || b.cite-a.cite);
+  else if (f.sort === "cite") res.sort((a,b) => b.cite-a.cite);
+  else if (f.sort === "year") res.sort((a,b) => b.y-a.y || normDate(b.d).localeCompare(normDate(a.d)));
   else res.sort((a,b) => (a.t||"").localeCompare(b.t||""));
 
   $("count").textContent = `${res.length} of ${DATA.papers.length} papers`;
+  syncSidebarState();
   activeFilterChips();
 
   const slice = res.slice(0, shown);
@@ -498,19 +575,67 @@ function render() {
   $("list").querySelectorAll(".tpc").forEach(t => t.onclick = e => {
     e.preventDefault();
     activeTopic = t.dataset.t;
-    $("tclist").querySelectorAll("[data-topic]").forEach(x =>
-      x.classList.toggle("on", x.dataset.topic === activeTopic));
-    $("clr-topic").classList.add("show");
     shown = PAGE; render();
     window.scrollTo({top: 0, behavior: "smooth"});
   });
+
+  syncURL();
 }
 
-["q","ven","yr","sort","top","oa"].forEach(id => {
+/* ═══ URL 状态：筛选条件写进 hash ════════════════════════════════════
+   —— 可分享 / 可收藏 / 刷新后保留（arXiv-sanity、Papers with Code 的做法）。
+   ⚠️ 用 replaceState 而非 pushState：反复勾选不会堆满浏览器历史。
+   ════════════════════════════════════════════════════════════════ */
+const URL_CHK = { top: "top", oa: "oa", code: "fcode", proj: "fproj", fresh: "fnew" };
+
+function syncURL() {
+  const f = readFilters();
+  const p = new URLSearchParams();
+  if (f.q) p.set("q", f.q);
+  if (activeCat) p.set("cat", activeCat);
+  if (f.topic) p.set("topic", f.topic);
+  if (f.ven) p.set("ven", f.ven);
+  if (f.yr) p.set("yr", f.yr);
+  if (f.sort !== "date") p.set("sort", f.sort);
+  Object.keys(URL_CHK).forEach(k => { if (f[k]) p.set(k, "1"); });
+  const s = p.toString();
+  history.replaceState(null, "", s ? "#" + s : location.pathname + location.search);
+}
+
+function applyURL() {
+  const p = new URLSearchParams(location.hash.replace(/^#/, ""));
+  if (!p.toString()) return;
+  if (p.get("q")) $("q").value = p.get("q");
+  if (p.get("cat")) activeCat = p.get("cat");
+  if (p.get("topic")) activeTopic = p.get("topic");
+  /* ⚠️ venue 下拉只列前 90 个 —— 极冷门 venue 的分享链接会静默回落成"全部" */
+  if (p.get("ven")) $("ven").value = p.get("ven");
+  if (p.get("yr")) $("yr").value = p.get("yr");
+  if (p.get("sort")) $("sort").value = p.get("sort");
+  Object.entries(URL_CHK).forEach(([k, id]) => { if (p.get(k)) $(id).checked = true; });
+}
+
+["q","ven","yr","sort","top","oa","fcode","fproj","fnew"].forEach(id => {
   $(id).addEventListener("input", () => { shown = PAGE; render(); });
 });
 $("more").onclick = () => { shown += PAGE; render(); };
 $("resetall").onclick = resetAll;
+
+/* 后退 / 外部粘贴带 hash 的链接 → 跟着走 */
+window.addEventListener("hashchange", () => {
+  applyURL(); shown = PAGE; render();
+});
+
+/* 快捷键：/ 聚焦搜索，Esc 清空并退出（文档站通行做法） */
+document.addEventListener("keydown", e => {
+  const tag = (document.activeElement || {}).tagName;
+  if (e.key === "/" && !/^(INPUT|SELECT|TEXTAREA)$/.test(tag)) {
+    e.preventDefault(); $("q").focus(); $("q").select();
+  } else if (e.key === "Escape" && document.activeElement === $("q")) {
+    if ($("q").value) { $("q").value = ""; shown = PAGE; render(); }
+    $("q").blur();
+  }
+});
 
 /* 移动端：筛选面板展开/收起 */
 $("sidebox").onclick = () => {
@@ -524,7 +649,9 @@ fetch("data/papers.json?t=" + Date.now())
   .then(r => r.json())
   .then(d => {
     DATA = d;
-    badges(); fillSelects(); sidebarLists(); render();
+    badges(); fillSelects(); sidebarLists(); resCounts();
+    applyURL();   // ⭐ 先恢复 URL 里的筛选，再 render —— 否则会先渲染全量再跳变
+    render();
     $("gen").textContent = `Data generated at ${(d.generated_at||"").slice(0,19).replace("T"," ")} UTC · ${d.total} papers`;
   })
   .catch(e => {
