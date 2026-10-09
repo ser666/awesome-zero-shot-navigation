@@ -104,7 +104,7 @@ make mcp        # 前台启动，Ctrl-C 退出；能起来就说明没问题
 | `get_dataset_info` | 库的概况（探索入口） | — |
 | `list_categories` | 全部分类 + 论文数 | — |
 | `list_topics` | 子专题标签 + 论文数 | `limit` |
-| `search_papers` | 多条件检索 | `query` `category` `topic` `venue` `year_from/to` `has_code` `open_access` `min_citations` `sort` `limit` `offset` |
+| `search_papers` | 多条件检索 | `query` `category` `topic` `venue` `year_from/to` `has_code` `has_project` `new_only` `open_access` `min_citations` `sort` `limit` `offset` |
 | `get_paper` | 单篇完整信息（含摘要） | `identifier`（DOI / arXiv / 标题） |
 | `latest_papers` | 最近发表的论文 | `days` `limit` `category` |
 | ⭐ `category_overview` | 分类总览表（Markdown） | `category` `group_by` `limit_per_group` `format` |

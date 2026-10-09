@@ -113,6 +113,7 @@ def _cmd_search(args, cfg: AppConfig, svc: PaperService) -> int:
     res = svc.search(
         args.query, category=args.category, topic=args.topic, venue=args.venue,
         year_from=args.year_from, year_to=args.year_to, has_code=args.has_code,
+        has_project=args.has_project, new_only=args.new_only,
         open_access=args.open_access, min_citations=args.min_citations,
         sort=args.sort, limit=args.limit, offset=args.offset,
     )
@@ -354,6 +355,10 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("--year-from", type=int, default=0)
     sp.add_argument("--year-to", type=int, default=0)
     sp.add_argument("--has-code", action="store_true")
+    sp.add_argument("--has-project", action="store_true",
+                    help="只要带项目主页的")
+    sp.add_argument("--new-only", action="store_true",
+                    help="只看新论文（窗口由数据侧定义，约 30 天）")
     sp.add_argument("--open-access", action="store_true")
     sp.add_argument("--min-citations", type=int, default=0)
     sp.add_argument("--sort", default="date",

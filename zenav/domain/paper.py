@@ -39,6 +39,7 @@ SHORT_TO_LONG: dict[str, str] = {
     "arx": "arxiv_id",
     "cite": "citations",
     "oa": "open_access",
+    "nw": "is_new",
     "hot": "hotness",
     "s": "abstract",
     "tl": "tldr",
@@ -85,6 +86,9 @@ class Paper:
     arxiv_id: str = ""
     citations: int = 0
     open_access: bool = False
+    # ⭐ 「新论文」标记 —— 由导出侧按 NEW_DAYS 判据算好（见 scripts/export.py）。
+    #    服务层不再重复实现一遍判据，避免两套定义漂移。
+    is_new: bool = False
     hotness: int = 0
     abstract: str = ""
     tldr: str = ""
@@ -134,6 +138,7 @@ class Paper:
             arxiv_id=str(take("arxiv_id", "") or ""),
             citations=int(take("citations", 0) or 0),
             open_access=bool(take("open_access", False)),
+            is_new=bool(take("is_new", False)),
             hotness=int(take("hotness", 0) or 0),
             abstract=str(take("abstract", "") or ""),
             tldr=str(take("tldr", "") or ""),
@@ -229,6 +234,7 @@ class Paper:
             "arxiv_id": self.arxiv_id,
             "citations": self.citations,
             "open_access": self.open_access,
+            "is_new": self.is_new,
             "hotness": self.hotness,
             "abstract": self.abstract,
             "tldr": self.tldr,
@@ -260,6 +266,7 @@ class Paper:
             "arxiv_id": self.arxiv_id,
             "citations": self.citations,
             "open_access": self.open_access,
+            "is_new": self.is_new,
             "identifier": self.best_identifier,
         }
 

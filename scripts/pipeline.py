@@ -168,6 +168,39 @@ def _clean_url(u: str | None, is_code: bool = False) -> str | None:
     return u or None
 
 
+def enrich_queue_sql(only_missing: bool = True) -> str:
+    """增强环节的**取数队列**（抽成函数是为了可测 —— 排序规则曾被写错）。
+
+    排序设计（三档，2026-10-09 定）：
+      ① 缺代码链接的优先 —— 这是增强最值钱的一项
+      ② ⭐ **顶会/顶刊（venue_tier='A'）优先**
+      ③ 同档内按发表时间倒序
+
+    ⚠️ 第 ② 档是补上的（原来只有 ①③），原因：
+       `github_max` 一轮只 250 次搜索，而待补的常驻 700+ 篇
+       ⇒ 只能覆盖队首 250 条。
+       而**已正式发表的顶会/顶刊论文恰好最旧**（同一工作的 arXiv 预印本更早）
+       ⇒ 它们被永久压在队尾，一轮都轮不到。
+       实测后果：顶会 94 篇只有 4 篇有代码（4%），全库却有 13%；
+       待补的 91 篇顶会里 90 篇排在 250 名之后。
+       顶会只有 ~91 篇，提前做完不会饿死长尾。
+    """
+    if only_missing:
+        # 按"缺什么"选目标：缺 PDF 或 缺代码链接的都要补。
+        # ⚠️ 不能写成"citations=0 且 无代码 且 无项目页"——
+        #    那样会把"已有引用数但没代码链接"的论文全跳过（实测漏掉 600 篇）。
+        where = ("WHERE (pdf_url IS NULL OR pdf_url = '' "
+                 "OR code_url IS NULL OR code_url = '')")
+    else:
+        where = ""
+    return f"""SELECT id, title, doi, arxiv_id, abstract, pdf_url, citations,
+                      code_url, project_url, open_access, venue, year
+               FROM papers {where}
+               ORDER BY (code_url IS NULL OR code_url = '') DESC,
+                        CASE WHEN venue_tier = 'A' THEN 0 ELSE 1 END,
+                        published_date DESC"""
+
+
 def enrich(limit: int | None = None, only_missing: bool = True,
            budget_s: int = 420, verbose: bool = True,
            github_max: int = 250) -> dict:
@@ -188,21 +221,7 @@ def enrich(limit: int | None = None, only_missing: bool = True,
 
     t0 = time.time()
     con = connect()
-
-    if only_missing:
-        # 按"缺什么"选目标：缺 PDF 或 缺代码链接的都要补。
-        # ⚠️ 不能写成"citations=0 且 无代码 且 无项目页"——
-        #    那样会把"已有引用数但没代码链接"的论文全跳过（实测漏掉 600 篇）。
-        where = ("WHERE (pdf_url IS NULL OR pdf_url = '' "
-                 "OR code_url IS NULL OR code_url = '')")
-    else:
-        where = ""
-    sql = f"""SELECT id, title, doi, arxiv_id, abstract, pdf_url, citations,
-                     code_url, project_url, open_access, venue, year
-              FROM papers {where}
-              ORDER BY (code_url IS NULL OR code_url = '') DESC,
-                       published_date DESC"""
-    rows = [dict(r) for r in con.execute(sql)]
+    rows = [dict(r) for r in con.execute(enrich_queue_sql(only_missing))]
     if limit:
         rows = rows[:limit]
     if verbose:

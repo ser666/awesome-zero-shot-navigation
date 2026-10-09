@@ -148,6 +148,24 @@
     padding:2px 0;margin-top:6px}
   .toggle:hover{text-decoration:underline}
   .empty{text-align:center;padding:56px 20px;color:var(--text-muted)}
+  /* ── 按子专题分组的浏览视图 ── */
+  .grp{margin-bottom:26px}
+  .grp-head{display:flex;align-items:baseline;gap:9px;margin:0 0 10px;
+    padding-bottom:7px;border-bottom:2px solid var(--accent-soft)}
+  .grp-name{font-size:15px;font-weight:700;color:var(--accent)}
+  .grp-n{color:var(--text-muted);font-size:12px}
+  .grp-jump{margin-left:auto;font-size:12px;color:var(--link);cursor:pointer;
+    background:none;border:none;font-family:inherit}
+  .grp-jump:hover{text-decoration:underline}
+  .grp-more{margin:2px 0 0 2px;font-size:12.5px;color:var(--link);
+    background:none;border:none;cursor:pointer;font-family:inherit;padding:4px 0}
+  .grp-more:hover{text-decoration:underline}
+  /* 视图切换（列表 / 分组） */
+  .viewsw{display:inline-flex;border:1px solid var(--border-strong);
+    border-radius:var(--radius);overflow:hidden}
+  .viewsw button{background:var(--surface);border:none;cursor:pointer;
+    font-family:inherit;font-size:12px;padding:4px 10px;color:var(--text-muted)}
+  .viewsw button.on{background:var(--accent);color:#fff;font-weight:600}
   #more{display:block;margin:22px auto;padding:10px 26px;border:1px solid var(--border-strong);
     border-radius:var(--radius);background:var(--surface);color:var(--text-body);
     cursor:pointer;font-size:14px}
@@ -244,7 +262,12 @@
     </div>
 
     <div class="side-block">
-      <div class="side-title"><span>Venue</span></div>
+      <div class="side-title">
+        <span>🏆 Top venues</span>
+        <span class="clr" id="clr-venlist">clear</span>
+      </div>
+      <div class="navlist" id="venlist"></div>
+      <div class="side-title"><span>Other venue</span></div>
       <select id="ven" title="Venue"><option value="">All venues</option></select>
       <div class="side-title"><span>Year</span></div>
       <select id="yr" title="Year"><option value="">All years</option></select>
@@ -257,6 +280,10 @@
   <section class="results">
     <div class="resbar">
       <span class="count" id="count">loading…</span>
+      <div class="viewsw" id="viewsw">
+        <button data-view="list" class="on">☰ 列表</button>
+        <button data-view="topic">▦ 按子专题分组</button>
+      </div>
       <div class="activefilters" id="af"></div>
     </div>
     <div id="list"></div>
@@ -351,9 +378,26 @@ function resCounts() {
 }
 
 function fillSelects() {
-  const vs = Object.entries(DATA.venues).slice(0, 90);
-  $("ven").innerHTML = `<option value="">All venues</option>` +
-    vs.map(([k,v]) => `<option value="${esc(k)}">${esc(k)} (${v})</option>`).join("");
+  /* ⭐ 会议下拉拆成两组：顶会/顶刊在前（约 17 种），其余在后（100+ 种）。
+     不做分组的话，150+ 个选项混在一起，顶会会被淹没在长尾里。 */
+  const TOP = DATA.venues_top || {};
+  const all = Object.entries(DATA.venues).slice(0, 200);
+  const top = Object.entries(TOP).sort((a,b) => b[1]-a[1]);
+  const rest = all.filter(([k]) => !(k in TOP));
+  $("ven").innerHTML =
+    `<option value="">All venues</option>`
+    + `<optgroup label="🏆 Top venues (CCF-A / major robotics)">`
+    + top.map(([k,v]) => `<option value="${esc(k)}">${esc(k)} (${v})</option>`).join("")
+    + `</optgroup>`
+    + `<optgroup label="Other venues">`
+    + rest.map(([k,v]) => `<option value="${esc(k)}">${esc(k)} (${v})</option>`).join("")
+    + `</optgroup>`;
+
+  /* ⭐ 顶会快捷列表：一次点击 = 筛选该会议（不用去下拉里翻） */
+  $("venlist").innerHTML = top.map(([k,v]) =>
+    `<div class="navitem" data-venue="${esc(k)}" title="${esc(k)}">`
+    + `<span class="lbl">${esc(k)}</span><span class="n">${v}</span></div>`
+  ).join("");
 
   const yrs = [...new Set(DATA.papers.map(p=>p.y).filter(Boolean))].sort((a,b)=>b-a);
   $("yr").innerHTML = `<option value="">All years</option>` +
@@ -393,11 +437,18 @@ function sidebarLists() {
 
   $("clr-cat").onclick = () => { activeCat = ""; shown = PAGE; render(); };
   $("clr-topic").onclick = () => { activeTopic = ""; shown = PAGE; render(); };
-  /* 资源组一键清空（三个复选框一起清） */
   $("clr-res").onclick = () => {
     ["fcode", "fproj", "oa"].forEach(id => { $(id).checked = false; });
     shown = PAGE; render();
   };
+  $("clr-venlist").onclick = () => { $("ven").value = ""; shown = PAGE; render(); };
+
+  /* 顶会快捷列表：点击 = 在下拉里选中同一个值（单一数据源 = #ven） */
+  $("venlist").querySelectorAll("[data-venue]").forEach(el => el.onclick = () => {
+    const v = el.dataset.venue;
+    $("ven").value = ($("ven").value === v) ? "" : v;   // 再点一次取消
+    shown = PAGE; render();
+  });
 
   $("tmore").onclick = () => {
     const c = $("tclist");
@@ -413,18 +464,24 @@ function syncSidebarState() {
     x.classList.toggle("on", x.dataset.cat === activeCat));
   $("tclist").querySelectorAll("[data-topic]").forEach(x =>
     x.classList.toggle("on", x.dataset.topic === activeTopic));
+  const f = readFilters();
+  /* 顶会列表高亮跟着下拉走（两者是同一个筛选的两个入口） */
+  $("venlist").querySelectorAll("[data-venue]").forEach(x =>
+    x.classList.toggle("on", x.dataset.venue === f.ven));
   $("clr-cat").classList.toggle("show", !!activeCat);
   $("clr-topic").classList.toggle("show", !!activeTopic);
-  const f = readFilters();
+  $("clr-venlist").classList.toggle("show", !!f.ven);
   $("clr-res").classList.toggle("show", !!(f.code || f.proj || f.oa));
 }
 
-/* 清空全部筛选（侧边栏 + 结果栏都用它） */
+/* 清空全部筛选（侧边栏 + 结果栏都用它）—— ⚠️ 不动 viewMode：
+   "重置筛选"与"切换视图"是两件事，混一起会让用户迷惑 */
 function resetAll() {
   $("q").value = ""; $("ven").value = ""; $("yr").value = "";
   $("sort").value = "date";
   ["top", "oa", "fcode", "fproj", "fnew"].forEach(id => { $(id).checked = false; });
   activeCat = ""; activeTopic = "";
+  Object.keys(grpShown).forEach(k => delete grpShown[k]);
   shown = PAGE; render();
 }
 
@@ -538,6 +595,86 @@ function activeFilterChips() {
   $("afreset").onclick = resetAll;
 }
 
+/* ═══ 按子专题分组的浏览视图 ═══════════════════════════════════════
+   用途：不按"时间倒序"平铺，而是**按子专题分区**，一眼看清
+   「每个方向各有多少篇、都是什么」。适合做领域综述前的扫读。
+   ⚠️ 一篇论文有多个子专题 ⇒ 会在多个分区里各出现一次（这是有意的：
+      分区的语义是"这个方向下的论文"，不是"论文的唯一归属"）。
+   ═══════════════════════════════════════════════════════════════ */
+let viewMode = "list";          // list | topic
+const GROUP_PAGE = 8;           // 每个分区默认展示几篇
+const grpShown = {};            // 分区 → 已展开的条数
+
+function groupByTopic(res) {
+  const buckets = new Map();
+  DATA.topics && Object.keys(DATA.topics).forEach(t => buckets.set(t, []));
+  const noTopic = [];
+  res.forEach(p => {
+    const ts = p.tp || [];
+    if (!ts.length) { noTopic.push(p); return; }
+    ts.forEach(t => { if (buckets.has(t)) buckets.get(t).push(p); });
+  });
+  /* 分区按论文数降序 —— 大方向在先（与侧边栏子专题列表一致） */
+  const groups = [...buckets.entries()]
+    .filter(([, arr]) => arr.length)
+    .sort((a, b) => b[1].length - a[1].length);
+  if (noTopic.length) groups.push(["（未标注子专题）", noTopic]);
+  return groups;
+}
+
+function renderGrouped(res) {
+  const groups = groupByTopic(res);
+  if (!groups.length) return "";
+  return groups.map(([name, arr]) => {
+    const shownN = grpShown[name] || GROUP_PAGE;
+    const visible = arr.slice(0, shownN);
+    const rest = arr.length - visible.length;
+    const head =
+      `<div class="grp-head">`
+      + `<span class="grp-name">${esc(name)}</span>`
+      + `<span class="grp-n">${arr.length} 篇</span>`
+      + (name === "（未标注子专题）" ? ""
+         : `<button class="grp-jump" data-goto="${esc(name)}">只看这个子专题 →</button>`)
+      + `</div>`;
+    const more = rest > 0
+      ? `<button class="grp-more" data-more="${esc(name)}">＋ 还有 ${rest} 篇</button>`
+      : "";
+    return `<section class="grp" data-grp="${esc(name)}">${head}`
+      + visible.map(card).join("") + more + `</section>`;
+  }).join("");
+}
+
+function bindGroupActions() {
+  $("list").querySelectorAll(".grp-more").forEach(b => b.onclick = () => {
+    const n = b.dataset.more;
+    grpShown[n] = (grpShown[n] || GROUP_PAGE) + GROUP_PAGE;
+    render();
+    const el = $("list").querySelector(`[data-grp="${CSS.escape(n)}"]`);
+    if (el) el.scrollIntoView({block: "start", behavior: "smooth"});
+  });
+  $("list").querySelectorAll(".grp-jump").forEach(b => b.onclick = () => {
+    activeTopic = b.dataset.goto;
+    viewMode = "list";          // 跳到该子专题的平铺视图
+    shown = PAGE;
+    render();
+    window.scrollTo({top: 0, behavior: "smooth"});
+  });
+}
+
+function bindCards() {
+  $("list").querySelectorAll(".toggle").forEach(b => b.onclick = () => {
+    const d = $(b.dataset.abs);
+    const open = d.classList.toggle("open");
+    b.textContent = (open ? "▾" : "▸") + " abstract";
+  });
+  $("list").querySelectorAll(".tpc").forEach(t => t.onclick = e => {
+    e.preventDefault();
+    activeTopic = t.dataset.t;
+    shown = PAGE; render();
+    window.scrollTo({top: 0, behavior: "smooth"});
+  });
+}
+
 function render() {
   const f = readFilters();
   let res = DATA.papers.filter(p => matches(p, f));
@@ -551,14 +688,27 @@ function render() {
   syncSidebarState();
   activeFilterChips();
 
-  const slice = res.slice(0, shown);
-  $("list").innerHTML = slice.length
-    ? slice.map(card).join("")
-    : `<div class="empty">No papers match these filters.<br>
-         <a href="#" id="reset">Reset filters</a></div>`;
+  const inList = viewMode === "list";
+  $("viewsw").querySelectorAll("button").forEach(b =>
+    b.classList.toggle("on", b.dataset.view === viewMode));
+
+  if (inList) {
+    const slice = res.slice(0, shown);
+    $("list").innerHTML = slice.length
+      ? slice.map(card).join("")
+      : `<div class="empty">No papers match these filters.<br>
+           <a href="#" id="reset">Reset filters</a></div>`;
+  } else {
+    $("list").innerHTML = res.length
+      ? renderGrouped(res)
+      : `<div class="empty">No papers match these filters.<br>
+           <a href="#" id="reset">Reset filters</a></div>`;
+  }
 
   const more = $("more");
-  if (res.length > shown) {
+  /* ⭐ 分组视图下不显示「Show more」——分组是全量渲染的，
+     分页按钮会与「＋ 还有 N 篇」语义冲突。 */
+  if (inList && res.length > shown) {
     more.style.display = "block";
     more.textContent = `Show ${Math.min(PAGE, res.length-shown)} more (${res.length-shown} remaining)`;
   } else more.style.display = "none";
@@ -566,18 +716,8 @@ function render() {
   const r = $("reset");
   if (r) r.onclick = e => { e.preventDefault(); resetAll(); };
 
-  $("list").querySelectorAll(".toggle").forEach(b => b.onclick = () => {
-    const d = $(b.dataset.abs);
-    const open = d.classList.toggle("open");
-    b.textContent = (open ? "▾" : "▸") + " abstract";
-  });
-  /* 卡片里的子专题标签：点一下 = 在侧边栏选中它（并滚回顶部） */
-  $("list").querySelectorAll(".tpc").forEach(t => t.onclick = e => {
-    e.preventDefault();
-    activeTopic = t.dataset.t;
-    shown = PAGE; render();
-    window.scrollTo({top: 0, behavior: "smooth"});
-  });
+  bindCards();
+  if (!inList) bindGroupActions();
 
   syncURL();
 }
@@ -597,6 +737,7 @@ function syncURL() {
   if (f.ven) p.set("ven", f.ven);
   if (f.yr) p.set("yr", f.yr);
   if (f.sort !== "date") p.set("sort", f.sort);
+  if (viewMode !== "list") p.set("view", viewMode);   // ⭐ 分组视图也可分享
   Object.keys(URL_CHK).forEach(k => { if (f[k]) p.set(k, "1"); });
   const s = p.toString();
   history.replaceState(null, "", s ? "#" + s : location.pathname + location.search);
@@ -608,12 +749,20 @@ function applyURL() {
   if (p.get("q")) $("q").value = p.get("q");
   if (p.get("cat")) activeCat = p.get("cat");
   if (p.get("topic")) activeTopic = p.get("topic");
-  /* ⚠️ venue 下拉只列前 90 个 —— 极冷门 venue 的分享链接会静默回落成"全部" */
+  /* ⚠️ venue 下拉只列前 200 个 —— 极冷门 venue 的分享链接会静默回落成"全部" */
   if (p.get("ven")) $("ven").value = p.get("ven");
   if (p.get("yr")) $("yr").value = p.get("yr");
   if (p.get("sort")) $("sort").value = p.get("sort");
+  if (p.get("view") === "topic") viewMode = "topic";
   Object.entries(URL_CHK).forEach(([k, id]) => { if (p.get(k)) $(id).checked = true; });
 }
+
+/* 视图切换：列表 ⇄ 按子专题分组 */
+$("viewsw").querySelectorAll("button").forEach(b => b.onclick = () => {
+  viewMode = (b.dataset.view === "topic") ? "topic" : "list";
+  shown = PAGE;
+  render();
+});
 
 ["q","ven","yr","sort","top","oa","fcode","fproj","fnew"].forEach(id => {
   $(id).addEventListener("input", () => { shown = PAGE; render(); });

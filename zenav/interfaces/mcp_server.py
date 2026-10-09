@@ -194,6 +194,8 @@ def build_server(cfg: AppConfig | None = None):
         year_from: int = 0,
         year_to: int = 0,
         has_code: bool = False,
+        has_project: bool = False,
+        new_only: bool = False,
         open_access: bool = False,
         min_citations: int = 0,
         sort: str = "date",
@@ -211,6 +213,8 @@ def build_server(cfg: AppConfig | None = None):
             year_from: 起始年份（含）。
             year_to: 结束年份（含）。
             has_code: 只要带开源代码的。
+            has_project: 只要带项目主页的。
+            new_only: 只看最近新发布的（"新"的窗口由数据侧定义，通常是 30 天）。
             open_access: 只要开放获取的。
             min_citations: 最低引用数。
             sort: date（默认，新→旧）| citations | hotness | year | title
@@ -224,6 +228,7 @@ def build_server(cfg: AppConfig | None = None):
             res = papers.search(
                 query, category=category, topic=topic, venue=venue,
                 year_from=year_from, year_to=year_to, has_code=has_code,
+                has_project=has_project, new_only=new_only,
                 open_access=open_access, min_citations=min_citations,
                 sort=sort, limit=_clamp(limit, 1, MAX_LIMIT), offset=max(0, offset),
             )

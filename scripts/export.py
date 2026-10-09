@@ -522,6 +522,12 @@ def build_site_json(rows: list, now: datetime | None = None) -> dict:
     for p in papers:
         if p["v"] and p["vk"] not in ("preprint", "proceedings", "other"):
             venue_count[p["v"]] += 1
+    # ⭐ 顶会/顶刊单独成表 —— 数量少（~17 种）、价值高，
+    #    适合在前端做成一列可点击的快捷筛选（下拉里 150+ 项太难找）
+    venue_top: dict[str, int] = defaultdict(int)
+    for p in papers:
+        if p["vt"] == "A" and p["v"]:
+            venue_top[p["v"]] += 1
 
     return {
         "total": len(papers),
@@ -533,6 +539,7 @@ def build_site_json(rows: list, now: datetime | None = None) -> dict:
                                   key=lambda x: -x[1])),
         "topics": dict(sorted(tag_count.items(), key=lambda x: -x[1])),
         "venues": dict(sorted(venue_count.items(), key=lambda x: -x[1])),
+        "venues_top": dict(sorted(venue_top.items(), key=lambda x: -x[1])),
         "papers": papers,
     }
 

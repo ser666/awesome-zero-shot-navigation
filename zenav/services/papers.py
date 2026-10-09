@@ -106,6 +106,8 @@ class PaperService:
         year_from: int = 0,
         year_to: int = 0,
         has_code: bool = False,
+        has_project: bool = False,
+        new_only: bool = False,
         open_access: bool = False,
         min_citations: int = 0,
         sort: str = "date",
@@ -116,6 +118,15 @@ class PaperService:
 
         Args:
             query: 关键词（空格分隔，全部命中才算）。匹配标题/摘要/作者/会议。
+            category: 分类（宽容匹配，可写片段如 "ObjectNav"）。
+            topic: 子专题标签（大小写不敏感）。
+            venue: 会议/期刊简称（子串匹配，可写 "CoRL"）。
+            year_from / year_to: 年份范围（含端点）。
+            has_code: 只要带开源代码的（有 GitHub 链接）。
+            has_project: 只要带项目主页的。
+            new_only: 只看「新论文」—— 由导出侧按 NEW_DAYS 判据标好的 is_new 字段。
+            open_access: 只要开放获取的。
+            min_citations: 最低引用数。
             sort: date（默认，新→旧）| citations | hotness | year | title
             limit: 返回条数上限（0 = 不限，⚠️ Agent 场景慎用，会撑爆上下文）
             offset: 分页偏移
@@ -144,6 +155,10 @@ class PaperService:
                 return False
             if has_code and not p.code_url:
                 return False
+            if has_project and not p.project_url:
+                return False
+            if new_only and not p.is_new:
+                return False
             if open_access and not p.open_access:
                 return False
             if min_citations and p.citations < min_citations:
@@ -170,6 +185,7 @@ class PaperService:
                 "query": query, "category": category, "topic": topic,
                 "venue": venue, "year_from": year_from, "year_to": year_to,
                 "has_code": has_code, "open_access": open_access,
+                "has_project": has_project, "new_only": new_only,
                 "min_citations": min_citations, "sort": sort,
                 "limit": limit, "offset": offset,
             },
