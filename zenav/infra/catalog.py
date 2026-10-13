@@ -138,7 +138,58 @@ class LocalJsonCatalog(PaperCatalog):
                 f"论文数据不是合法 JSON：{self.path}",
                 hint=f"{exc}\n     重新生成：make export",
             ) from exc
-        return _from_site_json(raw, self.describe)
+        # ⭐ 完整摘要已拆到 abstracts.json —— 并回来，服务层 abstract 字段才不空
+        return _from_site_json(_with_local_abstracts(raw, self.path), self.describe)
+
+
+# ══════════════════════════════════════════════════════════════════════
+#  完整摘要：独立文件（2026-10-13 拆分）+ 合并回来
+# ══════════════════════════════════════════════════════════════════════
+# ⚠️ 为什么拆：完整摘要曾内嵌在 papers.json（占 71% 体积 ⇒ 首屏要等 1.7MB
+#    下完才渲染，国内直连实测 3~18 秒空白）。现独立成 abstracts.json，
+#    由网站**懒加载**。但服务层的 `abstract` 字段不能因此缺失 ⇒ 这里并回来。
+_ABSTRACTS_NAME = "abstracts.json"
+
+
+def _merge_abstracts(papers_raw: list, abs_map: Any) -> None:
+    """把 abstracts.json 的完整摘要并回短键记录（写回 `s` 字段，就地修改）。
+
+    ⚠️ 一律**容错**：文件缺失 / 格式不对 / 缺 key 都只是"没有摘要"，
+    绝不因此让目录加载失败（它是可选增强，不是必需依赖）。
+    """
+    if not isinstance(abs_map, dict) or not abs_map:
+        return
+    for r in papers_raw:
+        if not isinstance(r, dict) or r.get("s"):
+            continue
+        aid = r.get("id")
+        if aid and isinstance(abs_map.get(aid), str):
+            r["s"] = abs_map[aid]
+
+
+def _local_abstracts(site_path: pathlib.Path) -> dict:
+    """读 papers.json 同目录的 abstracts.json（不存在 → 空）。"""
+    p = site_path.parent / _ABSTRACTS_NAME
+    if not p.is_file():
+        return {}
+    try:
+        return json.loads(p.read_text(encoding="utf-8")) or {}
+    except (json.JSONDecodeError, OSError):
+        return {}
+
+
+def _remote_abstracts(url: str) -> dict:
+    """读远程 papers.json 同目录的 abstracts.json（失败 → 空）。"""
+    from zenav.infra.http import HttpClient     # 延迟导入，避免环
+
+    abs_url = url.rsplit("/", 1)[0] + "/" + _ABSTRACTS_NAME
+    try:
+        resp = HttpClient(user_agent="awesome-zero-shot-navigation/zenav").get(abs_url)
+        if resp.status != 200:
+            return {}
+        return json.loads(resp.text) or {}
+    except Exception:                      # noqa: BLE001 —— 可选增强，任何失败都降级
+        return {}
 
 
 # ══════════════════════════════════════════════════════════════════════
@@ -177,7 +228,8 @@ class RemoteJsonCatalog(PaperCatalog):
                 f"远程数据不是合法 JSON：{self.url}",
                 hint=str(exc),
             ) from exc
-        return _from_site_json(raw, self.describe)
+        # ⭐ 同上游：完整摘要并回来（远程 abstracts.json 取不到就降级，不影响主流程）
+        return _from_site_json(_with_remote_abstracts(raw, self.url), self.describe)
 
 
 # ══════════════════════════════════════════════════════════════════════
@@ -269,6 +321,18 @@ def _count(key_fn, papers: list[Paper]) -> dict[str, int]:
             if k:
                 counter[k] += 1
     return dict(sorted(counter.items(), key=lambda kv: -kv[1]))
+
+
+def _with_local_abstracts(raw: dict, site_path: pathlib.Path) -> dict:
+    """把同目录的完整摘要并进 raw（就地），返回同一个 raw。"""
+    _merge_abstracts(raw.get("papers") or [], _local_abstracts(site_path))
+    return raw
+
+
+def _with_remote_abstracts(raw: dict, url: str) -> dict:
+    """把远程同目录的完整摘要并进 raw（就地），返回同一个 raw。"""
+    _merge_abstracts(raw.get("papers") or [], _remote_abstracts(url))
+    return raw
 
 
 def _from_site_json(raw: dict[str, Any], desc: str) -> CatalogData:

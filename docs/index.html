@@ -310,6 +310,9 @@
 <script>
 const PAGE = 40;
 let DATA = {papers: [], categories: {}, topics: {}, venues: {}};
+// ⭐ 完整摘要：独立文件 + 首屏后懒加载（原因见 scripts/export.py 的 build_abstracts）
+let ABS = {};
+const OPEN_ABS = new Set();   // 已展开的摘要 id —— 懒加载到达后重渲染时保留展开状态
 let shown = PAGE;
 let activeCat = "";
 let activeTopic = "";
@@ -515,7 +518,7 @@ function matches(p, f) {
   const q = f.q.toLowerCase();
   return (p.t||"").toLowerCase().includes(q)
       || (p.a||[]).join(" ").toLowerCase().includes(q)
-      || (p.s||"").toLowerCase().includes(q)
+      || (ABS[p.id]||"").toLowerCase().includes(q)   // ⭐ 完整摘要（懒加载，见下）
       || (p.tl||"").toLowerCase().includes(q)
       || (p.v||"").toLowerCase().includes(q)
       || (p.tp||[]).join(" ").toLowerCase().includes(q);
@@ -544,8 +547,10 @@ function card(p) {
   if (p.co) links.push(`<a class="lbtn code" href="${esc(p.co)}" target="_blank" rel="noopener">code ↗</a>`);
   if (p.doi) links.push(`<a class="lbtn doi" href="https://doi.org/${esc(p.doi)}" target="_blank" rel="noopener">DOI ↗</a>`);
 
-  const abs = p.tl || p.s || "";
+  // ⭐ 优先用懒加载来的完整摘要；未到位时退回 tldr（保证首屏就有内容）
+  const abs = ABS[p.id] || p.tl || "";
   const idb = "abs" + Math.abs([...(p.t||"")].reduce((a,c)=>a*31+c.charCodeAt(0)|0,7));
+  const isOpen = OPEN_ABS.has(idb);
 
   return `<article class="paper">
     <a class="ptitle" href="${esc(p.u||p.p||(p.doi?"https://doi.org/"+p.doi:"#"))}" target="_blank" rel="noopener">${esc(p.t)}</a>
@@ -553,8 +558,8 @@ function card(p) {
     ${p.a && p.a.length ? `<div class="auths">${esc(p.a.slice(0,6).join(", "))}${p.a.length>6?" et al.":""}</div>` : ""}
     ${tps ? `<div class="meta">${tps}</div>` : ""}
     ${links.length ? `<div class="links">${links.join("")}</div>` : ""}
-    ${abs ? `<button class="toggle" data-abs="${idb}">▸ abstract</button>
-      <div class="abs" id="${idb}">${esc(abs)}</div>` : ""}
+    ${abs ? `<button class="toggle" data-abs="${idb}">${isOpen?"▾":"▸"} abstract</button>
+      <div class="abs${isOpen?" open":""}" id="${idb}">${esc(abs)}</div>` : ""}
   </article>`;
 }
 
@@ -665,6 +670,8 @@ function bindCards() {
   $("list").querySelectorAll(".toggle").forEach(b => b.onclick = () => {
     const d = $(b.dataset.abs);
     const open = d.classList.toggle("open");
+    if (open) OPEN_ABS.add(b.dataset.abs);   // ⭐ 记住展开状态（摘要懒加载到达后会重渲染）
+    else OPEN_ABS.delete(b.dataset.abs);
     b.textContent = (open ? "▾" : "▸") + " abstract";
   });
   $("list").querySelectorAll(".tpc").forEach(t => t.onclick = e => {
@@ -802,11 +809,28 @@ fetch("data/papers.json?t=" + Date.now())
     applyURL();   // ⭐ 先恢复 URL 里的筛选，再 render —— 否则会先渲染全量再跳变
     render();
     $("gen").textContent = `Data generated at ${(d.generated_at||"").slice(0,19).replace("T"," ")} UTC · ${d.total} papers`;
+    loadAbstracts();   // ⭐ 首屏渲染完成后再后台拉完整摘要（不阻塞首屏）
   })
   .catch(e => {
     $("count").textContent = "failed to load";
     $("list").innerHTML = `<div class="empty">Could not load <code>data/papers.json</code>.<br>${esc(String(e))}</div>`;
   });
+
+/* ⭐ 完整摘要懒加载（2026-10-13）
+   ---------------------------------------------------------------
+   完整摘要在 papers.json 里曾占 71% 体积（1.7MB），导致首屏必须等它下完才渲染，
+   国内直连 GitHub Pages 实测 3~18 秒空白。现拆成 abstracts.json，首屏渲染完之后
+   再拉；到达后重渲染一次 → ① 搜索能命中摘要正文 ② 展开显示全文而不是 tldr。
+   失败也不影响主功能（静默忽略）。 */
+function loadAbstracts() {
+  fetch("data/abstracts.json?t=" + Date.now())
+    .then(r => r.ok ? r.json() : {})
+    .then(m => {
+      ABS = m || {};
+      if (Object.keys(ABS).length) render();   // 保留 OPEN_ABS → 已展开的不会收起
+    })
+    .catch(() => {});
+}
 </script>
 </body>
 </html>

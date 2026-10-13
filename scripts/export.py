@@ -19,6 +19,7 @@ README 条目格式（参考高 star 列表的做法，Boss 指定）
 from __future__ import annotations
 
 import calendar
+import hashlib
 import json
 import pathlib
 import re
@@ -31,6 +32,8 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 DB_PATH = ROOT / "data" / "papers.db"
 README = ROOT / "README.md"
 SITE_DATA = ROOT / "docs" / "data" / "papers.json"
+# ⚠️ 2026-10-13：完整摘要单独出一个文件（见 build_abstracts 的说明）
+ABSTRACTS_DATA = ROOT / "docs" / "data" / "abstracts.json"
 
 REPO = "ser666/awesome-zero-shot-navigation"
 SITE = "https://ser666.github.io/awesome-zero-shot-navigation/"
@@ -473,6 +476,41 @@ def is_fresh(published, ref, window_days=NEW_DAYS):
     return 0 <= (ref - d).days <= window_days
 
 
+def paper_id(r: dict) -> str:
+    """稳定的短 id —— 用于把 `abstracts.json` 关联回 `papers.json`。
+
+    ⚠️ 必须**跨运行稳定**（同一篇文章每次导出得到同一个 id），所以用内容派生：
+    doi → arxiv_id → title 依次取第一个可用的，取 sha1 前 10 位。
+    """
+    key = (r.get("doi") or r.get("arxiv_id") or r.get("title") or "").strip().lower()
+    return hashlib.sha1(key.encode("utf-8")).hexdigest()[:10]
+
+
+def build_abstracts(rows: list) -> dict:
+    """完整摘要：`{paper_id: abstract}`（只收非空的）。
+
+    ⭐ 为什么要拆出来（2026-10-13）
+    ------------------------------
+    原来 papers.json 里带 `s`（完整摘要，上限 1800 字），实测占 1.69MB 的 **71%**
+    （824 篇里 756 篇有摘要，中位 1450 字）。后果：
+
+      · 页面首屏必须等整个 1.7MB 下载完才渲染 ⇒ 国内直连 GitHub Pages
+        实测 **3~18 秒**空白（Boss 反馈「看不到论文」）
+      · 而 `s` 在页面上只有两处用：① 搜索命中 ② `tl`(tldr) 缺失时的兜底展示
+
+    ⇒ 拆成两个文件：
+        papers.json    —— 列表/筛选/排序所需字段，**首屏只等这个**（体积降 ~64%）
+        abstracts.json —— 完整摘要，首屏渲染完之后**后台懒加载**
+    这样功能零损失（搜索照样能命中摘要），首屏却快得多。
+    """
+    out: dict[str, str] = {}
+    for r in rows:
+        ab = re.sub(r"\s+", " ", (r.get("abstract") or "").strip())
+        if ab:
+            out[paper_id(r)] = ab[:1800]
+    return out
+
+
 def build_site_json(rows: list, now: datetime | None = None) -> dict:
     """网站数据：字段精简但保留浏览所需的全部维度
 
@@ -485,6 +523,7 @@ def build_site_json(rows: list, now: datetime | None = None) -> dict:
         ab = re.sub(r"\s+", " ", (r.get("abstract") or "").strip())
         tldr = re.sub(r"\s+", " ", (r.get("tldr") or "").strip())
         papers.append({
+            "id": paper_id(r),                                 # ⭐ 关联 abstracts.json 用
             "t": r["title"],                                  # title
             "a": [x for x in (r.get("authors") or []) if x][:12],   # authors
             "d": r.get("published_date") or "",               # date
@@ -505,7 +544,8 @@ def build_site_json(rows: list, now: datetime | None = None) -> dict:
             "oa": 1 if r.get("open_access") else 0,
             "nw": 1 if is_fresh(r.get("published_date"), ref_day) else 0,  # ⭐ NEW 徽章
             "hot": r.get("hotness") or 0,
-            "s": ab[:1800],          # abstract（保留全文，前端按需展示）
+            # ⚠️ 2026-10-13：完整摘要 `s` **不再放在这里**（占 71% 体积、只用于搜索/兜底）
+            #    → 已拆到 docs/data/abstracts.json（首屏后懒加载，见 build_abstracts）
             "tl": tldr[:400],
             "src": r.get("sources") or [],
         })
@@ -559,6 +599,16 @@ def main():
     print(f"✅ docs/data/papers.json ({SITE_DATA.stat().st_size/1024:.1f} KB)")
     print(f"   分类 {len(data['categories'])} ｜ 子专题 {len(data['topics'])} ｜ "
           f"会议 {len(data['venues'])}")
+
+    # ⭐ 完整摘要单独出文件（首屏只等 papers.json；这个由前端后台懒加载）
+    abstracts = build_abstracts(rows)
+    ABSTRACTS_DATA.write_text(json.dumps(abstracts, ensure_ascii=False),
+                              encoding="utf-8")
+    total_kb = (SITE_DATA.stat().st_size + ABSTRACTS_DATA.stat().st_size) / 1024
+    print(f"✅ docs/data/abstracts.json ({ABSTRACTS_DATA.stat().st_size/1024:.1f} KB, "
+          f"{len(abstracts)} 篇)")
+    print(f"   ⭐ 首屏载荷 papers.json = {SITE_DATA.stat().st_size/1024:.1f} KB"
+          f"（两文件合计 {total_kb:.1f} KB，后者异步）")
 
 
 if __name__ == "__main__":

@@ -11,7 +11,7 @@
 
 ```
 采集层  scripts/    零第三方依赖，跑在 GitHub Actions
-       产出 → data/papers.db + docs/data/papers.json
+       产出 → data/papers.db + docs/data/papers.json + docs/data/abstracts.json
                      ↓ 只通过"数据文件"耦合
 服务层  zenav/      给 Agent / 命令行 / Zotero 用
 ```

@@ -124,6 +124,19 @@ jobs:
               sys.exit(f"❌ 数量不一致：DB {n_db} vs JSON {n_js}")
           if n_js < 100:
               sys.exit(f"❌ 论文数异常偏低：{n_js}")
+          # ⭐ 首屏载荷红线 + 摘要文件（2026-10-13）：摘要不能再被塞回 papers.json，
+          #    两个文件都要产出，否则网站要么变慢、要么摘要静默丢失
+          kb = js.stat().st_size // 1024
+          print(f"site payload={kb}KB")
+          if kb > 900:
+              sys.exit(f"❌ papers.json 过大（{kb}KB > 900KB）—— 首屏会变慢")
+          if any("s" in p for p in d["papers"]):
+              sys.exit("❌ papers.json 里又出现了完整摘要字段 `s`")
+          abs_json = pathlib.Path("docs/data/abstracts.json")
+          if not abs_json.is_file() or abs_json.stat().st_size < 100_000:
+              sys.exit("❌ abstracts.json 缺失或过小 —— 摘要会静默丢失")
+          n_abs = len(json.loads(abs_json.read_text()))
+          print(f"abstracts={n_abs} 篇 / {abs_json.stat().st_size//1024}KB")
           print("✅ sanity check passed")
           PY
 
@@ -145,7 +158,10 @@ jobs:
           set -uo pipefail
           git config user.name  "ser666"
           git config user.email "1035534180@qq.com"
-          git add README.md docs/data/papers.json data/papers.db
+          # ⚠️ abstracts.json 必须一起提交（2026-10-13）——
+          #    完整摘要已从 papers.json 拆到该文件、由网站懒加载；
+          #    漏掉它 ⇒ 线上文件永远不更新，摘要功能**静默失效**（不报错）
+          git add README.md docs/data/papers.json docs/data/abstracts.json data/papers.db
 
           if git diff --staged --quiet; then
             echo "无变化，跳过提交"

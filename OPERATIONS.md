@@ -507,7 +507,8 @@ make audit       # 查数据质量
 | 项 | 位置 | 说明 |
 |----|------|------|
 | 数据集 | `data/papers.db`（SQLite，**提交进 git**） | 有完整历史，可复现 |
-| 网站数据 | `docs/data/papers.json` | 由 `export.py` 生成 |
+| 网站数据 | `docs/data/papers.json` | 由 `export.py` 生成（**首屏载荷**，有体积红线） |
+| 网站摘要 | `docs/data/abstracts.json` | 由 `export.py` 生成；前端懒加载，服务层自动并回 |
 | 列表 | `README.md` | 由 `export.py` 生成 |
 | GitHub token（本地） | `~/.hermes/secrets/github_pat`（权限 600） | **不进 git**，用于本机增强 |
 | GitHub token（CI） | Actions 内置 `GITHUB_TOKEN`；可选配 `secrets.GH_PAT` | 用于 CI 里搜代码仓库 |

@@ -77,7 +77,8 @@
 
 ```
 采集   pipeline.py（4 采集源 + 3 增强源，全部**硬编码**在 .py 里）
-存储   data/papers.db（SQLite）+ docs/data/papers.json（网站用）
+存储   data/papers.db（SQLite）+ docs/data/papers.json（网站首屏用）
+       └ 伴生 docs/data/abstracts.json（完整摘要，懒加载）
 展示   docs/index.html（Pages 静态页，**只读**）
 调度   GitHub Actions（每周一，云端，零成本）
 ```
@@ -104,9 +105,17 @@
 
 ```
 docs/data/papers.json 是采集层 → 展示层的唯一接口。
+docs/data/abstracts.json 是它的**可选伴生文件**（完整摘要，按 `id` 关联）——
+首屏只等 papers.json，摘要由前端懒加载；服务层 `PaperCatalog` 会自动并回来，
+所以调用方（网站 / MCP / CLI）看到的仍是一个「有摘要的 Paper」。
 ```
 
 ⭐ **原则：能在数据侧算一次的判据，绝不放到前端算第二遍。**
+
+⭐ **另一条（2026-10-13 加）：首屏载荷 = 只放"渲染第一屏必须的东西"。**
+完整摘要曾内嵌在 papers.json（占 71% 体积 → 首屏等 1.7MB 下完才渲染，
+国内直连 GitHub Pages 实测 3~18 秒空白）。现已拆出、懒加载 ——
+**体积红线由 `tests/test_payload_size.py` + 工作流 sanity check 双重看守。**
 
 | 字段 | 谁算 | 为什么 |
 |------|------|--------|
