@@ -209,39 +209,21 @@ jobs:
             echo "| 数据 | $(du -h docs/data/papers.json | cut -f1) |"
           } >> $GITHUB_STEP_SUMMARY
 
-  # ⭐ 关键：在同一工作流内直接部署 Pages
+  # ⚠️ 本工作流【不再部署 Pages】（2026-11-07 改）
   #
-  # 为什么必须放在这里（而不是靠 pages.yml 被 push 触发）：
-  #   GitHub 明确规定 —— 用默认 GITHUB_TOKEN 做的推送【不会触发其他工作流】
-  #   （防止递归运行）。所以本作业的自动提交不会触发 pages.yml，
-  #   网站就会永远停在旧数据上。必须在本工作流内自己部署。
-  deploy-pages:
-    needs: update
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    permissions:
-      contents: read
-      pages: write
-      id-token: write
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v7
-        with:
-          ref: main      # 取最新提交（含刚提交的数据）
-
-      - name: Setup Pages
-        uses: actions/configure-pages@v6
-
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v5
-        with:
-          path: docs
-
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v5
+  # 原因：本仓库的 Pages 已切换为 legacy（branch 部署，source = main:/docs）。
+  #   · legacy 模式下，push 到 main 会自动构建并发布 —— 不需要 runner
+  #   · 而 actions/deploy-pages 只对 build_type=workflow 有效，
+  #     留着会在每次运行时失败（"Pages site is not configured for workflow"）
+  #
+  # 为什么改：2026-11-07 账号因 billing 被锁 ⇒ 所有 Actions job 起不来
+  #   （runner_id=0、steps 为空、2 秒失败）⇒ workflow 部署型 Pages **完全停摆**，
+  #   仓库里数据是新的、线上却是旧快照。
+  #   切成 legacy 后，构建由 GitHub 页面服务自己完成，不消耗 runner，也不受
+  #   Actions 状态影响 ⇒ 抗这种故障。
+  #
+  # 注意：本工作流最后一步 Commit changes 会 push 到 main，
+  #   而 legacy 会对该 push 自动触发构建 ⇒ 部署依然生效，无需额外步骤。
 
   # ⭐ 防停自检：检查定时任务是否还活着（GitHub 60 天无活动会静默禁用）
   health-check:
