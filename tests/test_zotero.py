@@ -8,6 +8,7 @@
 
 from __future__ import annotations
 
+import datetime
 import json
 import pathlib
 import unittest
@@ -246,9 +247,22 @@ class TestPushFlow(unittest.TestCase):
             self.assertEqual(client.items[0]["title"], "A")
 
     def test_since_days_filter(self):
+        # ⚠️ 日期必须相对"今天"算，绝不能写死具体日子。
+        #
+        #   历史教训（2026-11-01 实测）：本用例曾把"新论文"写成
+        #   date="2026-09-30"。当时它能过，但等"今天 - 30 天"越过
+        #   2026-09-30，这篇"新论文"就被 since_days=30 排除了 ——
+        #   于是 **测试开始无故失败**（代码一行没改）。
+        #
+        #   后果比"测试红了"严重得多：周更工作流的 Self-test 是门禁，
+        #   它一红，后面的采集/导出/提交全部 skipped ⇒ 列表**静默停更**，
+        #   而站点上看起来只是"没新论文"，没人会怀疑到测试。
+        #
+        #   所以这里一律用相对日期，让用例的语义（近 N 天 vs 很旧）恒定。
+        recent = (datetime.date.today() - datetime.timedelta(days=3)).isoformat()
         with TempDir() as tmp:
             papers = [
-                make_paper(title="New", doi="10.1/n", date="2026-09-30"),
+                make_paper(title="New", doi="10.1/n", date=recent),
                 make_paper(title="Old", doi="10.1/o", date="2020-01-01"),
             ]
             client = FakeZoteroClient()
