@@ -17,12 +17,36 @@ cd "$(dirname "$0")/.." || exit 1
 unset http_proxy https_proxy HTTP_PROXY HTTPS_PROXY all_proxy ALL_PROXY
 export GH_PAT="${GH_PAT:-$(cat "$HOME/.hermes/secrets/github_pat" 2>/dev/null || true)}"
 
+# ⚠️ 关键：remote 是 SSH（git@github.com:...），而本机没有默认私钥 ~/.ssh/id_*，
+#    只有 ~/.ssh/github。所有走网络的 git 命令都必须带 GIT_SSH_COMMAND，
+#    否则会报 "Permission denied (publickey)"。
+#    （2026-11-09 / 11-16 两次周更就是因为 pull 没带这个而静默失败）
+if [ -f "$HOME/.ssh/github" ]; then
+  export GIT_SSH_COMMAND="ssh -i $HOME/.ssh/github -o IdentitiesOnly=yes -o StrictHostKeyChecking=no"
+fi
+
 LOG_DIR="${HOME}/.hermes/logs"
 mkdir -p "$LOG_DIR"
 LOG="$LOG_DIR/awesome-weekly-$(date +%Y%m%d-%H%M).log"
 exec > >(tee -a "$LOG") 2>&1
 
 echo "═══ 本地周更开始 $(date '+%Y-%m-%d %H:%M:%S %Z') ═══"
+
+# ⓿ 自愈：先把上一轮漏推的 commit 推上去（历史上失败过就必须补，不能等下一轮）
+echo "── 补推遗留 commit ──"
+if git fetch origin main --quiet 2>/dev/null; then
+  AHEAD=$(git rev-list --count origin/main..HEAD 2>/dev/null || echo 0)
+  if [ "${AHEAD:-0}" -gt 0 ]; then
+    echo "⚠️ 发现 ${AHEAD} 个未推送的 commit，先补推"
+    git pull --rebase --autostash origin main && git push origin HEAD:main \
+      && echo "✅ 遗留 commit 已补推" \
+      || echo "⚠️ 补推失败，继续本轮（末尾还会再推一次）"
+  else
+    echo "ℹ️ 无遗留 commit"
+  fi
+else
+  echo "⚠️ 无法连接 origin（网络/认证），本轮照常跑，最后再试推送"
+fi
 
 # ① 门禁：自测先跑（坏规则不该去写数据）
 echo "── 自测 ──"
@@ -76,19 +100,22 @@ else
   ok=0
   for attempt in 1 2 3; do
     echo "── 尝试 ${attempt} ──"
-    if git pull --rebase --autostash origin main; then
-      if GIT_SSH_COMMAND="ssh -i $HOME/.ssh/github -o IdentitiesOnly=yes -o StrictHostKeyChecking=no" \
-         git push origin HEAD:main; then
-        echo "✅ 已推送（第 ${attempt} 次）"; ok=1; break
+    if ! git pull --rebase --autostash origin main; then
+      # ⚠️ 注意：这里可能是【认证失败】也可能是【rebase 冲突】，要分清，别一律当冲突
+      if git status --porcelain 2>/dev/null | grep -q '^UU\|^AA\|^DD'; then
+        echo "⚠️ rebase 冲突（papers.db 是二进制，放弃本轮）"
+        git rebase --abort 2>/dev/null || true
+      else
+        echo "❌ pull 失败（认证或网络问题，不是冲突）—— 检查 ~/.ssh/github 与 GIT_SSH_COMMAND"
       fi
-      echo "⚠️ push 失败，重试中…"
+    elif git push origin HEAD:main; then
+      echo "✅ 已推送（第 ${attempt} 次）"; ok=1; break
     else
-      echo "⚠️ rebase 冲突（papers.db 是二进制，放弃本轮）"
-      git rebase --abort 2>/dev/null || true
+      echo "⚠️ push 失败，重试中…"
     fi
     sleep 5
   done
-  [ "$ok" -ne 1 ] && { echo "❌ 推送失败（数据已生成但未提交，下轮会重来）"; exit 1; }
+  [ "$ok" -ne 1 ] && { echo "❌ 推送失败（commit 已在本地，下轮开头会自动补推）"; exit 1; }
 fi
 
 echo "═══ 本地周更结束 $(date '+%Y-%m-%d %H:%M:%S %Z') ═══"
