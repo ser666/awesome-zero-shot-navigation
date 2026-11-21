@@ -118,4 +118,20 @@ else
   [ "$ok" -ne 1 ] && { echo "❌ 推送失败（commit 已在本地，下轮开头会自动补推）"; exit 1; }
 fi
 
+# ⑤ 上线核验：push 成功 ≠ 网站更新了（Pages 构建是另一回事）
+#    ⚠️ 2026-11-07 曾出现"仓库有新数据但线上停在旧版"的静默停更，这一步是防止它再次无声发生
+echo "── 上线核验（等 Pages 构建）──"
+LIVE_URL="https://ser666.github.io/awesome-zero-shot-navigation/data/papers.json"
+LOCAL_TOTAL=$(python3 -c "import json;print(json.load(open('docs/data/papers.json'))['total'])" 2>/dev/null || echo 0)
+LIVE_OK=0
+for i in $(seq 1 10); do
+  sleep 20
+  LIVE_TOTAL=$(curl -s -H 'Cache-Control: no-cache' "$LIVE_URL" | python3 -c "import sys,json;print(json.load(sys.stdin)['total'])" 2>/dev/null || echo -1)
+  echo "  第 ${i} 次检查：线上 ${LIVE_TOTAL} / 本地 ${LOCAL_TOTAL}"
+  if [ "$LIVE_TOTAL" = "$LOCAL_TOTAL" ]; then LIVE_OK=1; break; fi
+done
+if [ "$LIVE_OK" -ne 1 ]; then
+  echo "⚠️ 网站尚未更新（本地 ${LOCAL_TOTAL}，线上 ${LIVE_TOTAL}）—— 数据已推送，Pages 可能仍在构建，稍后自查"
+fi
+
 echo "═══ 本地周更结束 $(date '+%Y-%m-%d %H:%M:%S %Z') ═══"
